@@ -809,6 +809,22 @@ struct FetchInBlocksUserData
 
 extern bool g_concurrent_download;
 
+EMSCRIPTEN_KEEPALIVE
+extern "C" void head_result(const char *ptr, void *data);
+EMSCRIPTEN_KEEPALIVE
+extern "C" void head_result_err(void *data);
+
+EM_JS(void, get_header, (const char *filename, void *data), {
+    const url = UTF8ToString(filename);
+    fetch(url, { method: "HEAD" })
+      .then(r => {
+	  Module.ccall('head_result',null,['string','number'],[r.headers.get("Content-Length"),data]);
+		       //head_result(,data);
+      })
+      .catch(err => {
+	  Module.ccall('head_result_err',null,['number'],[data]);
+	});
+});
 
 
 class FetchInBlocks
@@ -824,11 +840,14 @@ public:
 private:
   void fetch_size()
   {
-
+    async_pending_count++;
+    get_header(url.c_str(),(void*)this);
+#if 0
+    
     //std::cout << "fetch_size" << std::endl; 
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
-    strcpy(attr.requestMethod, "GET");
+    strcpy(attr.requestMethod, "HEAD");
     attr.userData = (void*)this;
     attr.attributes = EMSCRIPTEN_FETCH_REPLACE| EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
     attr.onsuccess = blocks_success;
@@ -850,7 +869,7 @@ private:
     
     //if (url1=="") url1="https://meshpage.org/"; // this doesnt really work, since it gives CORS problem
     
-    std::string url2 = url1+"get_file_size.php?" + ss.str() + "&url=" +url; 
+    std::string url2 = /*url1+"get_file_size.php?" + ss.str() + "&url=" + */ url; 
     //std::cout << "Size url:" << url2 << std::endl;
     emscripten_fetch(&attr, url2.c_str());
 
@@ -870,17 +889,92 @@ private:
   ProgressBar(sum,val,15*150,"fetch: "+url_only2);
   }
   async_pending_count++;
+#endif
   }
 public:
-  void size_success(emscripten_fetch_t *fetch)
+  void head_result(std::string s)
   {
     async_pending_count--;
+
+    std::string res(s);
+    
+    std::stringstream ss(res);
+    totalSize = 0;
+    chunkSize = 1048576;
+    ss >> totalSize;
+    //ss >> chunkSize;
+    
+    int concurrent_tasks = 4;
+    //totalSize = fetch->totalBytes;
+    //std::cout << "Size Success: " << totalSize << std::endl;
+    if (chunkSize==0) { chunkSize=1048576; }
+    if (totalSize==0) { head_result_err(); return; }    
+    else {
+
+      // std::cout << "FETCH_SIZE:" << std::endl;
+      if (!g_concurrent_download) {
+	//std::cout << "FAILED IMMEDIATELY" << std::endl;
+	failed_after_size(0,totalSize);
+	return;
+      }
+      //std::cout << "FETCHIND SIZE" << std::endl;
+
+      
+
+
+      
+      result.resize(totalSize+1);
+      int t = totalSize/chunkSize+1;
+      blocks_ready.resize(t);
+      //fetch_block(0);
+      int s = t;
+      for(int i=0;i<s;i++) {
+	blocks_ready[i]=0;
+      }
+      for(int i=0;i<std::min(concurrent_tasks,s);i++) {
+	fetch_block(i);
+      }
+    }
+    //emscripten_fetch_close(fetch);
+
+    int val = 1;
+    int mult = totalSize/chunkSize;
+    if (mult<1) mult=1;
+    
+  std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
+
+  { // progressbar
+    std::string url_only2 = stripprefix(url_only);
+  int s = url_only2.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
+  sum = sum % 1000;
+  //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
+  ProgressBar(sum,val,15*mult+1,"fetch: "+url_only2);
+  }
+
+  }
+  void head_result_err()
+  {
+    std::cout << "HEAD_RESULT_ERR" << std::endl;
+    async_pending_count--;
+    failed(data);
+  }
+  void size_success(emscripten_fetch_t *fetch)
+  {
+  }
+  /*  
+    async_pending_count--;
     //std::cout << "size_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << std::endl;
-    if (!fetch || !fetch->data || !fetch->numBytes) { size_failed(fetch); return; } 
-    std::string res(&fetch->data[0],&fetch->data[fetch->numBytes]);
-    //std::cout << "RES: '" << res << "'" << std::endl;
+    //if (!fetch || !fetch->data || !fetch->numBytes) { size_failed(fetch); return; } 
+    // std::string res(&fetch->data[0],&fetch->data[fetch->numBytes]);
 
+    std::string value = fetch->responseHeaders;   
 
+    std::cout << "RES: '" << value << "'" << std::endl;
+
+    std::string res = value;
     
     if (res.size()==0) { size_failed(fetch); return; }
     
@@ -947,6 +1041,7 @@ public:
 
 
   }
+  */
   void size_failed(emscripten_fetch_t *fetch)
   {
     async_pending_count--;
@@ -1175,6 +1270,20 @@ public:
   int mode = 0;
   int failcount=0;
 };
+EMSCRIPTEN_KEEPALIVE
+extern "C" void head_result(const char *ptr, void *data)
+{
+  FetchInBlocks *blk = (FetchInBlocks *)data;
+  std::string s(ptr);
+  blk->head_result(s);
+}
+EMSCRIPTEN_KEEPALIVE
+extern "C" void head_result_err(void *data)
+{
+  FetchInBlocks *blk = (FetchInBlocks *)data;
+  blk->head_result_err();
+}
+
 void blocks_success(emscripten_fetch_t *fetch)
 {
   FetchInBlocks *ptr = (FetchInBlocks*)(fetch->userData);
@@ -2290,7 +2399,7 @@ void FetchInBlocks::failed_after_size(emscripten_fetch_t *fetch, int sz)
     
     //std::cout << "Concurrent load disabled -> loading normal way" << std::endl;
     failed(data);
-    emscripten_fetch_close(fetch);
+    //emscripten_fetch_close(fetch);
   }
 #endif
 
@@ -2456,7 +2565,7 @@ void fetch_2_success(emscripten_fetch_t *fetch)
   // hack to fix the download amounts.
   //std::cout << "FETCH2SUCCESS:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
   if (dt->final_file_size!=-1 && fetch->numBytes != dt->final_file_size) {
-    std::cout << "Size Compare:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
+    //std::cout << "Size Compare:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
      dt->obj->result.push_back(' ');
   }
   const std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec = dt->obj->get();  

@@ -587,6 +587,115 @@ echo "<button class=\"btn btn-danger btn-sm btn-light py-1 px-1 hover-red rounde
    else echo "500";
    echo "</div>";
 echo "<br>";
+echo "<style>";
+echo ".bl_row {\n";
+echo "  display: flex;\n";
+echo "  flex-direction: row;\n";
+echo "  flex-wrap: none;\n";
+echo "position: relative;\n";
+echo "border-style: solid;\n";
+echo "border-width: 2px;\n";
+echo "border-radius: 50px;\n";
+echo "background-color: #dddddd;\n";
+echo "padding: 30px;\n";
+echo "margin: 30px;\n";
+echo "width: 100%;\n";
+echo "}\n";
+echo ".bl_column {\n";
+echo "display:flex;\n";
+echo "  flex-direction: column;\n";
+echo "  flex-wrap: none;\n";
+echo "  width: 40%;\n";
+echo "  flex: 50%;\n";
+echo "position: relative;\n";
+echo "}\n";
+echo "@media (max-width: 1100px) {\n";
+echo ".bl_row {\n";
+echo "  flex-direction: column;\n";
+echo "  flex: 100%;\n";
+echo "}\n";
+echo ".bl_column {\n";
+echo "  width: 80%;\n";
+echo "}\n";
+echo "}\n";
+echo ".bl_item {\n";
+echo "display: block;\n";
+echo "margin: 30px;\n";
+echo "position: relative;\n";
+echo "}\n";
+echo ".bl_item img {\n";
+echo "display: flex; justify-content: center;\n";
+echo "margin: 30px;\n";
+echo "position: relative;\n";
+echo "}\n";
+echo ".bl_item video {\n";
+echo "display: flex; justify-content: center;\n";
+echo "margin: 30px;\n";
+echo "position: relative;\n";
+echo "}\n";
+echo "@media (max-width: 600px) {\n";
+echo ".bl_item {\n";
+echo "  margin: 2px;\n";
+echo "}\n";
+echo ".bl_item img {\n";
+echo "  margin: 2px;\n";
+echo "} }\n";
+echo ".bl_img {\n";
+echo "   width: 400px;";
+echo "   border-radius: 10px;\n";
+echo "   border-style: solid;\n";
+echo "   border-width: 2px;\n";
+echo "}\n";
+echo "@font-face { font-display: swap; font-family: \"custom\"; src: url(\"cafe.ttf\"); }\n";
+echo ".customfont { font-family: custom; }\n";
+echo ".bl_row {\n";
+echo "    border-radius: 50px;\n";
+echo "}\n";
+echo "</style>";
+
+
+echo "<div class=\"flex-container d-flex flex-row flex-wrap align-items-stretch\">";
+echo "<div class=\"flex-item p-3 m-0 w-3 h-18 text-left\">";
+echo "<br><h2>SPONSORS:</h2>\n";
+echo "</div>\n";
+echo "</div>\n"; // flex-container
+
+
+echo "<div class=\"flex-container d-flex flex-row  align-items-stretch\">";
+
+// START PELOCK
+
+echo "<div class=\"flex-item col-12 col-sm-12 col-md-12 col-lg-3 p-3 m-0 w-18 h-18 text-center\">\n";
+echo "<div class=\"highlight child-div top-0 start-0 w-100 h-100\" style=\"border-style: solid; border-width: 2px; border-color: black;\">\n";
+
+   echo "<div style=\"display: flex; align-items: center;\"><div style=\"display: flex; padding: 8px; width: 100%; font-size: 150%; height: 60px; font-family: 'calibri', sans-serif; line-height: 0.95;\" class=\"label align-items-center justify-content-center\" align=\"center\"><div style=\"display:flex; justify-content: center;\"><div style=\"text-align: left;\"><b><a href=\"https://www.pelock.com\">PELock Software Protection</a></b></div></div></div></div>";
+   echo "<div class=\"\">";
+   echo "<div class=\"image\">";
+
+echo "<img class=\"object-fit-cover\" style=\"width: 100%; aspect-ratio: 4 / 3;\" crossorigin src=\"https://meshpage.org/pelock-software-protection.jpg\"/>";
+echo "</div></div></div></div>";
+
+// END PELOCK
+// START PAYPAL LINK
+
+echo "<div class=\"flex-item col-12 col-sm-12 col-md-12 col-lg-3 p-3 m-0 w-18 h-18 text-center\">\n";
+echo "<div class=\"highlight child-div top-0 start-0 w-100 h-100\" style=\"border-style: solid; border-width: 2px; border-color: black;\"><div class=\"bl_item customfont content m-4 position-relative\">";
+   echo "<div style=\"display: flex; align-items: center;\"><div style=\"display: flex; padding: 8px; width: 100%; font-size: 150%; height: 100px; font-family: 'calibri', sans-serif; line-height: 0.95;\" class=\"label align-items-center justify-content-center\" align=\"center\"><div style=\"display:flex; justify-content: center;\"><div style=\"text-align: left;\"><b>Want your link here?</b></div></div></div></div>";
+   echo "<div class=\"object-fit-cover\">";
+   //echo "<div class=\"image\">";
+echo "(if you want your logo and url to this page, send email to terop@kotiposti.net)\n";
+echo "<a href=\"https://meshpage.org/pp3/pp.html\">paypal</a>";
+echo "</div>";
+
+// END PAYPAL LINK
+
+//echo "</div>\n"; // bl_item
+echo "</div>\n"; // bl_column
+echo "</div>\n"; // bl_row
+echo "</div>\n"; // flex-container
+echo "</div>\n";
+
+echo "<br>";
 echo "<div style=\"height:70px\"></div>";
 page_footer();
 echo "<div style=\"height:40px\"></div>";

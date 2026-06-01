@@ -6237,8 +6237,8 @@ public:
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     //std::cout << "GLTF: basecolor=" << r.baseColorFactor[0] << " " << r.baseColorFactor[1] << " " << r.baseColorFactor[2] << " " << r.baseColorFactor[3] << " " << std::endl;
-      std::cout << "GLTF:rgbbasecolorfactor=" << baseColorFactor << std::endl;
-      std::cout << "GLTF: basecolor=" << r.baseColorFactor[0] << " " << r.baseColorFactor[1] << " " << r.baseColorFactor[2] << " " << r.baseColorFactor[3] << " " << std::endl;
+    //std::cout << "GLTF:rgbbasecolorfactor=" << baseColorFactor << std::endl;
+    // std::cout << "GLTF: basecolor=" << r.baseColorFactor[0] << " " << r.baseColorFactor[1] << " " << r.baseColorFactor[2] << " " << r.baseColorFactor[3] << " " << std::endl;
 
     
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz,cache_id,self_mult,rest_mult, emissive);

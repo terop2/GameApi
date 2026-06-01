@@ -2757,6 +2757,20 @@ public:
   FS fs_sphere(float center_x, float center_y, float center_z, float radius);
   FS color_scene(FS scene, unsigned int color, int fptr_enum);
   FS fd_to_fs(EveryApi &ev, FD fd);
+  VX fs_to_vx(EveryApi &ev, int sx, int sy, int sz, float ssx, float ssy, float ssz, FS obj, float pos);
+  O fs_to_o(FS obj, float val);
+  ML fs_to_ml(EveryApi &ev, int sx, int sy, int sz,
+		float ssx, float ssy, float ssz,
+		FS obj,
+		float pos,
+	      //std::vector<P> vec,
+	      MT mat, float sx1, float sy1, float sz1);
+  ML fs_to_ml2(EveryApi &ev, int sx, int sy, int sz,
+		float ssx, float ssy, float ssz,
+		FS obj,
+		float pos,
+	      //std::vector<P> vec,
+	      MT mat, float sx1, float sy1, float sz1, float border_width, unsigned int border_color);
 private:
   Env &e;
 };
