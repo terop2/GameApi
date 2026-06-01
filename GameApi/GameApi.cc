@@ -27521,6 +27521,10 @@ public:
 	std::cout << "Saving to " + home + "/_gameapi_builder/Downloads/gameapi_deploy.zip" << std::endl;
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
 
+	home = deploy_replace_string(home,"\"","");
+	home = deploy_replace_string(home,"\"","");  
+
+	
 	std::ifstream ss((home + "\\_gameapi_builder\\deploy\\gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
 	char ch;
