@@ -17,7 +17,7 @@
 #define idb_disabled 1
 //#define idb_disabled 0
 
-
+extern std::string gameapi_temp_dir;
 
 bool g_disable_polygons=false;
 bool g_filter_execute = false;
@@ -4715,9 +4715,22 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
 {
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
-  system("mkdir %TEMP%\\_gameapi_builder");
-  system("mkdir %TEMP%\\_gameapi_builder\\Downloads");
+  std::string tmp = "%TEMP%";
+  if (gameapi_temp_dir!="@")
+    {
+      tmp = gameapi_temp_dir;
+    }
+  std::string mkdir1 = "mkdir " + tmp + "\\_gameapi_builder";
+  std::string mkdir2 = "mkdir " + tmp + "\\_gameapi_builder\\Downloads";
+  
+  system(mkdir1.c_str());
+  system(mkdir2.c_str());
   std::string home = getenv("TEMP");
+  
+  if (gameapi_temp_dir!="@")
+    {
+      home = gameapi_temp_dir;
+    }
   std::string filename_with_path = home + std::string("\\_gameapi_builder\\Downloads\\") + filename;
   std::ofstream ss(filename_with_path.c_str(),std::ios::binary);
   std::string val(vec->begin(),vec->end());

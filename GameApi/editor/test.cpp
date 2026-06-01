@@ -45,6 +45,8 @@ using namespace GameApi;
 #include <fcntl.h> 
 #endif
 
+extern std::string gameapi_temp_dir;
+
 IMPORT extern bool g_reload_edit_dialog;
 bool g_edit_dialog_available=false;
 std::vector<std::string> g_edit_labels;
@@ -3917,10 +3919,15 @@ public:
 #ifdef WINDOWS
 	      std::string home = getenv("TEMP");
 
-
+	      if (gameapi_temp_dir!="@")
+		{
+		  home = gameapi_temp_dir;
+		}
 	      int s = home.size();
 	      for(int i=0;i<s;i++)
 		if (home[i]=='\\') home[i]='/';
+
+	      home = replace_str(home, " ", "%20");
 	      
 	    //std::string drive = getenv("systemdrive");
 	    //std::string path = getenv("homepath");
@@ -3939,7 +3946,13 @@ public:
 #ifdef WINDOWS
 		std::string drive=getenv("systemdrive");
 		std::string path=getenv("homepath");
-		std::string p = drive+path+"\\_gameapi_builder\\Downloads\\";
+
+		std::string home = drive+path;
+		if (gameapi_temp_dir!="@")
+		  {
+		    home = gameapi_temp_dir;
+		  }		
+		std::string p = home+"\\_gameapi_builder\\Downloads\\";
 		pthread_system((std::string("start \"\" ")+p).c_str());
 #endif
 	      }
