@@ -26669,7 +26669,8 @@ std::vector<UrlItem> find_url_items(std::string s)
     {
       if (i<ss-5 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]==':'&&s[i+5]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
-	std::string url_orig = find_to_end(s_orig,i,",)\n");
+	std::string url_orig = find_to_end(s_orig,i,",\n");
+	if (url_orig.size()>0 && url_orig[url_orig.size()-1]==')') url_orig=url_orig.substr(0,url_orig.size()-1);
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
@@ -26678,7 +26679,8 @@ std::vector<UrlItem> find_url_items(std::string s)
       }
       if (i<ss-6 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]=='s'&&s[i+5]==':'&&s[i+6]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
-	std::string url_orig = find_to_end(s_orig,i,",)\n");
+	std::string url_orig = find_to_end(s_orig,i,",\n");
+	if (url_orig.size()>0 && url_orig[url_orig.size()-1]==')') url_orig=url_orig.substr(0,url_orig.size()-1);
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
@@ -26687,7 +26689,8 @@ std::vector<UrlItem> find_url_items(std::string s)
       }
       if (i<ss-6 && s[i]=='f'&&s[i+1]=='i'&&s[i+2]=='l'&&s[i+3]=='e'&&s[i+4]==':'&&s[i+5]=='/'&&s[i+6]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
-	std::string url_orig = find_to_end(s_orig,i,",)\n");
+	std::string url_orig = find_to_end(s_orig,i,",\n");
+	if (url_orig.size()>0 && url_orig[url_orig.size()-1]==')') url_orig=url_orig.substr(0,url_orig.size()-1);
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
@@ -26736,7 +26739,8 @@ std::string deploy_replace_string(std::string val, std::string repl, std::string
       bool not_found=false;
       for(int j=0;j<ss;j++)
 	{
-	  if (val[i+j]!=repl[j]) { not_found=true; break; }
+	  if (i+j<val.size())
+	    if (val[i+j]!=repl[j]) { not_found=true; break; }
 	}
       if (not_found) { res+=val[i]; continue; }
       res+=subst;
@@ -27117,7 +27121,7 @@ public:
 	int val2=system(str2.c_str());
 	int val3=system(str3.c_str());
 	int val4=system(str4.c_str());
-	if (val3!=0||val4!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << " " << val4 << " " << val5 << std::endl; ok=false; }
+	if (val3!=0||val4!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << " " << val4 << " " << std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
     }
