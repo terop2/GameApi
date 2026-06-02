@@ -1,4 +1,4 @@
-scp terop@meshpage.org:/home/terop/meshpage.org/gameapi_display.zip ./display/
+git pull
 cd steam_tmp
 scp terop@meshpage.org:/home/terop/GameApiBuilder_rel.zip .
 c:\Windows\System32\tar xf GameApiBuilder_rel.zip

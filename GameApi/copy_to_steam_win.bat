@@ -10,8 +10,6 @@ set ROOT_DIR=c:\users\terop\cvs\GameApi\GameApi
 
 set DEPOT_DIR=c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win
 
-scp terop@meshpage.org:/home/terop/meshpage.org/gameapi_display.zip ./display/
-
 copy %DISPLAY_DIR%\gameapi_0.html %DEPOT_DIR%\gameapi_0.html
 copy %DISPLAY_DIR%\gameapi_0_seamless.html %DEPOT_DIR%\gameapi_0_seamless.html
 copy %DISPLAY_DIR%\gameapi_1.html %DEPOT_DIR%\gameapi_1.html
