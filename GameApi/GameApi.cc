@@ -97,6 +97,30 @@ bool is_mobile(GameApi::EveryApi &ev)
   return is_mobile_1() || ev.mainloop_api.get_screen_width() < 800 ||(g_gpu_vendor != "NVID" && g_gpu_vendor != "AMD" && g_gpu_vendor != "WebK");
 }
 
+std::string deploy_curl_cmd()
+{
+#ifdef STEAM
+#ifdef LINUX
+  char buffer[PATH_MAX];
+
+  ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer)-1);
+
+  if (len != -1) {
+    buffer[len] = '\0';
+    std::string full_path(buffer);
+
+    size_t last_slash = full_path.find_last_of('/');
+    if (last_slash != std::string::npos) {
+      return "\"" + full_path.substr(0,last_slash) + "/curl\"";
+    }
+  }
+  return "curl";
+#endif
+#endif
+  return "curl";
+}
+
+
 IMPORT bool g_deploy_phase = false;
 
 IMPORT std::string gameapi_temp_dir = "@";
@@ -27747,7 +27771,9 @@ public:
 	    s = deploy_replace_string(s,ii.url_orig,remove_prefix(ii.url));
 	    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
-	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl \"") + convert_spaces_to_url_encoding(deploy_truncate(http_to_https(ii.url))) + "\" --output \"" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\")";
+	    std::string curl_cmd = deploy_curl_cmd();
+	    
+	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";") + curl_cmd + " \"" + convert_spaces_to_url_encoding(deploy_truncate(http_to_https(ii.url))) + "\" --output \"" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\")";
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
 	    std::string fn = home + "/.gameapi_builder/deploy/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?')));
