@@ -26320,6 +26320,7 @@ struct UrlItem
 {
   int index;
   std::string url;
+  std::string url_orig;
   bool is_license=false;
   std::string licensed_filename;
   std::string author;
@@ -26420,6 +26421,7 @@ void find_url_items3(std::vector<UrlItem> &result)
 	  UrlItem ii;
 	  ii.index = -1;
 	  ii.url = result[i].url;
+	  ii.url_orig = result[i].url;
 	  ii.author = stop?aut+(aut2[0]!='('?aut2:""):"(no author found from zip)";
 	  ii.is_license = true;
 	  ii.licensed_filename = name;
@@ -26436,6 +26438,7 @@ void find_url_items3(std::vector<UrlItem> &result)
 	      UrlItem ii;
 	      ii.index=-1;
 	      ii.url=urls[j];
+	      ii.url_orig = urls[j];
 	      ii.author = authors[j];
 	      ii.is_license=true;
 	      ii.licensed_filename=filenames[j];
@@ -26624,6 +26627,8 @@ std::string fetch_more_data(std::string url)
 }
 std::vector<UrlItem> find_url_items(std::string s)
 {
+  std::string s_orig = s;
+
 #ifdef WINDOWS
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
@@ -26664,23 +26669,29 @@ std::vector<UrlItem> find_url_items(std::string s)
     {
       if (i<ss-5 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]==':'&&s[i+5]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
+	std::string url_orig = find_to_end(s_orig,i,",)\n");
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
+	ii.url_orig=url_orig;
 	vec.push_back(ii);
       }
       if (i<ss-6 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]=='s'&&s[i+5]==':'&&s[i+6]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
+	std::string url_orig = find_to_end(s_orig,i,",)\n");
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
+	ii.url_orig = url_orig;
 	vec.push_back(ii);
       }
       if (i<ss-6 && s[i]=='f'&&s[i+1]=='i'&&s[i+2]=='l'&&s[i+3]=='e'&&s[i+4]==':'&&s[i+5]=='/'&&s[i+6]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
+	std::string url_orig = find_to_end(s_orig,i,",)\n");
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
+	ii.url_orig = url_orig;
 	vec.push_back(ii);
       }
     }
@@ -27096,7 +27107,7 @@ public:
       std::string str2 = "rmdir /Q /S %TEMP%\\_gameapi_builder\\deploy";
       std::string str3 = "mkdir %TEMP%\\_gameapi_builder\\deploy";
       std::string str4 = "mkdir %TEMP%\\_gameapi_builder\\deploy\\licenses";
-
+      
       if (gameapi_temp_dir!="@")
 	{
 	  str2 = deploy_replace_string(str2,"%TEMP%",gameapi_temp_dir);
@@ -27106,7 +27117,7 @@ public:
 	int val2=system(str2.c_str());
 	int val3=system(str3.c_str());
 	int val4=system(str4.c_str());
-      if (val3!=0||val4!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << " " << val4<< std::endl; ok=false; }
+	if (val3!=0||val4!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << " " << val4 << " " << val5 << std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
     }
@@ -27247,7 +27258,7 @@ public:
 	    int val=system(str7.c_str());
 	    if (val!=0) { std::cout << "ERROR: mkdir returned error " << val << std::endl; ok=false; }
 	  }
-	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
+	  s = deploy_replace_string(s,ii.url_orig,remove_prefix(ii.url));
 	  std::string curl="..\\curl\\curl.exe";
 	    std::string curl_string;
 	  if (file_exists(curl))
@@ -27693,7 +27704,7 @@ public:
 	      int val = system((std::string("mkdir -p ") + home + std::string("/.gameapi_builder/deploy/") + dir).c_str());
 	      if (val!=0) { std::cout << "ERROR: mkdir returned error: " << val << std::endl; ok=false; }
 	    }
-	    s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
+	    s = deploy_replace_string(s,ii.url_orig,remove_prefix(ii.url));
 	    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
 	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl \"") + convert_spaces_to_url_encoding(deploy_truncate(http_to_https(ii.url))) + "\" --output \"" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\")";
