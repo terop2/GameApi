@@ -3820,11 +3820,11 @@ std::string take_prefix(std::string cd, std::string path)
   if (pos!=-1)
     {
       int p = find_str(path,":");
-      if (path.size()>0 && path[0]!='/'&&p==-1) return cd+"/"+path.substr(0,pos);
+      if (path.size()>0 && (path[0]!='/'&&path[0]!='\\')&&p==-1) return cd+"/"+path.substr(0,pos);
       return path.substr(0,pos);
     }
   int p = find_str(path,":");
-  if (path.size()>0 && path[0]!='/'&&p==-1) return cd+"/"+path;
+  if (path.size()>0 && (path[0]!='/'&&path[0]!='\\')&&p==-1) return cd+"/"+path;
   return path;
 }
 
