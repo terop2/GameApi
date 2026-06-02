@@ -26763,7 +26763,7 @@ std::string remove_prefix(std::string s)
 std::string deploy_replace_string(std::string val, std::string repl, std::string subst)
 {
   //std::cout << "REPLACE: '" << repl << "' with '" << subst << "'" << std::endl;
-  if (repl.size()<1) { std::cout << "Result not changed!" << std::endl; return val; }
+  if (repl.size()<1) { /*std::cout << "Result not changed!" << std::endl;*/ return val; }
   std::string res;
   int s = val.size();
   for(int i=0;i<s;i++)
