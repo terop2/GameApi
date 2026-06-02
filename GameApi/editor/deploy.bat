@@ -1,4 +1,4 @@
-@echo on
+@echo off
 set "P3=%3"
 set "P2=%2"
 set "P1=%1"

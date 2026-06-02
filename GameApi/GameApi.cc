@@ -26326,9 +26326,23 @@ struct UrlItem
   std::string author;
   std::string license_contents;
 };
-std::string find_to_end(std::string s, int pos, std::string not_allowed_chars)
+std::string rep_ch(char ch, int num) {
+  int s=num;
+  std::string res;
+  for(int i=0;i<s;i++)
+    res+=ch;
+  return res;
+}
+
+std::string find_to_end(std::string s, int pos, std::string not_allowed_chars, std::vector<std::string> vec=std::vector<std::string>())
 {
-  int ss = s.size();
+  std::string s0 = s;
+  int st = vec.size();
+  for(int i=0;i<st;i++) {
+    s0 = deploy_replace_string(s0,vec[i],rep_ch('k',vec[i].size()));
+  }
+  
+  int ss = s0.size();
   int i=pos;
   for(;i<ss;i++)
     {
@@ -26336,11 +26350,13 @@ std::string find_to_end(std::string s, int pos, std::string not_allowed_chars)
       bool found=false;
       for(int j=0;j<sk;j++)
 	{
-	  if (s[i]==not_allowed_chars[j]) found=true;
+	  if (s0[i]==not_allowed_chars[j]) found=true;
 	}
       if (found) break;
     }
-  return s.substr(pos,i-pos);
+  if (pos>=0 && i<ss)
+    return s.substr(pos,i-pos); // this needs to be s, not s0
+  return "";
 }
 bool deploy_find(std::string s, std::string find)
 {
@@ -26629,6 +26645,8 @@ std::vector<UrlItem> find_url_items(std::string s)
 {
   std::string s_orig = s;
 
+  std::vector<std::string> k_vec = { "%CD%", "%cd%", "$(pwd)", "$(PWD)", "$(instdir)", "$(INSTDIR)" };
+  
 #ifdef WINDOWS
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
@@ -26669,35 +26687,49 @@ std::vector<UrlItem> find_url_items(std::string s)
     {
       if (i<ss-5 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]==':'&&s[i+5]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
-	std::string url_orig = find_to_end(s_orig,i,",\n");
-	if (url_orig.size()>0 && url_orig[url_orig.size()-1]==')') url_orig=url_orig.substr(0,url_orig.size()-1);
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
-	ii.url_orig=url_orig;
 	vec.push_back(ii);
       }
       if (i<ss-6 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]=='s'&&s[i+5]==':'&&s[i+6]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
-	std::string url_orig = find_to_end(s_orig,i,",\n");
-	if (url_orig.size()>0 && url_orig[url_orig.size()-1]==')') url_orig=url_orig.substr(0,url_orig.size()-1);
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
-	ii.url_orig = url_orig;
 	vec.push_back(ii);
       }
       if (i<ss-6 && s[i]=='f'&&s[i+1]=='i'&&s[i+2]=='l'&&s[i+3]=='e'&&s[i+4]==':'&&s[i+5]=='/'&&s[i+6]=='/') {
 	std::string url = find_to_end(s,i,",)\n");
-	std::string url_orig = find_to_end(s_orig,i,",\n");
-	if (url_orig.size()>0 && url_orig[url_orig.size()-1]==')') url_orig=url_orig.substr(0,url_orig.size()-1);
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
-	ii.url_orig = url_orig;
 	vec.push_back(ii);
       }
     }
+
+  int ss2 = s_orig.size();
+  int index = 0;
+  for(int i=0;i<ss2;i++)
+    {
+      if (i<ss2-5 && s_orig[i]=='h'&&s_orig[i+1]=='t'&&s_orig[i+2]=='t'&&s_orig[i+3]=='p'&&s_orig[i+4]==':'&&s_orig[i+5]=='/') {
+	std::string url_orig = find_to_end(s_orig,i,",)\n", k_vec);
+	vec[index].url_orig = url_orig;
+	index++;
+      }
+      if (i<ss2-6 && s_orig[i]=='h'&&s_orig[i+1]=='t'&&s_orig[i+2]=='t'&&s_orig[i+3]=='p'&&s_orig[i+4]=='s'&&s_orig[i+5]==':'&&s_orig[i+6]=='/') {
+	std::string url_orig = find_to_end(s_orig,i,",)\n", k_vec);
+	vec[index].url_orig = url_orig;
+	index++;
+      }
+      if (i<ss2-6 && s_orig[i]=='f'&&s_orig[i+1]=='i'&&s_orig[i+2]=='l'&&s_orig[i+3]=='e'&&s_orig[i+4]==':'&&s_orig[i+5]=='/'&&s_orig[i+6]=='/') {
+	std::string url_orig = find_to_end(s_orig,i,",)\n", k_vec);
+	vec[index].url_orig = url_orig;
+	index++;
+      }
+    }
+  
+  
   return vec;
 }
 
@@ -26722,7 +26754,7 @@ std::string remove_prefix(std::string s)
   int pos=0;
   for(int i=0;i<ss;i++)
     {
-      if (s[i]=='/') pos=i;
+      if (s[i]=='/'||s[i]=='\\') pos=i;
     }
   if (pos==0) return s;
   return s.substr(pos+1);
@@ -26730,22 +26762,26 @@ std::string remove_prefix(std::string s)
 
 std::string deploy_replace_string(std::string val, std::string repl, std::string subst)
 {
+  //std::cout << "REPLACE: '" << repl << "' with '" << subst << "'" << std::endl;
+  if (repl.size()<1) { std::cout << "Result not changed!" << std::endl; return val; }
   std::string res;
   int s = val.size();
   for(int i=0;i<s;i++)
     {
       int ss = repl.size();
-      //if (ss+i>=val.size()) { res+=val[i]; continue; }
+      if (ss+i>val.size()) { res+=val[i]; continue; }
       bool not_found=false;
       for(int j=0;j<ss;j++)
 	{
-	  if (i+j<val.size())
+	  //if (i+j<val.size()) {
 	    if (val[i+j]!=repl[j]) { not_found=true; break; }
+	    //} else { not_found=true; break; }
 	}
       if (not_found) { res+=val[i]; continue; }
       res+=subst;
       i+=repl.size()-1;
     }
+  //std::cout << "Result:" << res << std::endl;
   return res;
 }
 
