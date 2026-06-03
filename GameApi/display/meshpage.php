@@ -116,7 +116,7 @@ if ("$machine"=="terop-pc2") {
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light" id="html" style="overflow: auto;"> 
 <head>
-<title><?php echo $sitename ?> -- are you ready to bring the web to the next level technologies?</title>
+<title><?php echo $sitename ?> -- 3D Engine for the web | Display 3D models on your website</title>
 <link rel="stylesheet" id="bootstrap-css" href="" media="print" onload="this.media='all'" crossorigin="anonymous">
 
 <?php
