@@ -3162,6 +3162,7 @@ function enable_spinner(a)
   } else { enable_spinner2(a); }
 }
 
+let warn_brotli = false;
 function show_emscripten(str,hide,indicator,is_async)
 {
 	if (!g_emscripten_running)
@@ -3171,6 +3172,24 @@ function show_emscripten(str,hide,indicator,is_async)
 
 	g_emscripten_start_count++;
 	if (g_emscripten_running) {
+
+	//console.log("Checking if brotli is enabled..");
+	const entries = performance.getEntriesByType("resource");
+	for (const e of entries) {
+	    var name = e.name.split('?')[0];
+	    if (name.endsWith(".wasm")) {
+		if (e.decodedBodySize > e.encodedBodySize * 1.2) {
+		} else {
+		    if (!warn_brotli) {
+		        console.warn("Brotli might not be enabled => loading 3d engine will be slower than what would be possible if brotli is enabled.");
+			warn_brotli = true;
+			}
+		}
+	    }
+	}
+
+
+
 	   str+="\n";
 	   try {
 	       if (is_async) {
@@ -3230,6 +3249,9 @@ function show_emscripten(str,hide,indicator,is_async)
         } else {
 	  remove_keyboard_focus_from_iframe();
 	}
+
+
+
 	return;
 	}
 

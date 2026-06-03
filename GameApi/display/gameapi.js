@@ -77,6 +77,20 @@ function check_em() {
 
         //resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null);
         load_file();
+	
+	const entries = performance.getEntriesByType("resource");
+	for (const e of entries) {
+	    var name = e.name.split('?')[0];
+	    if (name.endsWith(".wasm")) {
+		if (e.decodedBodySize > e.encodedBodySize * 1.2) {
+		} else {
+		    if (!warn_brotli) {
+		        console.warn("Brotli might not be enabled => loading 3d engine will be slower than what would be possible if brotli is enabled.");
+			warn_brotli = true;
+			}
+		}
+	    }
+	}
     }
 }
 
