@@ -104,7 +104,7 @@ fclose($fp);
 
 echo "<!DOCTYPE html>\n";
 echo "<html lang=\"en\">\n";
-echo "<title>A way to display your 3d models on the web -- gltf supported</title>\n";
+echo "<title>3D Engine for the web | Display 3D models on your website</title>\n";
 echo "<head>\n";
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no\"/>";
 echo "<meta name=\"description\" content=\"Getting the best rendering result from gltf files is not easy task, but we're now getting the best result available on the market.\">\n";
@@ -771,7 +771,7 @@ echo "<script>(function () {var sc=document.createElement('script');sc.async=tru
 echo "</script>";
 echo "<!-- End SF Tag -->";
 echo "<footer style=\"position: static; margin-left: 27px;\" class=\"customfont\" id=\"gnomeauthor\">";
-echo "*) \"Mesh Garden Gnome\" (<a href=\"https://skfb.ly/D9Fq\">https://skfb.ly/D9Fq</a>) by Seth Berrier is licensed under Creative Commons Attribution (<a href=\"https://creativecommons.org/licenses/by/4.0/\">https://creativecommons.org/licenses/by/4.0/</a>).";
+echo "*) \"Mesh Garden Gnome\" (<a href=\"https://skfb.ly/D9Fq\">https://skfb.ly/D9Fq</a>) by Seth Berrier is licensed under Creative Commons Attribution (<a href=\"https://creativecommons.org/licenses/by/4.0/\" rel="nofollow">https://creativecommons.org/licenses/by/4.0/</a>).";
 echo "</footer>";
 
   // COPYRIGHT NOTICE
