@@ -20,27 +20,23 @@ set "ZIPFILE=%P1%"
 type gameapi.js |"%OLDDIR%\sed.exe" s@web_page@engine/web_page@ >gameapi2.js
 move gameapi2.js gameapi.js
 set "OUTPUT=%TEMP%\_gameapi_builder\deploy\display.html"
+del "%OUTPUT%" 2>nul
 if "%P2%"=="seamless" (
-> "%OUTPUT%" (
-   type "%TEMP%\_gameapi_builder\gameapi_0_seamless.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_homepage.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_1.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_script.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_2.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_date.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_3_seamless.html" 
-   )
-)
-if NOT "%P2%"=="seamless" (
-> "%OUTPUT%" (
-   type "%TEMP%\_gameapi_builder\gameapi_0.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_homepage.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_1.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_script.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_2.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_date.html" 
-   type "%TEMP%\_gameapi_builder\gameapi_3.html" 
-   )
+   type "%TEMP%\_gameapi_builder\gameapi_0_seamless.html" >> "%OUTPUT%"
+   type "%TEMP%\_gameapi_builder\gameapi_homepage.html" >> "%OUTPUT%"
+   type "%TEMP%\_gameapi_builder\gameapi_1.html"  >> "%OUTPUT%"
+   type "%TEMP%\_gameapi_builder\gameapi_script.html" >> "%OUTPUT%"
+   type "%TEMP%\_gameapi_builder\gameapi_2.html" >> "%OUTPUT%"
+   type "%TEMP%\_gameapi_builder\gameapi_date.html" >> "%OUTPUT%" 
+   type "%TEMP%\_gameapi_builder\gameapi_3_seamless.html" >> "%OUTPUT%" 
+) else (
+   type "%TEMP%\_gameapi_builder\gameapi_0.html" >> "%OUTPUT%" 
+   type "%TEMP%\_gameapi_builder\gameapi_homepage.html" >> "%OUTPUT%" 
+   type "%TEMP%\_gameapi_builder\gameapi_1.html" >> "%OUTPUT%" 
+   type "%TEMP%\_gameapi_builder\gameapi_script.html" >> "%OUTPUT%" 
+   type "%TEMP%\_gameapi_builder\gameapi_2.html" >> "%OUTPUT%" 
+   type "%TEMP%\_gameapi_builder\gameapi_date.html" >> "%OUTPUT%" 
+   type "%TEMP%\_gameapi_builder\gameapi_3.html" >> "%OUTPUT%" 
 )
 cd ..
 "%OLDDIR%\zip.exe" -r gameapi_deploy.zip *
