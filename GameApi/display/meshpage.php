@@ -194,9 +194,6 @@ $highmem = js_highmem();
 ?>
 </head>
 <!-- https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js -->
-<style>
-.preload-hidden { display:none; }
-</style>
 <body id="body" class="preload-hidden" style="overflow:hidden;">
 <script src="bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
 <script src="vue.js" async></script>
@@ -587,6 +584,10 @@ echo "<button class=\"btn btn-danger btn-sm btn-light py-1 px-1 hover-red rounde
    else echo "500";
    echo "</div>";
 echo "<br>";
+echo "<style>";
+echo ".preload-hidden { display:none; }";
+echo "</style>";
+
 echo "<style>";
 echo ".bl_row {\n";
 echo "  display: flex;\n";
@@ -2381,7 +2382,8 @@ window.choose_nav = function(val)
 //menu(0);
 //choose_nav(0);
 
-
+Vue.config.productionTip = false;
+Vue.config.silent = true;
 
 var app = new Vue({
    el: '#app',
