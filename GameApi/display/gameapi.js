@@ -67,7 +67,7 @@ function load_file()
 
 var g_check_em_timeout = null;
 var g_ready_bit=0; // THIS WILL BE CHANGED BY C++ SIDE                                                                                                  
-
+let warn_brotli = false;
 function check_em() {
     return function() {
         g_emscripten_running = true;
