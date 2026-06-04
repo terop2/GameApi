@@ -1197,7 +1197,7 @@ GameApi::TXID GameApi::TextureApi::videofile_txid_generic(EveryApi &ev, int sx, 
 {
   static bool firsttime = true;
   if (firsttime) {
-    std::cout << "Warning: videofile_txid_generic does not work in steam/proton environment!" << std::Endl;
+    std::cout << "Warning: videofile_txid_generic does not work in steam/proton environment!" << std::endl;
     firsttime = false;
   }
   static int num = 0;
