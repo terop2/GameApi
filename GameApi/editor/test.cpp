@@ -3928,6 +3928,10 @@ public:
 	      /*
 	      */      
 
+	      int s = home.size();
+	      for(int i=0;i<s;i++)
+		if (home[i]=='\\') home[i]='/';
+	      
 	    //std::string drive = getenv("systemdrive");
 	    //std::string path = getenv("homepath");
 	    g_dragdrop_filename = std::string("file://") + home + "/_gameapi_builder/Downloads/" + env->env->get_download_bar_filename(i);
