@@ -3828,6 +3828,8 @@ std::string take_prefix(std::string cd, std::string path)
   return path;
 }
 
+extern std::string gameapi_temp_dir;
+
 long long load_size_from_url(std::string url)
 {
   //std::cout << "POPEN SIZE" << url << std::endl;
@@ -3846,6 +3848,8 @@ long long load_size_from_url(std::string url)
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
   }
 #endif
 #ifdef LINUX
@@ -3862,6 +3866,8 @@ long long load_size_from_url(std::string url)
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
   url=convert_spaces_to_url_encoding(url);
   //std::cout << "size url: " << url << std::endl;
@@ -3973,6 +3979,8 @@ public:
     url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 
   }
 #endif
@@ -3990,6 +3998,8 @@ public:
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
   url=convert_spaces_to_url_encoding(url);
   
@@ -4236,6 +4246,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
   }
 #endif
 #ifdef LINUX
@@ -4252,6 +4264,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
   url=convert_spaces_to_url_encoding(url);
   // std::cout << "load url=" << url << std::endl;
