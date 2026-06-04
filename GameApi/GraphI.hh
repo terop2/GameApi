@@ -1507,6 +1507,42 @@ public:
   virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
 };
 
+class Frame
+{
+public:
+  // all the parameters should go via ctor parameters
+  virtual void execute()=0;
+  virtual void set_context(const MainLoopEnv &c)=0;
+
+  enum ETypes
+    {
+      EBDCalvinSprites=1
+    };
+  
+  virtual int get_type() const=0;
+  
+  template<class T>
+  T *dyn_cast(Frame *f, int type) { if (get_type()==type) return static_cast<T*>(f); std::cout << "Frame dyncast failed!" << std::endl; return 0; }
+};
+
+/* bdcalvin's ideas for sprite sheets rendering dynamically
+class TexCoordArray : public CollectInterface
+{
+public:
+  virtual ~TexCoordArray() { }
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual void Update(MainLoopEnv &e) { return false; }
+  virtual int Size() const=0;
+  virtual int MaxSize() const { return Size(); }
+  virtual int NumPoints() const { return 4; }
+  // face_index=0 is assumed / it cannot be changed. Only works with one quad
+  // and sprite sheets.
+  virtual Point2d TexCoord(int point_index, int instance_index) const=0;
+  virtual unsigned int Color(int point_index, int instance_index) const=0;
+};
+*/
+
 class PlaneShape
 {
 public:

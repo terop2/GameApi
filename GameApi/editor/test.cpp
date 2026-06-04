@@ -3921,7 +3921,7 @@ public:
 
 	      if (gameapi_temp_dir!="@")
 		{
-		  home = gameapi_temp_dir;
+		  home = "$(tempdir)"; //gameapi_temp_dir;
 		}
 	      int s = home.size();
 	      for(int i=0;i<s;i++)

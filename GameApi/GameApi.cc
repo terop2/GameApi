@@ -26598,6 +26598,10 @@ std::string find_more_data(std::string line)
   }
   return "";
 }
+
+
+extern std::string gameapi_temp_dir;
+
 std::string fetch_more_data(std::string url)
 {
 #ifdef WINDOWS
@@ -26612,6 +26616,8 @@ std::string fetch_more_data(std::string url)
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
   }
 #endif
 #ifdef LINUX
@@ -26626,6 +26632,8 @@ std::string fetch_more_data(std::string url)
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
 
 
@@ -26669,7 +26677,7 @@ std::vector<UrlItem> find_url_items(std::string s)
 {
   std::string s_orig = s;
 
-  std::vector<std::string> k_vec = { "%CD%", "%cd%", "$(pwd)", "$(PWD)", "$(instdir)", "$(INSTDIR)" };
+  std::vector<std::string> k_vec = { "%CD%", "%cd%", "$(pwd)", "$(PWD)", "$(instdir)", "$(INSTDIR)", "$(tempdir)", "$(TEMPDIR)" };
   
 #ifdef WINDOWS
   char buffer3[MAX_PATH];
@@ -26685,6 +26693,8 @@ std::vector<UrlItem> find_url_items(std::string s)
   s = deploy_replace_string(s,"$(PWD)",cd);
   s = deploy_replace_string(s,"$(instdir)",cd2);
   s = deploy_replace_string(s,"$(INSTDIR)",cd2);
+  s = deploy_replace_string(s,"$(tempdir)",gameapi_temp_dir);
+  s = deploy_replace_string(s,"$(TEMPDIR)",gameapi_temp_dir);
   }
 #endif
 #ifdef LINUX
@@ -26701,6 +26711,8 @@ std::vector<UrlItem> find_url_items(std::string s)
   s = deploy_replace_string(s,"$(PWD)",cd);
   s = deploy_replace_string(s,"$(instdir)",cd2);
   s = deploy_replace_string(s,"$(INSTDIR)",cd2);
+  s = deploy_replace_string(s,"$(tempdir)",gameapi_temp_dir);
+  s = deploy_replace_string(s,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
 
 
@@ -27282,6 +27294,8 @@ public:
   ii.url = deploy_replace_string(ii.url,"$(PWD)",cd);
   ii.url = deploy_replace_string(ii.url,"$(instdir)",cd2);
   ii.url = deploy_replace_string(ii.url,"$(INSTDIR)",cd2);
+  ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
+  ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",gameapi_temp_dir);
   }
 #endif
 #ifdef LINUX
@@ -27298,6 +27312,8 @@ public:
   ii.url = deploy_replace_string(ii.url,"$(PWD)",cd);
   ii.url = deploy_replace_string(ii.url,"$(instdir)",cd2);
   ii.url = deploy_replace_string(ii.url,"$(INSTDIR)",cd2);
+  ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
+  ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
 
 	  
@@ -27727,6 +27743,8 @@ public:
   ii.url = deploy_replace_string(ii.url,"$(PWD)",cd);
   ii.url = deploy_replace_string(ii.url,"$(instdir)",cd2);
   ii.url = deploy_replace_string(ii.url,"$(INSTDIR)",cd2);
+  ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
+  ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",gameapi_temp_dir);
   }
 #endif
 #ifdef LINUX
@@ -27739,6 +27757,8 @@ public:
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
   ii.url = deploy_replace_string(ii.url,"$(PWD)",cd);
+  ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
+  ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
 
 	  
@@ -44809,3 +44829,178 @@ EXPORT bool GameApi::MainLoopApi::is_gltf_animated(EveryApi &ev, TF tf)
   bool is_animated = num>0;
   return is_animated;
 }
+
+
+struct Sprite_InstData
+{
+  float src_start_x, src_end_x;
+  float src_start_y, src_end_y;
+
+  float dst_start_x, dst_end_x;
+  float dst_start_y, dst_end_y;
+
+  unsigned int color;
+};
+
+
+
+class BDCalvinSprites : public Frame
+{
+public:
+  BDCalvinSprites(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::BM sprite_sheet) : e(e), ev(ev), sprite_sheet(sprite_sheet)
+  {
+  }
+
+  struct SpriteCacheKey {
+    float src_start_x, src_end_x;
+    float src_start_y, src_end_y;
+
+    unsigned int color;
+    friend bool operator==(const SpriteCacheKey &key1, const SpriteCacheKey &key2)
+    {
+      return
+	fabs(key1.src_start_x-key2.src_start_x)<0.001 &&
+	fabs(key1.src_end_x-key2.src_end_x)<0.001 &&
+	fabs(key1.src_start_y-key2.src_start_y)<0.001 &&
+	fabs(key1.src_end_y-key2.src_end_y)<0.001 &&
+	key1.color==key2.color;
+    }
+  };
+  struct SpriteCacheData
+  {
+    GameApi::BM bm;
+    GameApi::ML ml;
+  };
+
+
+  void set_vec(std::vector<Sprite_InstData> *vec) { m_vec = vec; }
+  void set_context(const MainLoopEnv &c) { m_context = c; }
+  int get_type() const { return EBDCalvinSprites; }
+  void execute() {
+
+    int s = m_vec->size();
+    for(int i=0;i<s;i++) {
+      Sprite_InstData *dt = &m_vec->operator[](i);
+
+      SpriteCacheKey key = get_key(*dt);
+      handle_cache_key(key);
+      SpriteCacheData *data = find_cache_data(key);
+      GameApi::BM bm = data->bm;
+      GameApi::ML render = data->ml;
+      
+      float dst_width = dt->dst_end_x-dt->dst_start_x;
+      float dst_height = dt->dst_end_y-dt->dst_start_y;
+
+      int sx = ev.bitmap_api.size_x(bm);
+      int sy = ev.bitmap_api.size_y(bm);
+      
+      Matrix m = Matrix::Scale(dst_width/sx,dst_height/sy,1.0) * Matrix::Translate(dt->dst_start_x,dt->dst_start_y,0.0);
+      GameApi::M m2 = add_matrix2(e,m);
+      // TODO, next 3 lines here we still use EnvImpl memory? can we do it with in_MV?
+
+      int old_id = get_current_block();
+      int new_id = add_block();
+      set_current_block(new_id);
+      
+      GameApi::MN empty = ev.move_api.mn_empty();
+      GameApi::MN mn = ev.move_api.matrix(empty,m2);
+      GameApi::ML move = ev.move_api.move_ml(ev,render,mn,1,10.0);
+      MainLoopItem *item = find_main_loop(e,move);
+      item->execute(m_context);
+
+      clear_block(new_id);
+      set_current_block(old_id);
+      
+    }
+    
+  }
+
+  void handle_cache_key(const SpriteCacheKey &key)
+  {
+    int s = cache_key.size();
+    for(int i=0;i<s;i++)
+      {
+	if (key==cache_key[i]) return; // skip if cache key already found.
+      }
+      float src_width = key.src_end_x-key.src_start_x;
+      float src_height = key.src_end_y-key.src_start_y;
+      GameApi::BM bm = ev.bitmap_api.subbitmap(sprite_sheet,key.src_start_x,key.src_start_y,src_width,src_height);
+
+      GameApi::ML ml = ev.sprite_api.vertex_array_render(ev,bm);
+
+      MainLoopItem *item = find_main_loop(e,ml);
+      item->Prepare();
+      
+      
+      // TODO color
+      
+      SpriteCacheData dt;
+      dt.bm = bm;
+      dt.ml = ml;
+      
+      cache_key.push_back(key);
+      cache_data.push_back(dt);
+  }
+  SpriteCacheData *find_cache_data(const SpriteCacheKey &key)
+  {
+    int s = cache_key.size();
+    for(int i=0;i<s;i++)
+      {
+	if (key==cache_key[i]) return &cache_data[i];
+      }
+    return 0;
+  }
+  SpriteCacheKey get_key(const Sprite_InstData &dt)
+  {
+    SpriteCacheKey key;
+    key.src_start_x = dt.src_start_x;
+    key.src_end_x = dt.src_end_x;
+    key.src_start_y = dt.src_start_y;
+    key.src_end_y = dt.src_end_y;
+    key.color = dt.color;
+    return key;
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::Env &e;
+  MainLoopEnv m_context;
+
+  GameApi::BM sprite_sheet;
+  std::vector<Sprite_InstData> *m_vec;
+
+  mutable std::vector<SpriteCacheKey> cache_key;
+  mutable std::vector<SpriteCacheData> cache_data;
+  };
+
+class FrameMainLoop : public MainLoopItem
+{
+public:
+  FrameMainLoop(Frame &f) : f(f) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    BDCalvinSprites *sp = f.dyn_cast<BDCalvinSprites>(&f,Frame::EBDCalvinSprites);
+    sp->set_vec(&data);
+    
+    f.set_context(e);
+    f.execute();
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  
+private:
+  Frame &f;
+  std::vector<Sprite_InstData> data = {
+    { 0.0, 100.0, 0.0, 100.0,
+      0.0, 100.0, 0.0, 100.0,
+      0xffff0000
+    },
+    { 200.0, 300.0, 200.0, 300.0,
+      200.0, 300.0, 200.0, 300.0,
+      0xffff0000
+    }
+  };
+};

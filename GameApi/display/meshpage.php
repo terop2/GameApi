@@ -3283,7 +3283,7 @@ window.Module.locateFile = function(path, prefix) {
                 .then(text => {
                     const blob = new Blob([text], {type: 'application/javascript'});
                     window.wasmJSUrl = URL.createObjectURL(blob);
-                    return window.wasmJSUrl;
+                    return window.wasmJSUrl + "?<?php echo filemtime("engine_highmem.js"); ?>";
                 });
         }
         // Return a Promise from locateFile is not supported,
