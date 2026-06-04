@@ -26,7 +26,7 @@ extern int async_pending_count;
 
 IMPORT std::string g_mod_path;
 
-
+std::string replace_deploy_url(std::string home);
 
 FILE * my_popen(const char *cmd, const char *c)
 {
@@ -3848,7 +3848,13 @@ long long load_size_from_url(std::string url)
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
-  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  if (find_str(url,"$(tempdir)") != -1) {
+    std::string s = gameapi_temp_dir;
+    s = replace_deploy_url(s);
+    url = deploy_replace_string(url,"$(tempdir)",s);
+  } else {
+    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  }
   url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
   }
 #endif
@@ -3866,7 +3872,14 @@ long long load_size_from_url(std::string url)
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
-  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  if (find_str(url,"$(tempdir)") != -1) {
+    std::string s = gameapi_temp_dir;
+    s = replace_deploy_url(s);
+    url = deploy_replace_string(url,"$(tempdir)",s);
+  } else {
+    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  }
+  //url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
   url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
   url=convert_spaces_to_url_encoding(url);
@@ -3979,7 +3992,15 @@ public:
     url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
-  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  if (find_str(url,"$(tempdir)") != -1) {
+    std::string s = gameapi_temp_dir;
+    s = replace_deploy_url(s);
+    url = deploy_replace_string(url,"$(tempdir)",s);
+  } else {
+    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  }
+
+  // url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
   url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 
   }
@@ -3998,7 +4019,15 @@ public:
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
-  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  if (find_str(url,"$(tempdir)") != -1) {
+    std::string s = gameapi_temp_dir;
+    s = replace_deploy_url(s);
+    url = deploy_replace_string(url,"$(tempdir)",s);
+  } else {
+    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  }
+
+  // url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
   url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
   url=convert_spaces_to_url_encoding(url);
@@ -4246,7 +4275,14 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
-  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  if (find_str(url,"$(tempdir)") != -1) {
+    std::string s = gameapi_temp_dir;
+    s = replace_deploy_url(s);
+    url = deploy_replace_string(url,"$(tempdir)",s);
+  } else {
+    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  }
+  //url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
   url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
   }
 #endif
@@ -4264,7 +4300,14 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
-  url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  if (find_str(url,"$(tempdir)") != -1) {
+    std::string s = gameapi_temp_dir;
+    s = replace_deploy_url(s);
+    url = deploy_replace_string(url,"$(tempdir)",s);
+  } else {
+    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+  }
+  //url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
   url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
 #endif
   url=convert_spaces_to_url_encoding(url);
