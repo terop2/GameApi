@@ -1182,7 +1182,7 @@ GameApi::TXID GameApi::TextureApi::videofile_txid_win32(EveryApi &ev, int sx, in
 #endif
 
 GameApi::TXID GameApi::TextureApi::webcam_txid_generic(EveryApi &ev, int sx, int sy, int num)
-{
+{  
 #ifdef LINUX
   return webcam_txid_linux(ev,sx,sy,num);
 #endif
@@ -1195,6 +1195,11 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_generic(EveryApi &ev, int sx, int
 }
 GameApi::TXID GameApi::TextureApi::videofile_txid_generic(EveryApi &ev, int sx, int sy, std::string url)
 {
+  static bool firsttime = true;
+  if (firsttime) {
+    std::cout << "Warning: videofile_txid_generic does not work in steam/proton environment!" << std::Endl;
+    firsttime = false;
+  }
   static int num = 0;
   num++;
 #ifdef LINUX
