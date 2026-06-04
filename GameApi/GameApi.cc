@@ -73,6 +73,8 @@ std::string GetContentInstallDir(bool b);
 
 std::string replace_deploy_url(std::string home)
 {
+  std::cout << "REPLACE BEGIN:" << home << std::endl;
+  
   int s = home.size();
   for(int i=0;i<s;i++)
     if (home[i]=='\\') home[i]='/';
@@ -97,6 +99,9 @@ std::string replace_deploy_url(std::string home)
   
   home = replace_str(home, "\"", "");
   home = replace_str(home, "\"", "");
+
+  std::cout << "REPLACE END:" << home << std::endl;
+
   return home;
 }
 
