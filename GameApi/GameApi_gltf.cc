@@ -15412,11 +15412,11 @@ private:
 };
 */
 
-std::string fetch_more_data(std::string url);
+std::string fetch_more_data(GameApi::Env &e, std::string url);
 
-IMPORT std::string get_zip_license_file(std::string zipfilename)
+IMPORT std::string get_zip_license_file(GameApi::Env &e, std::string zipfilename)
 {
-  std::string zip = fetch_more_data(zipfilename);
+  std::string zip = fetch_more_data(e,zipfilename);
   std::vector<unsigned char> vec2(zip.begin(),zip.end());
   mz_ulong size = zip.end()-zip.begin();
   mz_zip_archive pZip;
@@ -15447,9 +15447,9 @@ IMPORT std::string get_zip_license_file(std::string zipfilename)
   return "";
 }
 
-std::string get_zip_indexhtml_file(std::string zipfilename)
+std::string get_zip_indexhtml_file(GameApi::Env &e, std::string zipfilename)
 {
-  std::string zip = fetch_more_data(zipfilename);
+  std::string zip = fetch_more_data(e,zipfilename);
   std::vector<unsigned char> vec2(zip.begin(),zip.end());
   mz_ulong size = zip.end()-zip.begin();
   mz_zip_archive pZip;
@@ -15515,7 +15515,7 @@ std::string replace_str(std::string val, std::string repl, std::string subst);
 
 bool load_zip(GameApi::Env &e, GameApi::EveryApi &ev, std::string url_to_zip)
 {
-  std::string index = get_zip_indexhtml_file(url_to_zip);
+  std::string index = get_zip_indexhtml_file(e,url_to_zip);
   if (index=="") { return false; }
 
   std::string parse = parse_zip_indexhtml(index);
@@ -15562,7 +15562,7 @@ public:
   std::string homepage() const { return gameapi_homepageurl; }
   std::string script_file() const
   {
-  std::string index = get_zip_indexhtml_file(url_to_zip);
+    std::string index = get_zip_indexhtml_file(env,url_to_zip);
   if (index=="") { return ""; }
 
   std::string parse = parse_zip_indexhtml(index,true);

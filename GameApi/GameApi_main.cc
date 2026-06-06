@@ -4353,7 +4353,7 @@ public:
     return timing->delta_time();
     } else return 0.0;
   }
-  Timing* clone() const { return new Timing2(env,duration,show,link); }
+  //Timing* clone() const { return new Timing2(env,duration,show,link); }
 
   virtual void Collect(CollectVisitor &vis)
   {
@@ -4562,7 +4562,7 @@ public:
   CurrentTimeTiming(Timing *prev) : prev(prev) { }
   float end_time() const { return current_time+delta_time(); }
   float delta_time() const { return prev->delta_time(); }
-  Timing *clone() const { return new CurrentTimeTiming(prev); }
+  //Timing *clone() const { return new CurrentTimeTiming(prev); }
   virtual void Collect(CollectVisitor &vis) { prev->Collect(vis); }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { prev->Prepare(); }
@@ -4600,7 +4600,7 @@ public:
     start_time = prev->end_time();
     return start_time + count*curr_to_repeated->end_time() + delta_time(); }
   float delta_time() const { return prev->delta_time(); }
-  Timing *clone() const { return new TimingRepeat(prev,curr_to_repeated,count); }
+  //Timing *clone() const { return new TimingRepeat(prev,curr_to_repeated,count); }
   virtual void Collect(CollectVisitor &vis)
   {
     prev->Collect(vis);
@@ -4706,10 +4706,12 @@ public:
     return start_time+20000.0;
   }
   virtual float delta_time() const { return timing->delta_time(); }
+  /*
   virtual Timing *clone() const
   {
     return new TimingEvent(env,fetch,timing,item);
   }
+  */
   virtual void Collect(CollectVisitor &vis) {
     item->Collect(vis);
     timing->Collect(vis);
@@ -4814,11 +4816,17 @@ GameApi::TT GameApi::MainLoopApi::timing_switch(EveryApi &ev, float duration, TT
   return add_timing(e, new Timing2(e,duration,new_show,new_show2,link,switch_dir));
 }
 
+
 GameApi::ML GameApi::MainLoopApi::timing_exit(TT link)
 {
+  Timing *t = find_timing(e,link);
+  return add_main_loop(e, new TimingForward(*t));
+  
+#if 0
   Timing *t = find_timing(e,link)->clone();
   MainLoopItem *item = (MainLoopItem*)t;
   return add_main_loop(e,item);
+#endif
 }
 
 bool g_concurrent_download=false;

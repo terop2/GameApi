@@ -138,6 +138,17 @@ void add_b(std::shared_ptr<void> ptr)
 }
 
 
+GameApi::PAT add_path(GameApi::Env &e, Path *p)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->paths.push_back(p);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(p));
+  GameApi::PAT im;
+  im.id = env->paths.size()-1;
+  return im;
+}
+
 GameApi::FS add_float_scene(GameApi::Env &e, FloatScene *scene)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1540,6 +1551,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 #endif
   GameApi::LL ll = { -1 };
   return ll;
+}
+
+Path *find_path(GameApi::Env &e, GameApi::PAT p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->paths[p.id];  
 }
 
 FloatScene *find_float_scene(GameApi::Env &e, GameApi::FS fs)

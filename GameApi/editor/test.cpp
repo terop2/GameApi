@@ -45,7 +45,7 @@ using namespace GameApi;
 #include <fcntl.h> 
 #endif
 
-extern std::string gameapi_temp_dir;
+extern GameApi::PAT gameapi_temp_dir;
 
 IMPORT extern bool g_reload_edit_dialog;
 bool g_edit_dialog_available=false;
@@ -66,6 +66,83 @@ struct ArrayType
   int type; // arraytypesinuse
   std::vector<int> vec;
 };
+
+class PathHandler
+{
+public:
+  struct PathConfig
+  {
+    bool user_input=false;
+    bool linux_path=false;
+    bool windows_path=false;
+    bool normal_url=false;
+    bool file_url=false;
+    bool path_with_unresolved_replaces=false;
+    bool url_with_unresolved_replaces=false;
+  };
+  IMPORT PathConfig conf_user_input(const PathConfig &prev);
+  IMPORT PathConfig conf_linux(bool has_unresolved_replaces);
+  IMPORT PathConfig conf_windows(bool has_unresolved_replaces);
+  IMPORT PathConfig conf_url(bool has_unresolved_replaces);
+  IMPORT PathConfig conf_file_url(bool has_unresolved_replaces);
+
+  enum Situation
+    {
+      ETestIfAvailable0,
+      ETestIfAvailable1,
+      ETestIfAvailable2,
+      ETestIfAvailable3,
+      
+      EReplaceHomeDirForPThreadSystem0,
+      EReplaceHomeDirForOfStream,
+      EReplaceTmpForSystemAndMkDir0,
+      ETempDirReplace0,
+      ETempDirReplace1,
+      ETempDirReplace2,
+      ETempDirReplace3,
+      ETempDirReplace4,
+      ETempDirReplace5,
+      ETempDirReplace6,
+      ETempDirReplace7,
+      ETempDirReplace8,
+      ETempDirReplace9,
+      ETempDirReplace10,
+      ETempDirReplace11,
+      ETempDirReplace12,
+      ETempDirReplace13,
+      ETempDirReplace14,
+      ETempDirReplace15,
+      ETempDirReplace16,
+      ETempDirReplace17,
+      ETempDirReplace18,
+      ETempDirReplace19,
+      ETempDirReplace20,
+      ETempDirReplace21,
+      ETempDirReplace22,
+      ETempDirReplace23,
+      ETempDirReplace24,
+      ETempDirReplace25,
+      ETempDirReplace26,
+      ETempDirReplace27,
+      ETempDirReplace28,
+    };
+  
+  struct SituationConfig
+  {
+    Situation situ;
+  };
+
+  IMPORT SituationConfig situ(Situation a);
+  IMPORT GameApi::PAT default_path();
+  IMPORT GameApi::PAT create_path_from_source(GameApi::Env &e, std::string val, const PathConfig &pc);
+  IMPORT GameApi::PAT set_possible_default_path(GameApi::Env &e, GameApi::PAT p, std::string def, const PathConfig &pc);
+  IMPORT GameApi::PAT convert_path(GameApi::Env &e, GameApi::PAT old, const PathConfig &pc);  
+  IMPORT std::string use_path(GameApi::Env &e, GameApi::PAT val, const SituationConfig &sc);
+};
+IMPORT extern PathHandler *g_path_handler;
+
+
+
 class Envi;
 void render_cb(Envi *env);
 void refresh();
@@ -95,7 +172,7 @@ extern const char *g_videodriver;
 extern std::vector<std::vector<std::string> > g_collect_authors;
 extern std::vector<std::vector<std::string> > g_collect_licenses;
 
-IMPORT std::string get_zip_license_file(std::string s);
+IMPORT std::string get_zip_license_file(GameApi::Env &e, std::string s);
 
 std::vector<std::string> g_license_filenames;
 std::vector<std::string> g_license_urls;
@@ -1333,7 +1410,7 @@ public:
 
 	    if (urls[i].substr(urls[i].size()-4,4)==".zip") {
 	      std::cout << "ZIP HANDLING" << std::endl;
-	      std::string contents = get_zip_license_file(urls[i]);
+	      std::string contents = get_zip_license_file(*env->env,urls[i]);
 	      std::stringstream ss(contents);
 	      std::string line;
 	      std::string aut,license;
@@ -3921,7 +3998,7 @@ public:
 #ifdef WINDOWS
 	      std::string home = getenv("TEMP");
 
-	      if (gameapi_temp_dir!="@")
+	      if (g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable0)) !="@")
 		{
 		  home = "$(tempdir)"; //gameapi_temp_dir;
 		}
@@ -3951,9 +4028,9 @@ public:
 		std::string path=getenv("homepath");
 
 		std::string home = drive+path;
-		if (gameapi_temp_dir!="@")
+		if (g_path_hander->use_path(e,gameapi_temp_dir,g_path_handler->situ(ETestIfAvailable1))!="@")
 		  {
-		    home = gameapi_temp_dir;
+		    home = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(EReplaceHomeDirForPThreadSystem0));
 		  }		
 		std::string p = home+"\\_gameapi_builder\\Downloads\\";
 		pthread_system((std::string("start \"\" ")+p).c_str());
@@ -4238,7 +4315,7 @@ void refresh()
   }
 }
 
-IMPORT extern std::string gameapi_temp_dir;
+IMPORT extern GameApi::PAT gameapi_temp_dir;
 #ifdef LINUX
 //#include <opencv2/opencv.hpp>
 //#include <opencv2/highgui.hpp>
@@ -4294,16 +4371,6 @@ int main(int argc, char *argv[]) {
   cv::ocl::setUseOpenCL(false);
 #endif
 
-#ifdef STEAM
-#ifdef WINDOWS
-  char buffer3[MAX_PATH];
-  if (_getcwd(buffer3,sizeof(buffer3))) {
-    std::string cd = std::string("\"") + std::string(buffer3) + std::string("\"");
-    // cd = std::string("\"") + "c:\\users\\terop\\terop's GameApi Builder" + std::string("\"");
-  gameapi_temp_dir=cd;
-  }
-#endif
-#endif
 
   
 #ifdef STEAM
@@ -4346,6 +4413,19 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 	Env *e2 = new Env;
   Env &e = *e2;
   EveryApi ev(*e2);
+
+#ifdef STEAM
+#ifdef WINDOWS
+  char buffer3[MAX_PATH];
+  if (_getcwd(buffer3,sizeof(buffer3))) {
+    std::string cd = std::string("\"") + std::string(buffer3) + std::string("\"");
+    // cd = std::string("\"") + "c:\\users\\terop\\terop's GameApi Builder" + std::string("\"");
+    gameapi_temp_dir=g_path_handler->create_path_from_source(e,cd,g_path_handler->conf_windows(false));
+  }
+#endif
+#endif
+
+
   
   Envi *env = new Envi;
   Envi_tabs *env_tab = new Envi_tabs;
@@ -4480,7 +4560,17 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 	      }
 	    if (std::string(argv[i])=="--tempdir")
 	      {
-		gameapi_temp_dir=std::string(argv[i+1]);
+		std::string path = std::string(argv[i+1]);
+		PathHandler::PathConfig conf;
+#ifdef WINDOWS
+                conf = g_path_handler->conf_windows(false);
+		conf = g_path_handler->conf_user_input(conf);
+#endif
+#ifdef LINUX
+		conf = g_path_handler->conf_linux(false);
+		conf = g_path_handler->conf_user_input(conf);
+#endif
+		gameapi_temp_dir=g_path_handler->create_path_from_source(e,path,conf);
 		i++;
 	      }
 	  }
