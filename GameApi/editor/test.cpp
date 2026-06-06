@@ -1964,7 +1964,20 @@ public:
 					      env->ev->mod_api.codegen_reset_counter();
 
 					      std::string htmlfile = find_html2(ml,*env->env);
-					      htmlfile = replace_str(htmlfile, "@", "\n");					      
+					      htmlfile = replace_str(htmlfile, "@", "\n");
+
+					      int k = find_str(htmlfile,"file://");
+					      if (k!=-1)
+						{
+						  std::cout << "----------------------------------------------------------------------" << std::endl;
+						  std::cout << "ERROR: file:// -urls do not work in this HML node. " << std::endl;
+						  std::cout << "       Drag and drop fail. " << std::endl;
+						  std::cout << "       Move assets to web server/change urls to point to correct locations," << std::endl;
+						  std::cout << "       and it might work better." << std::endl;
+						  std::cout << "----------------------------------------------------------------------" << std::endl;
+						}
+
+					      
 					      while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
 
 					      htmlfile+='\n';
