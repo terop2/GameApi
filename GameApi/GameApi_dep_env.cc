@@ -17,7 +17,7 @@
 #define idb_disabled 1
 //#define idb_disabled 0
 
-extern std::string gameapi_temp_dir;
+extern GameApi::PAT gameapi_temp_dir;
 
 bool g_disable_polygons=false;
 bool g_filter_execute = false;
@@ -1312,7 +1312,7 @@ void chunk_failed(emscripten_fetch_t *fetch)
 
 std::string g_window_href;
 
-long long load_size_from_url(std::string url);
+long long load_size_from_url(GameApi::Env &e, std::string url);
 
 
 std::vector<FaceCollection*> g_confirm;
@@ -1773,7 +1773,7 @@ EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage, 
   //std::cout << "async_load_url " << url << std::endl;
   //stackTrace();
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  env->async_loader->load_urls(url, homepage, nosize);
+  env->async_loader->load_urls(*this, url, homepage, nosize);
 
 }
 EXPORT void GameApi::Env::async_load_all_urls(std::vector<std::string> urls, std::string homepage)
@@ -1781,7 +1781,7 @@ EXPORT void GameApi::Env::async_load_all_urls(std::vector<std::string> urls, std
   if (!envimpl) return;
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   if (!env) return;
-  env->async_loader->load_all_urls(urls, homepage);
+  env->async_loader->load_all_urls(*this, urls, homepage);
 
 }
 EXPORT void GameApi::Env::async_load_callback(std::string url, void (*fptr)(void*), void *data)
@@ -1818,7 +1818,7 @@ EXPORT GameApi::Env::~Env()
   delete (::EnvImpl*)envimpl;
 }
 std::string remove_load(std::string s);
-std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize,int progress_num);
+std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(GameApi::Env &e, std::string url, bool nosize,int progress_num);
 
 
 
@@ -2010,7 +2010,7 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
 
 IMPORT bool g_progress_lock_assets=false;
 
-std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool noside,int progress_num);
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(GameApi::Env &e, std::string url, bool noside,int progress_num);
 
 struct CallbackDel
 {
@@ -2136,6 +2136,7 @@ struct ProcessData
   pthread_t thread_id;
   std::string url;
   int progress_script_num;
+  GameApi::Env *env;
 };
 
 void* process(void *ptr)
@@ -2143,7 +2144,7 @@ void* process(void *ptr)
   ProcessData *dt = (ProcessData*)ptr;
   std::string url = dt->url;
   //pthread_detach(pthread_self());
-  std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,false,dt->progress_script_num);
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(*dt->env,url,false,dt->progress_script_num);
   std::string url2 = "load_url.php?url=" + url ;
   //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
   //std::cout << "g_del_map add url(process): " << url2 << std::endl;
@@ -2202,7 +2203,7 @@ long long get_total_size()
   return res;
 }
 
-void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homepage)
+void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, std::string homepage)
 {
   //std::cout<< "URLS_SIZE:" << urls.size() << std::endl;
 #if 0
@@ -2264,14 +2265,14 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 	ProgressBar(444,0,15,"loading assets");
     }
 
-  
+    
   long long total_size = 0;
   std::vector<long long> sizes;
   //s=std::min(10,s-u);
   for(int d=0;d<s;d++)
     {
   std::string url = urls[d];
-      long long sz = load_size_from_url(url);
+  long long sz = load_size_from_url(e,url);
       //std::cout << "SZ:" << url << "=" << sz << std::endl;
       sizes.push_back(sz);
       total_size+=sz;
@@ -2291,6 +2292,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
     dt.push_back(processdata);
     processdata->url = url;
     processdata->progress_script_num = g_progress_script_num;
+    processdata->env = &e;
     vec.push_back(processdata);
     //pthread_attr_t attr;
     //pthread_attr_init(&attr);
@@ -2738,11 +2740,12 @@ struct LoadUrlsData
   std::string homepage;
   bool nosize;
   int num;
+  GameApi::Env *env;
 };
 void *load_urls_task(void *d)
 {
   LoadUrlsData *dt = (LoadUrlsData*)d;
-  dt->loader->load_urls2(dt->url,dt->homepage,dt->nosize);
+  dt->loader->load_urls2(*dt->env,dt->url,dt->homepage,dt->nosize);
   return 0;
 }
 
@@ -2759,7 +2762,7 @@ pthread_mutex_t *get_load_mutex()
 }
 
 
-void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
+void ASyncLoader::load_urls(GameApi::Env &env, std::string url, std::string homepage, bool nosize)
 {
   static int count = 0;
   count++;
@@ -2772,6 +2775,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
   dt->homepage = homepage;
   dt->nosize = nosize;
   dt->num = 9999+count;
+  dt->env = &env;
   g_pending_loads++;
   pthread_mutex_lock(m);
   g_pending_loads_vec.push_back(dt);
@@ -2792,7 +2796,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 #endif
 
 
-void ASyncLoader::load_urls2(std::string url, std::string homepage, bool nosize)
+void ASyncLoader::load_urls2(GameApi::Env &e, std::string url, std::string homepage, bool nosize)
   {
     //std::cout << "load_urls:" << url << std::endl;
     if (url=="") return;
@@ -3073,7 +3077,7 @@ void ASyncLoader::load_urls2(std::string url, std::string homepage, bool nosize)
 
     //std::cout << "URL going to load_from_url!" << url << std::endl;
 
-    std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,nosize,g_progress_script_num);
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(e,url,nosize,g_progress_script_num);
 
     //std::cout << "load_from_url returned " << (long)buf << " " << buf->size() << std::endl;
     
@@ -3828,9 +3832,9 @@ std::string take_prefix(std::string cd, std::string path)
   return path;
 }
 
-extern std::string gameapi_temp_dir;
+extern GameApi::PAT gameapi_temp_dir;
 
-long long load_size_from_url(std::string url)
+long long load_size_from_url(GameApi::Env &e, std::string url)
 {
   //std::cout << "POPEN SIZE" << url << std::endl;
   url = upgrade_to_https(url);
@@ -3844,18 +3848,31 @@ long long load_size_from_url(std::string url)
   cd2 = convert_spaces_to_url_encoding(cd2);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
-  url = deploy_replace_string(url,"$(pwd)",cd);
-  url = deploy_replace_string(url,"$(PWD)",cd);
+  if (find_str(url,"$(pwd)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(pwd)",s2);
+  }
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  if (find_str(url,"$(PWD)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(PWD)",s2);
+  }
+  //url = deploy_replace_string(url,"$(PWD)",cd);
+
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  //url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   if (find_str(url,"$(tempdir)") != -1) {
-    std::string s = gameapi_temp_dir;
+    std::string s = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace19));
     s = replace_deploy_url(s);
     url = deploy_replace_string(url,"$(tempdir)",s);
   } else {
-    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+    url = deploy_replace_string(url,"$(tempdir)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace12)));
   }
-  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace13)));
   }
 #endif
 #ifdef LINUX
@@ -3868,19 +3885,32 @@ long long load_size_from_url(std::string url)
   cd2 = convert_spaces_to_url_encoding(cd2);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
-  url = deploy_replace_string(url,"$(pwd)",cd);
-  url = deploy_replace_string(url,"$(PWD)",cd);
+  if (find_str(url,"$(pwd)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(pwd)",s2);
+  }
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  if (find_str(url,"$(PWD)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(PWD)",s2);
+  }
+  //url = deploy_replace_string(url,"$(PWD)",cd);
+
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  //url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   if (find_str(url,"$(tempdir)") != -1) {
-    std::string s = gameapi_temp_dir;
+    std::string s = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace14));
     s = replace_deploy_url(s);
     url = deploy_replace_string(url,"$(tempdir)",s);
   } else {
-    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+    url = deploy_replace_string(url,"$(tempdir)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace15)));
   }
   //url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
-  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace16)));
 #endif
   url=convert_spaces_to_url_encoding(url);
   //std::cout << "size url: " << url << std::endl;
@@ -3959,7 +3989,7 @@ long long load_size_from_url(std::string url)
 class LoadUrlStream : public LoadStream
 {
 public:
-  LoadUrlStream(std::string url) : url(url),f(0) { }
+  LoadUrlStream(GameApi::Env &e, std::string url) : e(e), url(url),f(0) { }
   ~LoadUrlStream() {
 #ifdef HAS_POPEN
     if (f) { pclose(f); }
@@ -3967,7 +3997,7 @@ public:
   }
   virtual LoadStream *Clone()
   {
-    return new LoadUrlStream(url);
+    return new LoadUrlStream(e,url);
   }
 
   void Collect(CollectVisitor &vis) { vis.register_obj(this); }
@@ -3988,20 +4018,33 @@ public:
   cd2 = convert_spaces_to_url_encoding(cd2);
     url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
-    url = deploy_replace_string(url,"$(pwd)",cd);
-    url = deploy_replace_string(url,"$(PWD)",cd);
+  if (find_str(url,"$(pwd)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(pwd)",s2);
+  }
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  if (find_str(url,"$(PWD)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(PWD)",s2);
+  }
+  //url = deploy_replace_string(url,"$(PWD)",cd);
+
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  //  url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   if (find_str(url,"$(tempdir)") != -1) {
-    std::string s = gameapi_temp_dir;
+    std::string s = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace20));
     s = replace_deploy_url(s);
     url = deploy_replace_string(url,"$(tempdir)",s);
   } else {
-    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+    url = deploy_replace_string(url,"$(tempdir)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace21)));
   }
 
   // url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
-  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace22)));
 
   }
 #endif
@@ -4015,20 +4058,33 @@ public:
   cd2 = convert_spaces_to_url_encoding(cd2);
   url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
-  url = deploy_replace_string(url,"$(pwd)",cd);
-  url = deploy_replace_string(url,"$(PWD)",cd);
+  if (find_str(url,"$(pwd)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(pwd)",s2);
+  }
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  if (find_str(url,"$(PWD)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(PWD)",s2);
+  }
+  //url = deploy_replace_string(url,"$(PWD)",cd);
+
+  //  url = deploy_replace_string(url,"$(pwd)",cd);
+  //url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   if (find_str(url,"$(tempdir)") != -1) {
-    std::string s = gameapi_temp_dir;
+    std::string s = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace17));
     s = replace_deploy_url(s);
     url = deploy_replace_string(url,"$(tempdir)",s);
   } else {
-    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+    url = deploy_replace_string(url,"$(tempdir)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace18)));
   }
 
   // url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
-  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace23)));
 #endif
   url=convert_spaces_to_url_encoding(url);
   
@@ -4036,7 +4092,7 @@ public:
   std::cout << "stream prepare: " << url << std::endl;
 
     
-    size = load_size_from_url(url);
+  size = load_size_from_url(e,url);
 
     InstallProgress(333, "stream load..", 15);
     
@@ -4165,6 +4221,7 @@ public:
 #endif
   }
 private:
+  GameApi::Env &e;
   std::string url;
   FILE *f;
   long long size=0;
@@ -4214,10 +4271,10 @@ private:
 
 LoadStream *load_from_vector(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec);
 
-LoadStream *load_from_url_stream(std::string url)
+LoadStream *load_from_url_stream(GameApi::Env &env, std::string url)
 {
 #ifndef ANDROID
-  LoadStream *stream = new LoadUrlStream(url);
+  LoadStream *stream = new LoadUrlStream(env,url);
     stream->Prepare();  
   return stream;
 #else
@@ -4256,7 +4313,7 @@ load_url_deleter load_from_url_del;
 
 int g_last_loaded_script=-1;
 
-std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize, int progress_script_num)
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(GameApi::Env &e, std::string url, bool nosize, int progress_script_num)
 {
   //std::cout << "URL:" << url << std::endl;
   
@@ -4271,19 +4328,32 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   cd2 = convert_spaces_to_url_encoding(cd2);
     url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
-  url = deploy_replace_string(url,"$(pwd)",cd);
-  url = deploy_replace_string(url,"$(PWD)",cd);
+  if (find_str(url,"$(pwd)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(pwd)",s2);
+  }
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  if (find_str(url,"$(PWD)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(PWD)",s2);
+  }
+  //url = deploy_replace_string(url,"$(PWD)",cd);
+
+  //  url = deploy_replace_string(url,"$(pwd)",cd);
+  //url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   if (find_str(url,"$(tempdir)") != -1) {
-    std::string s = gameapi_temp_dir;
+    std::string s = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace24));
     s = replace_deploy_url(s);
     url = deploy_replace_string(url,"$(tempdir)",s);
   } else {
-    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+    url = deploy_replace_string(url,"$(tempdir)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace25)));
   }
   //url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
-  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace26)));
   }
 #endif
 #ifdef LINUX
@@ -4296,19 +4366,32 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   cd2 = convert_spaces_to_url_encoding(cd2);
   url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
-  url = deploy_replace_string(url,"$(pwd)",cd);
-  url = deploy_replace_string(url,"$(PWD)",cd);
+  if (find_str(url,"$(pwd)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(pwd)",s2);
+  }
+  //url = deploy_replace_string(url,"$(pwd)",cd);
+  if (find_str(url,"$(PWD)") != -1) {
+    std::string s2 = cd;
+    s2 = replace_deploy_url(s2);
+    url = deploy_replace_string(url,"$(PWD)",s2);
+  }
+  //url = deploy_replace_string(url,"$(PWD)",cd);
+
+  //  url = deploy_replace_string(url,"$(pwd)",cd);
+  //url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   if (find_str(url,"$(tempdir)") != -1) {
-    std::string s = gameapi_temp_dir;
+    std::string s = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace26));
     s = replace_deploy_url(s);
     url = deploy_replace_string(url,"$(tempdir)",s);
   } else {
-    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+    url = deploy_replace_string(url,"$(tempdir)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace27)));
   }
   //url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
-  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace28)));
 #endif
   url=convert_spaces_to_url_encoding(url);
   // std::cout << "load url=" << url << std::endl;
@@ -4775,9 +4858,9 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
   std::string tmp = "%TEMP%";
-  if (gameapi_temp_dir!="@")
+  if (g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable3))!="@")
     {
-      tmp = gameapi_temp_dir;
+      tmp = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::EReplaceTmpForSystemAndMkDir0));
     }
   std::string mkdir1 = "mkdir " + tmp + "\\_gameapi_builder";
   std::string mkdir2 = "mkdir " + tmp + "\\_gameapi_builder\\Downloads";
@@ -4786,9 +4869,9 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
   system(mkdir2.c_str());
   std::string home = getenv("TEMP");
   
-  if (gameapi_temp_dir!="@")
+  if (g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable2))!="@")
     {
-      home = gameapi_temp_dir;
+      home = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->sity(PathHandler::EReplaceHomeDirForOfStream));
     }
   home = deploy_replace_string(home,"\"","");
   home = deploy_replace_string(home,"\"","");  
@@ -4993,3 +5076,207 @@ void EnvImpl::async_scheduler()
 	}
     }
 }
+
+typename PathHandler::PathConfig PathHandler::conf_user_input(const PathConfig &prev)
+{
+  PathHandler::PathConfig conf = prev;
+  conf.user_input = true;
+  return conf;
+}
+typename PathHandler::PathConfig PathHandler::conf_linux(bool has_unresolved_replaces)
+{
+  PathConfig pc;
+  pc.linux_path=true;
+  pc.path_with_unresolved_replaces=has_unresolved_replaces;
+  return pc;
+}
+typename PathHandler::PathConfig PathHandler::conf_windows(bool has_unresolved_replaces)
+{
+  PathConfig pc;
+  pc.windows_path=true;
+  pc.path_with_unresolved_replaces=has_unresolved_replaces;
+  return pc;
+}
+typename PathHandler::PathConfig PathHandler::conf_url(bool has_unresolved_replaces)
+{
+  PathConfig pc;
+  pc.normal_url=true;
+  pc.url_with_unresolved_replaces=has_unresolved_replaces;
+  return pc;
+}
+typename PathHandler::PathConfig PathHandler::conf_file_url(bool has_unresolved_replaces)
+{
+  PathConfig pc;
+  pc.file_url=true;
+  pc.path_with_unresolved_replaces=has_unresolved_replaces;
+  return pc;
+}
+
+typename PathHandler::SituationConfig PathHandler::situ(PathHandler::Situation a)
+{
+  PathHandler::SituationConfig conf;
+  conf.situ = a;
+  return conf;
+}
+
+
+class PathImplForward : public Path
+{
+public:
+  PathImplForward(const Path &p) : p(p) { }
+  virtual std::string get_path() const { return p.get_path(); }
+  virtual std::string get_default_path() const { return p.get_default_path(); }
+
+  
+  virtual bool is_user_input() const { return p.is_user_input(); }
+  virtual bool is_linux_path() const { return p.is_linux_path(); }
+  virtual bool is_windows_path() const { return p.is_windows_path(); }
+  virtual bool is_normal_url() const { return p.is_normal_url(); }
+  virtual bool is_file_url() const { return p.is_file_url(); }
+  virtual bool is_path_with_unresolved_replaces() const { return p.is_path_with_unresolved_replaces(); }
+  virtual bool is_url_with_unresolved_replaces() const { return p.is_url_with_unresolved_replaces(); }
+
+  virtual bool is_default_set() const { return p.is_default_set(); }
+  
+  virtual bool is_def_user_input() const { return p.is_def_user_input(); }
+  virtual bool is_def_linux_path() const { return p.is_def_linux_path(); }
+  virtual bool is_def_windows_path() const { return p.is_def_windows_path(); }
+  virtual bool is_def_normal_url() const { return p.is_def_normal_url(); }
+  virtual bool is_def_file_url() const { return p.is_def_file_url(); }
+  virtual bool is_def_path_with_unresolved_replaces() const { return p.is_def_path_with_unresolved_replaces(); }
+  virtual bool is_def_url_with_unresolved_replaces() const { return p.is_def_url_with_unresolved_replaces(); }
+
+private:
+  const Path &p;
+};
+
+class PathImplDefault : public PathImplForward
+{
+public:
+  PathImplDefault(const Path &p, std::string val_default, const PathHandler::PathConfig &pc_default) : PathImplForward(p), val_default(val_default), pc_default(pc_default) { }
+  virtual std::string name() const { return "PathImplDefault"; }
+  //virtual Path* clone() const { return new PathImplDefault(); }
+
+  virtual bool is_default_set() const { return true; }
+  virtual bool is_def_user_input() const { return pc_default.user_input; }
+  virtual bool is_def_linux_path() const { return pc_default.linux_path; }
+  virtual bool is_def_windows_path() const { return pc_default.windows_path; }
+  virtual bool is_def_normal_url() const { return pc_default.normal_url; }
+  virtual bool is_def_file_url() const { return pc_default.file_url; }
+  virtual bool is_def_path_with_unresolved_replaces() const { return pc_default.path_with_unresolved_replaces; }
+  virtual bool is_def_url_with_unresolved_replaces() const { return pc_default.url_with_unresolved_replaces; }
+private:
+  std::string val_default;
+  PathHandler::PathConfig pc_default;  
+};
+
+class PathImpl : public Path
+{
+public:
+  PathImpl(std::string val, const PathHandler::PathConfig &pc) : val(val), pc(pc) { }
+  //PathImpl(std::string val, const PathHandler::PathConfig &pc,
+  //	   ) : val(val), pc(pc), val_default(val_default), pc_default(pc_default), m_is_default_set(true) { }
+  std::string name() const { return "PathImpl"; }
+  std::string get_path() const { return val; }
+  std::string get_default_path() const { return ""; }
+
+  virtual bool is_default_set() const { return false; }
+  
+  virtual bool is_user_input() const { return pc.user_input; }
+  virtual bool is_linux_path() const { return pc.linux_path; }
+  virtual bool is_windows_path() const { return pc.windows_path; }
+  virtual bool is_normal_url() const { return pc.normal_url; }
+  virtual bool is_file_url() const { return pc.file_url; }
+  virtual bool is_path_with_unresolved_replaces() const { return pc.path_with_unresolved_replaces; }
+  virtual bool is_url_with_unresolved_replaces() const { return pc.url_with_unresolved_replaces; }
+
+
+  virtual bool is_def_user_input() const { return false; }
+  virtual bool is_def_linux_path() const  { return false; }
+  virtual bool is_def_windows_path() const  { return false; }
+  virtual bool is_def_normal_url() const  { return false; }
+  virtual bool is_def_file_url() const  { return false; }
+  virtual bool is_def_path_with_unresolved_replaces() const { return false; }
+  virtual bool is_def_url_with_unresolved_replaces() const { return false; }
+
+  /*
+  void set_default(std::string val_default0, const PathHandler::PathConfig &pc_default0)
+  {
+    m_is_default_set = true;
+    val_default=val_default0;
+    pc_default = pc_default0;
+  }
+*/ 
+/*
+  virtual Path* clone() const
+  {
+    if (m_is_default_set)
+      {
+	return new PathImpl(val,pc);
+      }
+    else
+      {
+	return new PathImpl(val,pc,val_default,pc_default);
+      }
+    return 0;
+  }
+*/
+private:
+  std::string val;
+  PathHandler::PathConfig pc;
+};
+
+GameApi::PAT PathHandler::default_path()
+{
+  GameApi::PAT p;
+  p.id = -1;
+  return p;
+}
+
+GameApi::PAT PathHandler::create_path_from_source(GameApi::Env &e, std::string val, const PathConfig &pc)
+{
+  return add_path(e,new PathImpl(val,pc));
+}
+
+GameApi::PAT convert_path(GameApi::Env &e, GameApi::PAT old, const PathHandler::PathConfig &pc)
+{
+  std::cout << "convert_path is not yet implemented!" << std::endl;
+  return old;
+}
+
+
+GameApi::PAT PathHandler::set_possible_default_path(GameApi::Env &e, GameApi::PAT p0, std::string def, const PathConfig &pc)
+{
+  Path *p = find_path(e,p0);
+  return add_path(e, new PathImplDefault(*p,def,pc));
+
+
+#if 0
+  Path *p1 = p->clone();
+  if (p1->name()=="PathImpl") {
+    PathImpl *p_impl = static_cast<PathImpl*>(p1);
+    p_impl->set_default(def,pc);
+    return add_path(e,p_impl);
+  } else {
+    std::cout << "PathHandler::default_path setting failed!" << std::endl;
+    return p0;
+  }
+  return p0;
+
+#endif
+  
+}
+
+std::string PathHandler::use_path(GameApi::Env &e, GameApi::PAT val, const SituationConfig &sc)
+{
+  if (val.id==-1) return "@";
+  
+  Path *pt = find_path(e,val);
+  // here we can do decisions using convertpath() and pt->is_*() functions.
+  
+  
+  // decisions done
+  return pt->get_path();
+}
+PathHandler g_path_handler_impl;
+EXPORT PathHandler *g_path_handler = &g_path_handler_impl;

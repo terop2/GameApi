@@ -832,6 +832,7 @@ struct EnvImpl
   std::vector<Bitmap<FaceCollection*> *> p_matrix;
   std::vector<Array<int,FaceCollection*> *> p_array;
   std::vector<FloatScene*> float_scenes;
+  std::vector<Path*> paths;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1166,6 +1167,7 @@ ARRMACRO(GameApi::PAR,par)
 
 //GameApi::TFA add_tf_array(GameApi::Env &e, Array<int,LazyAlloc<std::string,GLTFModelInterface*>* > * arr);
 //GameApi::TFB add_tf_matrix(GameApi::Env &e, Bitmap<LazyAlloc<GLTFModelInterface*>* >* matrix);
+GameApi::PAT add_path(GameApi::Env &e, Path *p);
 GameApi::FS add_float_scene(GameApi::Env &e, FloatScene *fs);
 GameApi::PV add_facecoll_array(GameApi::Env &e, Array<int,FaceCollection*> *arr);
 GameApi::PM add_facecoll_matrix(GameApi::Env &e, Bitmap<FaceCollection*> *arr);
@@ -1336,6 +1338,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 //Array<int,LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_array(GameApi::Env &e, GameApi::TFA tfa);
 //Bitmap<LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_matrix(GameApi::Env &e, GameApi::TFB tfb);
+Path *find_path(GameApi::Env &e, GameApi::PAT p);
 FloatScene *find_float_scene(GameApi::Env &e, GameApi::FS fs);
 Array<int,FaceCollection*> *find_facecoll_array(GameApi::Env &e, GameApi::PV pa);
 Bitmap<FaceCollection*> *find_facecoll_matrix(GameApi::Env &e, GameApi::MA ma);

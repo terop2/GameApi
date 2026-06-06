@@ -14,6 +14,49 @@
 #endif
 
 
+#ifdef WINDOWS
+#ifdef GAMEAPI_EXPORTS
+#define IMPORT __declspec(dllexport)
+#else
+#define IMPORT __declspec(dllimport)
+#endif
+#define EXPORT
+#else
+
+#ifdef GAMEAPI_EXPORTS
+#define IMPORT __attribute__((visibility("default")))
+#else
+#define IMPORT
+#endif
+#define EXPORT
+#endif
+
+
+#ifndef GAMEAPI_HH
+#ifndef PAT_DEFINED
+#define PAT_DEFINED 1
+namespace GameApi {
+#define MAC(name) \
+  struct name { int id;\
+  name(const name &i) : id(i.id) { } \
+  name(const volatile name &i) : id(i.id) { } \
+  name() : id(-1) { }				\
+  name(int i) : id(i) { }\
+  name &operator=(const name &i) { id=i.id; return *this; } \
+  volatile name &operator=(volatile name &i) volatile { id=i.id; return *this; } \
+  name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
+  };
+  MAC(PAT)
+
+};
+#endif
+#endif
+
+namespace GameApi
+{
+  class Env;
+};
+
 class ConversionTableInterface
 {
 public:
@@ -26,6 +69,110 @@ public:
   virtual int find_last_location(std::string str) const=0;
   virtual bool insert_label_to_string(std::string *str, char ch) const=0;
 };
+
+class Path // PAT -id.
+{
+public:
+  //virtual std::string name() const =0;
+  //virtual Path* clone() const=0;
+  
+  virtual std::string get_path() const=0;
+  virtual std::string get_default_path() const=0;
+  
+  virtual bool is_user_input() const=0;
+  virtual bool is_linux_path() const=0;
+  virtual bool is_windows_path() const=0;
+  virtual bool is_normal_url() const=0;
+  virtual bool is_file_url() const=0;
+  virtual bool is_path_with_unresolved_replaces() const=0;
+  virtual bool is_url_with_unresolved_replaces() const=0;
+
+  virtual bool is_default_set() const=0;
+  
+  virtual bool is_def_user_input() const=0;
+  virtual bool is_def_linux_path() const=0;
+  virtual bool is_def_windows_path() const=0;
+  virtual bool is_def_normal_url() const=0;
+  virtual bool is_def_file_url() const=0;
+  virtual bool is_def_path_with_unresolved_replaces() const=0;
+  virtual bool is_def_url_with_unresolved_replaces() const=0;
+
+};
+
+class PathHandler
+{
+public:
+  struct PathConfig
+  {
+    bool user_input=false;
+    bool linux_path=false;
+    bool windows_path=false;
+    bool normal_url=false;
+    bool file_url=false;
+    bool path_with_unresolved_replaces=false;
+    bool url_with_unresolved_replaces=false;
+  };
+  IMPORT PathConfig conf_user_input(const PathConfig &prev);
+  IMPORT PathConfig conf_linux(bool has_unresolved_replaces);
+  IMPORT PathConfig conf_windows(bool has_unresolved_replaces);
+  IMPORT PathConfig conf_url(bool has_unresolved_replaces);
+  IMPORT PathConfig conf_file_url(bool has_unresolved_replaces);
+
+  enum Situation
+    {
+      ETestIfAvailable0,
+      ETestIfAvailable1,
+      ETestIfAvailable2,
+      ETestIfAvailable3,
+      
+      EReplaceHomeDirForPThreadSystem0,
+      EReplaceHomeDirForOfStream,
+      EReplaceTmpForSystemAndMkDir0,
+      ETempDirReplace0,
+      ETempDirReplace1,
+      ETempDirReplace2,
+      ETempDirReplace3,
+      ETempDirReplace4,
+      ETempDirReplace5,
+      ETempDirReplace6,
+      ETempDirReplace7,
+      ETempDirReplace8,
+      ETempDirReplace9,
+      ETempDirReplace10,
+      ETempDirReplace11,
+      ETempDirReplace12,
+      ETempDirReplace13,
+      ETempDirReplace14,
+      ETempDirReplace15,
+      ETempDirReplace16,
+      ETempDirReplace17,
+      ETempDirReplace18,
+      ETempDirReplace19,
+      ETempDirReplace20,
+      ETempDirReplace21,
+      ETempDirReplace22,
+      ETempDirReplace23,
+      ETempDirReplace24,
+      ETempDirReplace25,
+      ETempDirReplace26,
+      ETempDirReplace27,
+      ETempDirReplace28,
+    };
+  
+  struct SituationConfig
+  {
+    Situation situ;
+  };
+
+  IMPORT SituationConfig situ(Situation a);
+  IMPORT GameApi::PAT default_path();
+  IMPORT GameApi::PAT create_path_from_source(GameApi::Env &e, std::string val, const PathConfig &pc);
+  IMPORT GameApi::PAT set_possible_default_path(GameApi::Env &e, GameApi::PAT p, std::string def, const PathConfig &pc);
+  IMPORT GameApi::PAT convert_path(GameApi::Env &e, GameApi::PAT old, const PathConfig &pc);  
+  IMPORT std::string use_path(GameApi::Env &e, GameApi::PAT val, const SituationConfig &sc);
+};
+IMPORT extern PathHandler *g_path_handler;
+
 
 class ByteStore
 {
@@ -1162,14 +1309,51 @@ public:
   }
 };
 
+class MainLoopItemForward : public MainLoopItem
+{
+public:
+  MainLoopItemForward(MainLoopItem &prev) : prev(prev) { }
+  virtual void Collect(CollectVisitor &vis) { prev.Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { prev.Prepare(); }
+  virtual void FirstFrame() { prev.FirstFrame(); }
+  virtual void execute(MainLoopEnv &e) { prev.execute(e); }
+  virtual void handle_event(MainLoopEvent &e) { prev.handle_event(e); }
+  virtual std::vector<int> shader_id() { return prev.shader_id(); }
+  virtual bool ReadyToPrepare() const { return prev.ReadyToPrepare(); }
+private:
+  MainLoopItem &prev;
+};
+
 class Timing : public MainLoopItem
 {
 public:
   virtual float end_time() const=0;
   virtual float delta_time() const=0;
-  virtual Timing *clone() const=0;
+  //virtual Timing *clone() const=0;
   virtual void execute_without_draw(MainLoopEnv &e)=0;
 };
+
+class TimingForward : public Timing
+{
+public:
+  TimingForward(Timing &prev) : prev(prev) { }
+  virtual void Collect(CollectVisitor &vis) { prev.Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { prev.Prepare(); }
+  virtual void FirstFrame() { prev.FirstFrame(); }
+  virtual void execute(MainLoopEnv &e) { prev.execute(e); }
+  virtual void handle_event(MainLoopEvent &e) { prev.handle_event(e); }
+  virtual bool ReadyToPrepare() const { return prev.ReadyToPrepare(); }
+public:
+  virtual float end_time() const { return prev.end_time(); }
+  virtual float delta_time() const { return prev.delta_time(); }
+  //virtual Timing *clone() const { return
+  virtual void execute_without_draw(MainLoopEnv &e) { return prev.execute_without_draw(e); }
+private:
+  Timing &prev;
+};
+
 
 enum FrameBufferFormat
   {
@@ -1511,8 +1695,7 @@ class Frame
 {
 public:
   // all the parameters should go via ctor parameters
-  virtual void execute()=0;
-  virtual void set_context(const MainLoopEnv &c)=0;
+  virtual void execute(MainLoopEnv &e)=0;
 
   enum ETypes
     {
@@ -1691,9 +1874,9 @@ public:
 class ASyncLoader
 {
 public:
-  void load_urls(std::string url, std::string homepage, bool nosize);
-  void load_urls2(std::string url, std::string homepage, bool nosize);
-  void load_all_urls(std::vector<std::string> urls, std::string homepage);
+  void load_urls(GameApi::Env &e, std::string url, std::string homepage, bool nosize);
+  void load_urls2(GameApi::Env &e, std::string url, std::string homepage, bool nosize);
+  void load_all_urls(GameApi::Env &e, std::vector<std::string> urls, std::string homepage);
   GameApi::ASyncVec *get_loaded_data(std::string url) const;
   void set_callback(std::string url, void (*fptr)(void*), void *data);
   void rem_callback(std::string url);
@@ -3894,6 +4077,9 @@ public:
   virtual void render(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
 };
+
+
+
 
 
 

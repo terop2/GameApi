@@ -1416,7 +1416,7 @@ private:
   mutable FaceCollection *coll_cache=0;
 };
 
-LoadStream *load_from_url_stream(std::string url);
+LoadStream *load_from_url_stream(GameApi::Env &e, std::string url);
 class NetworkedFaceCollection : public FaceCollection
 {
 public:
@@ -1451,7 +1451,7 @@ public:
       
 #ifdef HAS_POPEN
 	delete stream;
-      stream = load_from_url_stream(url);
+	stream = load_from_url_stream(e,url);
 #else
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -1549,7 +1549,7 @@ public:
       
 #ifdef HAS_POPEN
 	//std::cout << "load_from_url" << url << std::endl;
-      LoadStream *stream = load_from_url_stream(url);
+	LoadStream *stream = load_from_url_stream(e,url);
 #else
       
       //std::cout << "A" << std::endl;
@@ -2150,7 +2150,7 @@ public:
       
 #ifdef HAS_POPEN
 	delete stream;
-	stream = load_from_url_stream(url);
+	stream = load_from_url_stream(e,url);
 
 #ifndef EMSCRIPTEN
     e.async_load_url(mtl_url, homepage);

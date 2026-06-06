@@ -63,6 +63,10 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   volatile name &operator=(volatile name &i) volatile { id=i.id; return *this; } \
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+#ifndef PAT_DEFINED
+  MAC(PAT)
+#define PAT_DEFINED 1
+#endif
   MAC(ZIP)
   MAC(BS)
   MAC(US)
