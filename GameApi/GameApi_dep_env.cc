@@ -828,6 +828,7 @@ EM_JS(void, get_header, (const char *filename, void *data), {
 	});
 });
 
+int g_num_pending_concurrent_downloads = 0;
 
 class FetchInBlocks
 {
@@ -910,13 +911,19 @@ public:
     
     std::stringstream ss(res);
     totalSize = 0;
-    chunkSize = 1024*30; //1048576;
+    chunkSize = 1024*300; //1048576;
     ss >> totalSize;
 
     //std::cout << res << " " << totalSize << std::endl;
     //ss >> chunkSize;
+
     
-    int concurrent_tasks = 40; //4;
+    
+    
+    int concurrent_tasks = std::max(1,150-g_num_pending_concurrent_downloads); //4;
+
+
+
     //totalSize = fetch->totalBytes;
     //std::cout << "Size Success: " << totalSize << std::endl;
     if (chunkSize==0) { chunkSize=1048576; }
@@ -945,6 +952,7 @@ public:
       for(int i=0;i<s;i++) {
 	blocks_ready[i]=0;
       }
+      g_num_pending_concurrent_downloads+=std::min(concurrent_tasks,s);
       for(int i=0;i<std::min(concurrent_tasks,s);i++) {
 	fetch_block(i);
       }
@@ -1140,6 +1148,10 @@ public:
     //std::cout << fetch->status << std::endl;
     //std::cout << "FETCHED BLOCK: " << fetch->dataOffset << " " << fetch->numBytes << std::endl;
 
+    g_num_pending_concurrent_downloads--;
+    if (g_num_pending_concurrent_downloads<0) g_num_pending_concurrent_downloads=0;
+    
+    
     if (fetch->status==200||fetch->status==206) // OK ONE HAS WRONG SIZE BLOCK IN IT, PARTIAL CONTENT PROBABLY ALSO WORKS WITH THIS CODE
       {
 	for(int i=0;i<blocks_ready.size();i++)
@@ -1203,12 +1215,15 @@ public:
       {
 	if (next.size()!=0) {
 	  if (fetch->status==206 && firsttime) {
-	    int s = std::min(next.size(),(unsigned long)8);
+	    int s = std::max((unsigned long)1,std::min(next.size(),(unsigned long)(150-g_num_pending_concurrent_downloads)));
+	    g_num_pending_concurrent_downloads+=s;
+	    
 	    for(int i=0;i<s;i++) {
 	      fetch_block(next[i]);
 	    }
 	    firsttime = false;
 	  } else {
+	    g_num_pending_concurrent_downloads++;
 	    fetch_block(next[0]);
 	  }
 	}
