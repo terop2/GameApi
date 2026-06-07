@@ -924,11 +924,13 @@ public:
     else {
 
       // std::cout << "FETCH_SIZE:" << std::endl;
+ #ifdef NO_CONCURRENT_TEST
       if (!g_concurrent_download) {
 	//std::cout << "FAILED IMMEDIATELY" << std::endl;
 	failed_after_size(0,totalSize);
 	return;
       }
+#endif
       //std::cout << "FETCHIND SIZE" << std::endl;
 
       
