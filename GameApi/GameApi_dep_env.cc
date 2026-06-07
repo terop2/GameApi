@@ -969,7 +969,11 @@ public:
   }
   void head_result_err()
   {
-    std::cout << "HEAD_RESULT_ERR -> using size 50000" << std::endl;
+    std::cout << "Warning: You probably don't have http Range requests enabled!" << std::endl;
+    std::cout << "Recommended solution (in .htaccess):" << std::endl;
+    std::cout << "<IfModule mod_headers.c>" << std::endl;
+    std::cout << "   Header set Access-Control-Expose-Headers \"Content-Length, Content-Range\""<< std::endl;
+    std::cout << "</IfModule>" << std::endl;
     head_result("/50000");
     //async_pending_count--;
     //failed(data);
