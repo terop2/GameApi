@@ -910,13 +910,13 @@ public:
     
     std::stringstream ss(res);
     totalSize = 0;
-    chunkSize = 1048576;
+    chunkSize = 1024*30; //1048576;
     ss >> totalSize;
 
     //std::cout << res << " " << totalSize << std::endl;
     //ss >> chunkSize;
     
-    int concurrent_tasks = 4;
+    int concurrent_tasks = 40; //4;
     //totalSize = fetch->totalBytes;
     //std::cout << "Size Success: " << totalSize << std::endl;
     if (chunkSize==0) { chunkSize=1048576; }
