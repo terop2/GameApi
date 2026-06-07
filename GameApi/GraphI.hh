@@ -157,6 +157,8 @@ public:
       ETempDirReplace26,
       ETempDirReplace27,
       ETempDirReplace28,
+
+      EDragDropInfoMessage
     };
   
   struct SituationConfig
