@@ -4014,7 +4014,12 @@ public:
 	      if (g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable0)) !="@")
 		{
 		  home = "$(tempdir)"; //gameapi_temp_dir;
+
+		  std::cout << "Note: $(tempdir) is the same as " << g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::EDragDropInfoMessage)) << std::endl;
 		}
+
+
+	      
 	      /*
 	      */      
 

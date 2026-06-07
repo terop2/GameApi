@@ -1125,6 +1125,7 @@ public:
 	g_reload_edit_dialog = true;
 	std::string filename = g_dragdrop_filename;
 
+	
 	std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
 	if (drag_drop_ext == ext
 	    ||((ext==".ds"||ext=="obj")&&(drag_drop_ext==".ds"||drag_drop_ext=="obj"))
