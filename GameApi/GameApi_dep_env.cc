@@ -818,9 +818,9 @@ extern "C" void head_result_err(void *data);
 
 EM_JS(void, get_header, (const char *filename, void *data), {
     const url = UTF8ToString(filename);
-    fetch(url, { method: "HEAD" })
+    fetch(url, { method: "GET", headers: { "Range": "bytes=0-0" } } )
       .then(r => {
-	  Module.ccall('head_result',null,['string','number'],[r.headers.get("Content-Length"),data]);
+	  Module.ccall('head_result',null,['string','number'],[r.headers.get("Content-Range"),data]);
 		       //head_result(,data);
       })
       .catch(err => {
@@ -899,11 +899,21 @@ public:
     async_pending_count--;
 
     std::string res(s);
+
+    int s5 = res.size();
+    int pos = 0;
+    for(int i=0;i<s5;i++)
+      {
+	if (res[i]=='/') pos=i;
+      }
+    res = res.substr(pos+1);
     
     std::stringstream ss(res);
     totalSize = 0;
     chunkSize = 1048576;
     ss >> totalSize;
+
+    //std::cout << res << " " << totalSize << std::endl;
     //ss >> chunkSize;
     
     int concurrent_tasks = 4;
@@ -959,9 +969,10 @@ public:
   }
   void head_result_err()
   {
-    std::cout << "HEAD_RESULT_ERR" << std::endl;
-    async_pending_count--;
-    failed(data);
+    std::cout << "HEAD_RESULT_ERR -> using size 50000" << std::endl;
+    head_result("/50000");
+    //async_pending_count--;
+    //failed(data);
   }
   void size_success(emscripten_fetch_t *fetch)
   {
@@ -2783,15 +2794,15 @@ void ASyncLoader::load_urls(GameApi::Env &env, std::string url, std::string home
   tasks_add(9999+count,&load_urls_task,(void*)dt);
 }
 #else
-void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
+void ASyncLoader::load_urls(GameApi::Env &env, std::string url, std::string homepage, bool nosize)
 {
-  load_urls2(url,homepage,nosize);
+  load_urls2(env,url,homepage,nosize);
 }
 #endif
 #else
-void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
+void ASyncLoader::load_urls(GameApi::Env &env, std::string url, std::string homepage, bool nosize)
 {
-  load_urls2(url,homepage,nosize);
+  load_urls2(env,url,homepage,nosize);
 }
 #endif
 

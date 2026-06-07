@@ -5,35 +5,46 @@ DirectoryIndex index.html
 FileETag MTime Size
 #php_value post_max_size 20M
 #php_value memory_limit 1024M
-AddOutputFilterByType BROTLI_COMPRESS text/xml
-AddOutputFilterByType BROTLI_COMPRESS text/css
-AddOutputFilterByType BROTLI_COMPRESS text/javascript
-AddOutputFilterByType BROTLI_COMPRESS application/xml
-AddOutputFilterByType BROTLI_COMPRESS application/xhtml+xml
-AddOutputFilterByType BROTLI_COMPRESS application/rss+xml
-AddOutputFilterByType BROTLI_COMPRESS application/javascript
-AddOutputFilterByType BROTLI_COMPRESS application/x-javascript
-AddOutputFilterByType BROTLI_COMPRESS application/wasm
-AddOutputFilterByType BROTLI_COMPRESS application/x-font-opentype
-AddOutputFilterByType BROTLI_COMPRESS text/plain
-<files *.wasm>
-SetOutputFilter BROTLI_COMPRESS
-</files>
-<files *.ds.*>
-SetOutputFilter BROTLI_COMPRESS
-</files>
-<files *.ds>
-SetOutputFilter BROTLI_COMPRESS
-</files>
-<files *.data>
-SetOutputFilter BROTLI_COMPRESS
-</files>
+#AddOutputFilterByType BROTLI_COMPRESS text/xml
+#AddOutputFilterByType BROTLI_COMPRESS text/css
+#AddOutputFilterByType BROTLI_COMPRESS text/javascript
+#AddOutputFilterByType BROTLI_COMPRESS application/xml
+#AddOutputFilterByType BROTLI_COMPRESS application/xhtml+xml
+#AddOutputFilterByType BROTLI_COMPRESS application/rss+xml
+#AddOutputFilterByType BROTLI_COMPRESS application/javascript
+#AddOutputFilterByType BROTLI_COMPRESS application/x-javascript
+#AddOutputFilterByType BROTLI_COMPRESS application/wasm
+#AddOutputFilterByType BROTLI_COMPRESS application/x-font-opentype
+#AddOutputFilterByType BROTLI_COMPRESS text/plain
+#<files *.wasm>
+#SetOutputFilter BROTLI_COMPRESS
+#</files>
+#<files *.ds.*>
+#SetOutputFilter BROTLI_COMPRESS
+#</files>
+#<files *.ds>
+#SetOutputFilter BROTLI_COMPRESS
+#</files>
+#<files *.data>
+#SetOutputFilter BROTLI_COMPRESS
+#</files>
 AddType application/wasm wasm
 AddType application/x-gameapi-binary ds
 AddType text/plain mtl
 AddType application/x-font-opentype otf
 AddType application/x-httpd-php php
 RewriteEngine On
+
+
+RewriteCond %{HTTP:Accept-Encoding} br
+RewriteCond %{REQUEST_FILENAME].br -f
+RewriteRule ^(.+)$ $1.br [L]
+
+RewriteCond %{REQUEST_METHOD} HEAD
+RewriteRule .* - [E=no-brotli:1]
+Header unset Content-Encoding env=no-brotli
+
+
 #RewriteCond %{HTTP:X-Forwarded-Proto} !https
 #RewriteCond %{HTTPS} off
 #RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
@@ -97,6 +108,10 @@ ErrorDocument 403 /error.php
 ErrorDocument 500 /error.php
 ErrorDocument 502 /error.php
 ErrorDocument 503 /error.php
+<IfModule mod_headers.c>
+    Header set Access-Control-Expose-Headers "Content-Length, Content-Range"
+</IfModule>
+
 <IfModule mod_headers.c>
     <FilesMatch "\.(js|css|webp|glb|gltf|wasm)$">
         Header set Cache-Control "no-store, must-revalidate, max-age=0, post-check=0, pre-check=0"
