@@ -1078,6 +1078,11 @@ bool is_allowed(std::string chars, char ch)
 
 #ifndef EMSCRIPTEN
 
+extern GameApi::PAT gameapi_temp_dir;
+
+std::string GetContentInstallDir(bool b);
+
+
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -1156,6 +1161,61 @@ public:
       {
 	Conv<T>::get(target, label, allow_expr, expr);
 
+	if (find_str(label,"$(tempdir)") != -1) {
+	  std::cout << "Note: $(tempdir) is the same as " << g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::EDragDropInfoMessage)) << std::endl;
+	}
+	{
+	  int l1,l2;
+	  if ((l1=find_str(label,"$(instdir)")) != -1 ||
+	      (l2=find_str(label,"$(INSTDIR)")) != -1)
+	  {
+	    std::string chosen;
+	    if (l1!=-1) chosen="$(instdir)";
+	    if (l2!=-1) chosen="$(INSTDIR)";
+	    std::string cd2 = GetContentInstallDir(false);
+	    std::cout << "Note: " << chosen << " is the same as " << cd2 << std::endl;
+	    
+	    
+	      
+	  }
+
+	}
+	{
+	  int l1,l2,l3,l4;
+	  if ((l1=find_str(label,"%CD%")) != -1
+	      ||(l2= find_str(label,"%cd")) != -1
+	      ||(l3=find_str(label,"$(pwd)")) != -1
+	      ||(l4=find_str(label, "$(PWD)")) != -1)
+	  {
+	    std::string chosen="";
+	    if (l1!=-1) chosen="%CD%";
+	    if (l2!=-1) chosen="%cd%";
+	    if (l3!=-1) chosen="$(pwd)";
+	    if (l4!=-1) chosen="$(PWD)";
+	    
+#ifdef WINDOWS
+	    
+	    char buffer3[MAX_PATH];
+	    if (_getcwd(buffer3,sizeof(buffer3))) {
+	      std::string cd = buffer3;
+#endif
+#ifdef LINUX
+	      char buffer3[PATH_MAX];
+	      buffer3[0]=0;
+	      getcwd(buffer3, PATH_MAX);
+	      if (1)
+	      {
+	      std::string cd = buffer3;
+	      
+#endif
+
+	      std::cout << "Note: " << chosen << " is the same as " << cd << std::endl;
+	    }
+	  }
+	}
+	
+
+	
 	std::string ext = label.size()<4?"$":label.substr(label.size()-3);
 	drag_drop_ext = ext;
 	
