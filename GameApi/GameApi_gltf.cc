@@ -6032,18 +6032,18 @@ public:
   }
   GameApi::BM reduce_size(GameApi::BM bm) const
   {
-    return bm;
-#if 0
+#if 1
     BitmapHandle *handle = find_bitmap(e, bm);
     Bitmap<Color> *bbm = find_color_bitmap(handle);
     int sx = bbm->SizeX();
     int sy = bbm->SizeY();
     int sx2 = sx;
     int sy2 = sy;
-    if (sx>256) sx2=256;
-    if (sy>256) sy2=256;
+    if (sx>512) sx2=512;
+    if (sy>512) sy2=512;
     if (sx!=sx2 || sy!=sy2)
       {
+	//return ev.bitmap_api.function([&](int x, int y) { return bbm->Map(x*sx/sx2,y*sy/sy2).Pixel(); },sx2,sy2);
 	return ev.bitmap_api.scale_bitmap(ev,bm,sx2,sy2);
       }
     return bm;

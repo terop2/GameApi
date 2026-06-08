@@ -6293,6 +6293,12 @@ bool is_texture_usage_confirmed(VertexArraySet *set);
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
+  static int uni_id = 0;
+  uni_id++;
+  int unique_id = uni_id;
+  InstallProgress(66665+unique_id,"create_vertex_array", 4);
+  ProgressBar(66665+unique_id,1,4,"create_vertex_array");
+  
 
     FaceCollection *faces2 = find_facecoll(e, p);
     if (faces2->HasBatchMap()) {
@@ -6396,6 +6402,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     if (!keep) {
       s->free_memory();
     }
+    ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
     }
 
@@ -6484,6 +6491,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     if (!keep) {
       s->free_memory();
     }
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
   }
   
@@ -6522,6 +6530,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       {
 	prep.join(vec[i]);
       }
+  ProgressBar(66665+unique_id,2,4,"create_vertex_array");
+
     VertexArraySet *set = prep.collect();
 
     FaceCollection &coll = *faces;
@@ -6547,6 +6557,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	//::EnvImpl *env = ::EnvImpl::Environment(&e);
 	//env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
       }
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+
 #else // BATCHING=true, EMSCRIPTEN=??, THREADS=true
     //std::cout << "IMPL#3:BATCHING=true, THREADS=true" << std::endl;
     int num_threads = 8;
@@ -6566,6 +6578,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr2->prepare(0);
     if (!keep)
       s->free_memory();
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
 
     }
@@ -6667,6 +6680,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //pthread_mutex_unlock(mutex2); // release other process
       if (thread_counter==num_threads||error) break;
     }
+  ProgressBar(66665+unique_id,2,4,"create_vertex_array");
     
     for(int i=0;i<num_threads;i++)
       {
@@ -6694,6 +6708,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       {
     	set->free_memory();
     }
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     
     
 #endif // BATCHING
@@ -6716,6 +6731,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr2->prepare(0); 
     if (!keep)
      s->free_memory();
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
 #else // BATCHING
     // std::cout << "IMPL#5:BATCHING=true, EMSCRIPTEN=true, THREADS=true" << std::endl;
@@ -6778,6 +6794,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //std::cout << "\n";
     if (!keep)
       s->free_memory();
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
 #endif // BATCHING
     //#ifdef __EMSCRIPTEN_PTHREADS__
@@ -6788,6 +6805,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #endif
   //#endif
 #else // EMSCRIPTEN
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
   return add_vertex_array(e, set, arr2);
 #endif // end of EMSCRIPTEN
 
@@ -6804,6 +6822,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   arr2->prepare(0); 
   if (!keep)
     s->free_memory();
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
   return add_vertex_array(e, s, arr2);
 
 #else // BATCHING=true, THREADS=false
@@ -6864,6 +6883,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //std::cout << "\n";
     if (!keep)
       s->free_memory();
+  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
 #endif // end of BATCHING
 #endif // end of THREADS
