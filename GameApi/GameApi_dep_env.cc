@@ -920,7 +920,7 @@ public:
     
     
     
-    int concurrent_tasks = std::max(1,150-g_num_pending_concurrent_downloads); //4;
+    int concurrent_tasks = std::max(1,50-g_num_pending_concurrent_downloads); //4;
 
 
 
@@ -953,6 +953,7 @@ public:
 	blocks_ready[i]=0;
       }
       g_num_pending_concurrent_downloads+=std::max(0,std::min(concurrent_tasks,s));
+      if (g_num_pending_concurrent_downloads>50) g_num_pending_concurrent_downloads = 50;
       for(int i=0;i<std::min(concurrent_tasks,s);i++) {
 	fetch_block(i);
       }
@@ -1215,7 +1216,7 @@ public:
       {
 	if (next.size()!=0) {
 	  if (fetch->status==206 && firsttime) {
-	    int s = std::max((unsigned long)1,std::min(next.size(),(unsigned long)(150-g_num_pending_concurrent_downloads)));
+	    int s = std::max((unsigned long)1,std::min(next.size(),(unsigned long)(50-g_num_pending_concurrent_downloads)));
 	    g_num_pending_concurrent_downloads+=s;
 	    
 	    for(int i=0;i<s;i++) {
