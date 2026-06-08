@@ -765,10 +765,10 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx, bool is_srgb, bool text
   FlipColours flip(bm);
   BufferFromBitmap buf(flip);
   //  buf.Gen();
-  InstallProgress(555,"texture",4);
+  //InstallProgress(555,"texture",4);
 #ifndef THREADS
   buf.Gen();
-  ProgressBar(555,4,4,"texture");
+  //ProgressBar(555,4,4,"texture");
 #else
   buf.GenPrepare();
 
