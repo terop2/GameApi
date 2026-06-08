@@ -108,9 +108,9 @@ ErrorDocument 403 /error.php
 ErrorDocument 500 /error.php
 ErrorDocument 502 /error.php
 ErrorDocument 503 /error.php
-<IfModule mod_headers.c>
-    Header set Access-Control-Expose-Headers "Content-Length, Content-Range"
-</IfModule>
+#<IfModule mod_headers.c>
+#    Header set Access-Control-Expose-Headers "Content-Length, Content-Range"
+#</IfModule>
 
 <IfModule mod_headers.c>
     <FilesMatch "\.(js|css|webp|glb|gltf|wasm)$">
