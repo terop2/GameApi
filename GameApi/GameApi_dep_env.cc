@@ -938,7 +938,7 @@ public:
     else {
 
       // std::cout << "FETCH_SIZE:" << std::endl;
- #ifdef NO_CONCURRENT_TEST
+#ifdef NO_CONCURRENT_TEST
       if (!g_concurrent_download) {
 	//std::cout << "FAILED IMMEDIATELY" << std::endl;
 	failed_after_size(0,totalSize);
@@ -1180,6 +1180,8 @@ public:
 	      if (dataOffset<=start && dataOffset+numBytes>=end-1)
 		{
 		  int offset = start-dataOffset;
+		  // this is because our "/50000" error case.
+		  if (result.size() < end) { result.resize(end+1); }
 		  std::copy(&fetch->data[offset], &fetch->data[offset+(end-start)], &result[start]);
 		  blocks_ready[i]=1;
 		  //std::cout << "BLOCK READY: " << i << std::endl;
