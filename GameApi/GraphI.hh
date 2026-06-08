@@ -8,6 +8,7 @@
 #include <cstdint>
 #include "VectorTools.hh"
 #include "Buffer.hh"
+#include <memory>
 
 #ifdef EMSCRIPTEN
 #include <emscripten/heap.h>
@@ -187,9 +188,10 @@ public:
 void stackTrace();
 
 template<class T>
-class GameApiAllocator
+class GameApiAllocator : std::allocator<T>
 {
 public:
+  using std::allocator<T>::allocator;
   static uint32_t m_free_mem;
   static uint32_t m_changed_mem;
   static uint32_t m_used_mem;
@@ -204,6 +206,23 @@ public:
   void print() const
   {
   }
+
+  // this construct is optimization for vector initialization.
+  // it fails to initialize to zero.
+  template<class U, typename... Args>
+  void construct(U *p, Args&&... args) {
+    if constexpr (sizeof...(Args) == 0) {
+            ::new (static_cast<void*>(p)) U; 
+        } else {
+            ::new (static_cast<void*>(p)) U(std::forward<Args>(args)...);
+        }
+  }
+
+  template<typename U>
+  void destroy(U* p) {
+    p->~U();
+  }
+  
   T* allocate(uint32_t sz) {
     if (sz==0) return nullptr;
     //if (sz*sizeof(T)>=1024000) {
