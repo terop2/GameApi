@@ -5424,33 +5424,27 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
     }
   int extra_margin = 50;
   int button_width = std::max(max_width/2+30+extra_margin*2/2,350);
+  bool is_empty = false;
   if (vec2.size()==0)
     {
+      is_empty=true;
       W lab0 = text("", atlas, atlas_bm, 8);
       W lab = text("(No data)", atlas, atlas_bm, 8);
       W lab_2 = center_align(lab, button_width*2);
       vec2.push_back(lab0);
       vec2.push_back(lab_2);
       vec2.push_back(lab0);
-
-      vec2_ed.push_back(lab0);
-      vec2_ed.push_back(lab_2);
-      vec2_ed.push_back(lab0);
-
-      vec2_lab.push_back(lab0);
-      vec2_lab.push_back(lab_2);
-      vec2_lab.push_back(lab0);
-      
     }
+      
   // This still breaks more than it fixes.
-  W array = array_y(vec2 /*&vec2[0], vec2.size()*/, 35-30-15);
+  W array = array_y(vec2 /*&vec2[0], vec2.size()*/, is_empty?35:35-30-15);
   for(int i=0;i<s;i++)
     {
       W array4 = margin(vec2[i],extra_margin+size_x1-size_x(vec2_lab[i]),15,max_width-size_x(vec2[i])-(size_x1-size_x(vec2_lab[i])-extra_margin)+extra_margin,15);
      
       vec2[i] = editor_mouse_tweak(vec2_ed[i],array4,array);
     }
-  W array_0 = array_y(vec2 /*&vec2[0],vec2.size()*/,35-30-15);
+  W array_0 = array_y(vec2 /*&vec2[0],vec2.size()*/,is_empty?35:35-30-15);
   W array_1 = margin(array_0, 10,10,10,10);
   W array_1a = center_align(array_1, button_width*2);
   W array_2 = button(button_width*2, size_y(array_1), c_dialog_1, c_dialog_1_2 /*0xff884422, 0xff442211*/);
