@@ -952,7 +952,7 @@ public:
       for(int i=0;i<s;i++) {
 	blocks_ready[i]=0;
       }
-      g_num_pending_concurrent_downloads+=std::min(concurrent_tasks,s);
+      g_num_pending_concurrent_downloads+=std::max(0,std::min(concurrent_tasks,s));
       for(int i=0;i<std::min(concurrent_tasks,s);i++) {
 	fetch_block(i);
       }
@@ -3521,7 +3521,7 @@ void *g_progress_bar_logo_cb_data=0;
 
 void ProgressBar(int num, int val, int max, std::string label)
 {
-  //std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
+  std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
   if (find_str(label,"script")!=-1) return;
 #ifndef EMSCRIPTEN
   //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
