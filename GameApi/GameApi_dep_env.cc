@@ -687,6 +687,12 @@ public:
   }
   virtual void join_id(int id)
   {
+    static int uni_id =0;
+    uni_id++;
+    int unique_id = uni_id;
+    InstallProgress(77777+unique_id,"join_id", 4);
+    ProgressBar(77777+unique_id,0,4,"join_id");
+    
     //std::cout << "join waiting " << id << std::endl;
       in_join=true;
     pthread_mutex_lock(mutex2);
@@ -740,6 +746,7 @@ public:
     queue_mutex_end();
     
       in_join=false;
+    ProgressBar(77777+unique_id,4,4,"join_id");
     //std::cout << "join exiting " << id << std::endl;
   }
 private:
