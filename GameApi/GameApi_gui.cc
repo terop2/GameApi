@@ -4531,14 +4531,16 @@ EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std:
 {
 #ifndef EMSCRIPTEN
   W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap, allow_expr, expr,non_editable_char_count,redraw_w));
-  W e2 = highlight(e1);
+  W w1 = margin(e1,8,4,8,4);
+  W e2 = highlight(w1);
   return e2;
 #endif
 }
 EXPORT GameApi::W GameApi::GuiApi::multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height)
 {
   W e1 = add_widget(e, new MultilineEditor<std::string>(ev, allowed_chars, target, font, sh, x_gap, line_height));
-  W e2 = highlight(e1);
+  W w1 = margin(e1,8,4,8,4);
+  W e2 = highlight(w1);
   return e2;
 }
 
@@ -4548,7 +4550,8 @@ EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, std::string &expr
   std::string allowed_chars = "0123456789.-+*/%@";
   static W ww = empty();
   W w = add_widget(e, new EditorGuiWidgetAtlas<float>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true, expr,noneditnum ,&ww));
-  W w2 = highlight(w);
+  W w1 = margin(w,8,4,8,4);
+  W w2 = highlight(w1);
   return w2;
 #endif
 }
@@ -4563,7 +4566,8 @@ EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM
 #ifndef EMSCRIPTEN
  static W ww = empty();
   W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,noneditnum,&ww));
-  W w2 = highlight(w);
+  W w1 = margin(w,8,4,8,4);
+  W w2 = highlight(w1);
   return w2;
 #endif
 }
@@ -4713,7 +4717,8 @@ EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, std::string &expr, Ft
   std::string allowed_chars = "0123456789-&%";
   static W ww = empty();
   W w = add_widget(e, new EditorGuiWidgetAtlas<int>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,noneditnum,&ww));
-  W w2 = highlight(w);
+  W w1 = margin(w,8,4,8,4);
+  W w2 = highlight(w1);
   int_editor_map[w2.id]=w.id;
   return w2;
 #endif
@@ -4727,7 +4732,8 @@ EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas
   static W ww = empty();
   //GuiWidget *ww2 = find_widget(e,ww);
   W w = add_widget(e, new EditorGuiWidgetAtlas<long>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,false,expr,noneditnum,&ww));
-  W w2 = highlight(w);
+  W w1 = margin(w,8,4,8,4);
+  W w2 = highlight(w1);
   return w2;
 #endif
 }
@@ -4739,8 +4745,9 @@ EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM 
   static std::string expr;
     static W redraw_w = empty();
     W edit = string_editor(allowed_chars, col, expr, atlas, atlas_bm, x_gap,noneditnum,&redraw_w);
-  W edit2 = highlight(edit);
-  return edit2; 
+    //W w1 = margin(edit,8,4,8,4);
+  //W edit2 = highlight(w1); // not needed since string editor already have these.
+  return edit; 
 }
 EXPORT GameApi::W GameApi::GuiApi::copy_paste_dialog(SH sh, W &close_button,FI font, FtA atlas, BM atlas_bm, std::string &edit)
 {
@@ -5380,6 +5387,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
   assert(labels.size()==types.size());
   std::vector<W> vec2;
   std::vector<W> vec2_ed;
+  std::vector<W> vec2_lab;
   int s = vec.size();
   //std::cout << "edit_dialog: " << s << std::endl;
   int size_x1 = 0;
@@ -5394,6 +5402,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
       vec3.push_back(w);
     }
   int max_width=0;
+  int max_width_lab=0;
   for(int i=0;i<s;i++)
     {
       EditTypes *target = vec[i];
@@ -5404,14 +5413,17 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
       W lab_2 = right_align(lab, size_x1);
       W edit = generic_editor(ev,*target, atlas, atlas_bm, type, 2, atlas_tiny, atlas_tiny_bm, size_y(lab),vec3[i]);
       max_width = std::max(max_width,size_x(lab)+size_x(edit));
-
+      max_width_lab=std::max(max_width_lab,size_x(lab));
+      
       W array2[] = { lab_2, edit };
       W array3 = array_x(&array2[0], 2, 5);
       //max_width = std::max(max_width,size_x(array3));
       vec2.push_back(array3);
       vec2_ed.push_back(edit);
+      vec2_lab.push_back(lab_2);
     }
-  int button_width = std::max(max_width/2+30,350);
+  int extra_margin = 50;
+  int button_width = std::max(max_width/2+30+extra_margin*2/2,350);
   if (vec2.size()==0)
     {
       W lab0 = text("", atlas, atlas_bm, 8);
@@ -5420,14 +5432,25 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
       vec2.push_back(lab0);
       vec2.push_back(lab_2);
       vec2.push_back(lab0);
+
+      vec2_ed.push_back(lab0);
+      vec2_ed.push_back(lab_2);
+      vec2_ed.push_back(lab0);
+
+      vec2_lab.push_back(lab0);
+      vec2_lab.push_back(lab_2);
+      vec2_lab.push_back(lab0);
+      
     }
   // This still breaks more than it fixes.
-  W array = array_y(vec2 /*&vec2[0], vec2.size()*/, 35);
+  W array = array_y(vec2 /*&vec2[0], vec2.size()*/, 35-30-15);
   for(int i=0;i<s;i++)
     {
-      vec2[i] = editor_mouse_tweak(vec2_ed[i],vec2[i],array);
+      W array4 = margin(vec2[i],extra_margin+size_x1-size_x(vec2_lab[i]),15,max_width-size_x(vec2[i])-(size_x1-size_x(vec2_lab[i])-extra_margin)+extra_margin,15);
+     
+      vec2[i] = editor_mouse_tweak(vec2_ed[i],array4,array);
     }
-  W array_0 = array_y(vec2 /*&vec2[0],vec2.size()*/,35);
+  W array_0 = array_y(vec2 /*&vec2[0],vec2.size()*/,35-30-15);
   W array_1 = margin(array_0, 10,10,10,10);
   W array_1a = center_align(array_1, button_width*2);
   W array_2 = button(button_width*2, size_y(array_1), c_dialog_1, c_dialog_1_2 /*0xff884422, 0xff442211*/);
