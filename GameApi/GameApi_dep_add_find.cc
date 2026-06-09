@@ -1,5 +1,6 @@
 
 #include "GameApi_h.hh"
+#include "GraphI.hh"
 #include <memory>
 
 
@@ -8,77 +9,28 @@ IMPORT void ProgressBar(int num, int val, int max, std::string label);
 void stackTrace();
 
 
-struct Block
-{
-  std::vector<std::shared_ptr<void> > vec;
-#if 0
-  ~Block()
-  {
-    int s = vec.size();
-    std::cout << "Block dtor s=" << s << std::endl;
-    for(int i=0;i<s;i++)
-      {
-	std::cout << "Reset " << i << std::endl;
-      vec[i].reset();
-      std::cout << "Reset ok" << std::endl;
-      }
-    std::cout << "Clearing vec" << std::endl;
-    vec.clear();
-    std::cout << "Clear ok" << std::endl;
-  }
-#endif
-};
 
+
+/*
 struct G_BLOCK
 {
-std::vector<Block*> g_blocks;
+std::vector<Block*> g_blocks;  
+
   ~G_BLOCK() {
     int s = g_blocks.size();
-    //std::cout << "G_BLOCKS dtor: s=" << s<< std::endl;
     for(int i=0;i<s;i++) {
-      //std::cout << "Deleting " << i << std::endl;
       delete g_blocks[i];
-      //std::cout << "del ok" << std::endl;
     }
   }
 } g_blocks;
+*/
+G_BLOCK g_blocks;
 
-struct Rest {
-  std::vector<std::shared_ptr<void> > g_rest;
-  void delete_item_from_rest(void *ptr)
-  {
-    int s = g_rest.size();
-    for(int i=0;i<s;i++) {
-      void *ptr2 = g_rest[i].get();
-      if (ptr==ptr2) {
-	g_rest[i].reset();
-      }
-    }
-    
-  }
-  ~Rest()
-  {
-    int s = g_rest.size();
-    // doesnt work because global destructors have already been ran
-    // and installprogress uses global variables.
-    //InstallProgress(666, "cleanup", 15);
-    for(int i=0;i<s;i++)
-      {
-	//if (i%10==0) {
-	//  ProgressBar(666,i*15/s,15,"cleanup");
-	//}
-      g_rest[i].reset();
-      }
-    //ProgressBar(666,15,15,"cleanup");
-    //std::cout << std::endl;
-    g_rest.clear();
-  }
-};
 Rest g_rest;
 int g_current_block=-1;
 IMPORT int add_block()
 {
-  g_blocks.g_blocks.push_back(new Block);
+  g_blocks.g_blocks.push_back(new Block2);
   return g_blocks.g_blocks.size()-1;
 }
 void recreate_block(int id)
@@ -86,20 +38,21 @@ void recreate_block(int id)
   if (id>=0 && id<g_blocks.g_blocks.size()) {
     //if (g_blocks.g_blocks[id])
     //  delete g_blocks.g_blocks[id];
-    g_blocks.g_blocks[id]=new Block;
+    g_blocks.g_blocks[id]=new Block2;
   }
 }
 IMPORT void set_current_block(int id)
 {
   g_current_block = id;
 }
-void delete_item_from_block(void *ptr, Block *blk)
+void delete_item_from_block(void *ptr, Block2 *blk)
 {
   int s = blk->vec.size();
   for(int i=0;i<s;i++) {
-    void *ptr2 = blk->vec[i].get();
-    if (ptr==ptr2) {
-      blk->vec[i].reset();
+    //void *ptr2 = blk->vec[i].get();
+    if (blk->vec[i]->compare(ptr)) {
+      blk->vec[i]->del();
+      //blk->vec[i].reset();
     }
   }
 }
@@ -107,7 +60,7 @@ void delete_item(void *ptr)
 {
   int ks = g_blocks.g_blocks.size();
   for(int i=0;i<ks;i++) {
-    Block *blk = g_blocks.g_blocks[i];
+    Block2 *blk = g_blocks.g_blocks[i];
     if (blk)
     delete_item_from_block(ptr, blk);
   }
@@ -125,6 +78,9 @@ IMPORT void clear_block(int id)
     g_blocks.g_blocks[id]=0;
   }
 }
+
+
+#if 0
 void add_b(std::shared_ptr<void> ptr)
 {
   if ((g_current_block>=0 && g_current_block<g_blocks.g_blocks.size()) && !g_blocks.g_blocks[g_current_block])
@@ -136,6 +92,7 @@ void add_b(std::shared_ptr<void> ptr)
   else
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
+#endif
 
 
 GameApi::PAT add_path(GameApi::Env &e, Path *p)
@@ -143,7 +100,7 @@ GameApi::PAT add_path(GameApi::Env &e, Path *p)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->paths.push_back(p);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(p));
+    add_b(p);
   GameApi::PAT im;
   im.id = env->paths.size()-1;
   return im;
@@ -154,7 +111,7 @@ GameApi::FS add_float_scene(GameApi::Env &e, FloatScene *scene)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->float_scenes.push_back(scene);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(scene));
+    add_b(scene);
   GameApi::FS im;
   im.id = env->float_scenes.size()-1;
   return im;
@@ -165,7 +122,7 @@ GameApi::PV add_facecoll_array(GameApi::Env &e, Array<int,FaceCollection*> *arr)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->p_array.push_back(arr);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(arr));
+    add_b(arr);
   GameApi::PV im;
   im.id = env->p_array.size()-1;
   return im;
@@ -176,7 +133,7 @@ GameApi::PM add_facecoll_matrix(GameApi::Env &e, Bitmap<FaceCollection*> *arr)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->p_matrix.push_back(arr);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(arr));
+    add_b(arr);
   GameApi::PM im;
   im.id = env->p_matrix.size()-1;
   return im;
@@ -188,7 +145,7 @@ GameApi::OVX add_opt_voxel(GameApi::Env &e, OptVoxel *vx)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->opt_voxels.push_back(vx);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(vx));
+    add_b(vx);
   GameApi::OVX im;
   im.id = env->opt_voxels.size()-1;
   return im;
@@ -200,7 +157,7 @@ GameApi::BS add_bytestore(GameApi::Env &e, ByteStore *bs)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->bytestores.push_back(bs);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(bs));
+    add_b(bs);
   GameApi::BS im;
   im.id = env->bytestores.size()-1;
   return im;
@@ -211,7 +168,7 @@ GameApi::CS add_colourspace(GameApi::Env &e, ColourSpace *cs)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->colourspaces.push_back(cs);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(cs));
+    add_b(cs);
   GameApi::CS im;
   im.id = env->colourspaces.size()-1;
   return im;
@@ -221,7 +178,7 @@ GameApi::CSI add_colourspaceI(GameApi::Env &e, ColourSpaceI *cs)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->colourspacesI.push_back(cs);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(cs));
+    add_b(cs);
   GameApi::CSI im;
   im.id = env->colourspacesI.size()-1;
   return im;
@@ -232,7 +189,7 @@ GameApi::TT add_timing(GameApi::Env &e, Timing *t)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->timings.push_back(t);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(t));
+    add_b(t);
   GameApi::TT im;
   im.id = env->timings.size()-1;
   return im;
@@ -243,7 +200,7 @@ GameApi::PL add_platform(GameApi::Env &e, Platform *pl)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->platforms.push_back(pl);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(pl));
+    add_b(pl);
   GameApi::PL im;
   im.id = env->platforms.size()-1;
   return im;
@@ -254,7 +211,7 @@ GameApi::PBO add_pbo(GameApi::Env &e, PixelBufferObject *i)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->pbo.push_back(i);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(i));
+    add_b(i);
   GameApi::PBO im;
   im.id = env->pbo.size()-1;
   return im;
@@ -265,7 +222,7 @@ GameApi::SHP add_shp(GameApi::Env &e, ShaderParameterI* i)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shp.push_back(i);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(i));
+    add_b(i);
   GameApi::SHP im;
   im.id = env->shp.size()-1;
   return im;
@@ -275,7 +232,7 @@ GameApi::SHI add_shaderI(GameApi::Env &e, ShaderI2* i)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shi.push_back(i);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(i));
+    add_b(i);
   GameApi::SHI im;
   im.id = env->shi.size()-1;
   return im;
@@ -285,7 +242,7 @@ GameApi::TF add_gltf(GameApi::Env &e, GLTFModelInterface *i)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->tf.push_back(i);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(i));
+    add_b(i);
   GameApi::TF im;
   im.id = env->tf.size()-1;
   return im;
@@ -295,7 +252,7 @@ GameApi::SHC add_shader_code(GameApi::Env &e, ShaderCode *code)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shc.push_back(code);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(code));
+    add_b(code);
   GameApi::SHC im;
   im.id = env->shc.size()-1;
   return im;
@@ -305,7 +262,7 @@ GameApi::GC add_gc(GameApi::Env &e, GraphicsContext *gc)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->gc.push_back(gc);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(gc));
+    add_b(gc);
   GameApi::GC im;
   im.id = env->gc.size()-1;
   return im;
@@ -316,7 +273,7 @@ GameApi::ATT add_attach(GameApi::Env &e, Attach *att)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->attach.push_back(att);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(att));
+    add_b(att);
   GameApi::ATT im;
   im.id = env->attach.size()-1;
   return im;
@@ -327,7 +284,7 @@ GameApi::MB add_memblock(GameApi::Env &e, MemoryBlock *b)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->memblock.push_back(b);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(b));
+    add_b(b);
   GameApi::MB im;
   im.id = env->memblock.size()-1;
   return im;
@@ -338,7 +295,7 @@ GameApi::UV add_uv(GameApi::Env &e, Fetcher<FaceID> *f)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->uv.push_back(f);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(f));
+    add_b(f);
   GameApi::UV im;
   im.id = env->uv.size()-1;
   return im;
@@ -349,7 +306,7 @@ GameApi::AV add_voxel_array(GameApi::Env &e, VoxelArray *arr)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->voxel_array.push_back(arr);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(arr));
+    add_b(arr);
   GameApi::AV im;
   im.id = env->voxel_array.size()-1;
   return im;
@@ -361,7 +318,7 @@ GameApi::HML add_html(GameApi::Env &e, Html *file)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->html.push_back(file);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(file));
+  add_b(file);
   GameApi::HML im;
   im.id = env->html.size()-1;
   return im;
@@ -372,7 +329,7 @@ GameApi::W add_frm_widget(GameApi::Env &e, FrmWidget *w)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->frm_widgets.push_back(w);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(w));
+  add_b(w);
   GameApi::W im;
   im.id = env->frm_widgets.size()-1;
   return im;
@@ -384,7 +341,7 @@ GameApi::PN add_polynomial(GameApi::Env &e, std::vector<float> *pn)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->polynomials.push_back(pn);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(pn));
+  add_b(pn);
   GameApi::PN im;
   im.id = env->polynomials.size()-1;
   return im;
@@ -396,7 +353,7 @@ GameApi::FBU add_framebuffer(GameApi::Env &e, FrameBuffer *buf)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->frame_buffer.push_back(buf);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(buf));
+  add_b(buf);
   GameApi::FBU im;
   im.id = env->frame_buffer.size()-1;
   return im;
@@ -407,7 +364,7 @@ GameApi::FML add_framemainloop(GameApi::Env &e, FrameBufferLoop *loop)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->frame_loop.push_back(loop);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(loop));
+  add_b(loop);
   GameApi::FML im;
   im.id = env->frame_loop.size()-1;
   return im;
@@ -419,7 +376,7 @@ GameApi::DS add_disk_store(GameApi::Env &e, DiskStore *ds)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->disk_store.push_back(ds);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(ds));
+  add_b(ds);
   GameApi::DS im;
   im.id = env->disk_store.size()-1;
   return im;
@@ -430,7 +387,7 @@ GameApi::TXID add_txid(GameApi::Env &e, TextureID *txid)
   int id = txid->texture();
   env->txids[id] = txid;
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(txid));
+  add_b(txid);
   GameApi::TXID tx;
   tx.id = id;
   return tx;
@@ -441,7 +398,7 @@ GameApi::PA add_patch(GameApi::Env &e, CurvePatch *patch)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->curve_patches.push_back(patch);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(patch));
+  add_b(patch);
   GameApi::PA im;
   im.id = env->curve_patches.size()-1;
   return im;
@@ -452,7 +409,7 @@ GameApi::SD add_string_display(GameApi::Env &e, StringDisplay *sd)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->string_displays.push_back(sd);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(sd));
+  add_b(sd);
   GameApi::SD im;
   im.id = env->string_displays.size()-1;
   return im;
@@ -462,7 +419,7 @@ GameApi::GI add_glyph_interface(GameApi::Env &e, GlyphInterface *gi)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->glyph_interfaces.push_back(gi);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(gi));
+  add_b(gi);
   GameApi::GI im;
   im.id = env->glyph_interfaces.size()-1;
   return im;
@@ -472,7 +429,7 @@ GameApi::FI add_font_interface(GameApi::Env &e, FontInterface *fi)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->font_interfaces.push_back(fi);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(fi));
+  add_b(fi);
   GameApi::FI im;
   im.id = env->font_interfaces.size()-1;
   return im;
@@ -482,7 +439,7 @@ GameApi::FF add_float_fetcher(GameApi::Env &e, Fetcher<float> *f)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->float_fetchers.push_back(f);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(f));
+  add_b(f);
   GameApi::FF im;
   im.id = env->float_fetchers.size()-1;
   return im;
@@ -492,7 +449,7 @@ GameApi::PF add_point_fetcher(GameApi::Env &e, Fetcher<Point> *f)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->point_fetchers.push_back(f);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(f));
+  add_b(f);
   GameApi::PF im;
   im.id = env->point_fetchers.size()-1;
   return im;
@@ -502,7 +459,7 @@ GameApi::IF add_int_fetcher(GameApi::Env &e, Fetcher<int> *i)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->int_fetchers.push_back(i);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(i));
+  add_b(i);
   GameApi::IF im;
   im.id = env->int_fetchers.size()-1;
   return im;
@@ -512,7 +469,7 @@ GameApi::SF add_string_fetcher(GameApi::Env &e, Fetcher<std::string> *i)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->string_fetchers.push_back(i);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(i));
+  add_b(i);
   GameApi::SF im;
   im.id = env->string_fetchers.size()-1;
   return im;
@@ -522,7 +479,7 @@ GameApi::ARR add_array(GameApi::Env &e, ArrayType *type)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->arrays2.push_back(type);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(type));
+  add_b(type);
   GameApi::ARR im;
   im.id = env->arrays2.size()-1;
   return im;
@@ -532,7 +489,7 @@ GameApi::PTT add_point_transform(GameApi::Env &e, PointTransform *trans)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->point_transforms.push_back(trans);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(trans));
+  add_b(trans);
   GameApi::PTT im;
   im.id = env->point_transforms.size()-1;
   return im;
@@ -542,7 +499,7 @@ GameApi::KF add_vertex_anim(GameApi::Env &e, VertexAnimNode *node)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->vertex_anims.push_back(node);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(node));
+  add_b(node);
   GameApi::KF im;
   im.id = env->vertex_anims.size()-1;
   return im;
@@ -552,7 +509,7 @@ GameApi::CPP add_curve_pos(GameApi::Env &e, CurvePos *pos)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->curve_pos.push_back(pos);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(pos));
+  add_b(pos);
   GameApi::CPP im;
   im.id = env->curve_pos.size()-1;
   return im;
@@ -562,7 +519,7 @@ GameApi::BLK add_blocker(GameApi::Env &e, Blocker *blk)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->blockers.push_back(blk);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(blk));
+  add_b(blk);
   GameApi::BLK im;
   im.id = env->blockers.size()-1;
   return im;
@@ -573,7 +530,7 @@ GameApi::RUN add_splitter(GameApi::Env &e, Splitter *blk)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->splitters.push_back(blk);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(blk));
+  add_b(blk);
   GameApi::RUN im;
   im.id = env->splitters.size()-1;
   return im;
@@ -584,7 +541,7 @@ GameApi::CC add_color(GameApi::Env &e, ColorChange *cc)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->color_change.push_back(cc);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(cc));
+  add_b(cc);
   GameApi::CC im;
   im.id = env->color_change.size()-1;
   return im;
@@ -595,7 +552,7 @@ GameApi::PP add_plane_shape(GameApi::Env &e, PlaneShape *sh)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->plane_shapes.push_back(sh);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(sh));
+  add_b(sh);
   GameApi::PP im;
   im.id = env->plane_shapes.size()-1;
   return im;
@@ -606,7 +563,7 @@ GameApi::MX add_mixed(GameApi::Env &e, MixedI *m)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->mixed.push_back(m);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(m));
+  add_b(m);
   GameApi::MX im;
   im.id = env->mixed.size()-1;
   return im;
@@ -616,7 +573,7 @@ GameApi::SA add_skeletal(GameApi::Env &e, SkeletalNode *n)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->skeletals.push_back(n);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(n));
+  add_b(n);
   GameApi::SA im;
   im.id = env->skeletals.size()-1;
   return im;
@@ -627,7 +584,7 @@ GameApi::MC add_matrix_curve(GameApi::Env &e, Curve<Matrix> *m)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->matrix_curves.push_back(m);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(m));
+  add_b(m);
   GameApi::MC im;
   im.id = env->matrix_curves.size()-1;
   return im;
@@ -638,7 +595,7 @@ GameApi::MS add_matrix_array(GameApi::Env &e, MatrixArray *m)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->matrix_arrays.push_back(m);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(m));
+  add_b(m);
   GameApi::MS im;
   im.id = env->matrix_arrays.size()-1;
   return im;
@@ -649,7 +606,7 @@ GameApi::C add_curve(GameApi::Env &e, Curve<Point> *curve)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->curves.push_back(curve);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(curve));
+  add_b(curve);
   GameApi::C im;
   im.id = env->curves.size()-1;
   return im;
@@ -659,7 +616,7 @@ GameApi::US add_uber(GameApi::Env &e, ShaderCall *call)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shadercalls.push_back(call);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(call));
+  add_b(call);
   GameApi::US im;
   im.id = env->shadercalls.size()-1;
   return im;
@@ -669,7 +626,7 @@ GameApi::MT add_material(GameApi::Env &e, Material *mat)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->materials.push_back(mat);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(mat));
+  add_b(mat);
   GameApi::MT im;
   im.id = env->materials.size()-1;
   return im;
@@ -680,7 +637,7 @@ GameApi::TL add_tree_level(GameApi::Env &e, TreeLevel *lvl)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->tree_levels.push_back(lvl);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(lvl));
+  add_b(lvl);
   GameApi::TL im;
   im.id = env->tree_levels.size()-1;
   return im;
@@ -690,7 +647,7 @@ GameApi::T add_tree(GameApi::Env &e, TreeStack *tre)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->trees.push_back(tre);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(tre));
+  add_b(tre);
   GameApi::T im;
   im.id = env->trees.size()-1;
   return im;
@@ -701,7 +658,7 @@ GameApi::IM add_implicit(GameApi::Env &e, ImplicitFunction3d *m)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->implicit.push_back(m);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(m));
+  add_b(m);
   GameApi::IM im;
   im.id = env->implicit.size()-1;
   return im;
@@ -711,7 +668,7 @@ GameApi::MN add_move(GameApi::Env &e, Movement *m)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->movement_array.push_back(m);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(m));
+  add_b(m);
   GameApi::MN a;
   a.id = env->movement_array.size()-1;
   return a;
@@ -722,7 +679,7 @@ GameApi::CP add_collision(GameApi::Env &e, Collision *c)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->collision_array.push_back(c);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(c));
+  add_b(c);
   GameApi::CP a;
   a.id = env->collision_array.size()-1;
   return a;
@@ -732,7 +689,7 @@ GameApi::TS add_tri_strip(GameApi::Env &e, TriStrip *n)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->tri_strip.push_back(n);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(n));
+  add_b(n);
   GameApi::TS a;
   a.id = env->tri_strip.size()-1;
   return a;
@@ -743,7 +700,7 @@ GameApi::PH add_physics(GameApi::Env &e, PhysicsNode *n)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->phys.push_back(n);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(n));
+  add_b(n);
   GameApi::PH a;
   a.id = env->phys.size()-1;
   return a;
@@ -754,7 +711,7 @@ GameApi::EX add_expr(GameApi::Env &e, ExprNode *n)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->exprs.push_back(n);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(n));
+  add_b(n);
   GameApi::EX a;
   a.id = env->exprs.size()-1;
   return a;
@@ -782,7 +739,7 @@ GameApi::GML add_main_loop_wgpu(GameApi::Env &e, MainLoopItemWGPU *item)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->wgpu_main_loop.push_back(item);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(item));
+  add_b(item);
   GameApi::GML ml;
   ml.id = env->wgpu_main_loop.size()-1;
   return ml;
@@ -792,7 +749,7 @@ GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->main_loop.push_back(item);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(item));
+  add_b(item);
   GameApi::ML ml;
   ml.id = env->main_loop.size()-1;
   return ml;
@@ -803,7 +760,7 @@ GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->font_atlas.push_back(info);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(info));
+  add_b(info);
   GameApi::FtA ft;
   ft.id = env->font_atlas.size()-1;
   return ft;
@@ -820,7 +777,7 @@ GameApi::W add_widget(GameApi::Env &e, GuiWidget *w)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->widgets.push_back(w);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(w));
+  add_b(w);
   GameApi::W wid;
   wid.id = env->widgets.size()-1;
   return wid;
@@ -830,7 +787,7 @@ GameApi::SFO add_shader_module(GameApi::Env &e, ShaderModule *vol)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shader_module.push_back(vol);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(vol));
+  add_b(vol);
   GameApi::SFO sfo;
   sfo.id = env->shader_module.size()-1;
   return sfo;
@@ -840,7 +797,7 @@ GameApi::SM add_sample(GameApi::Env &e, Samples *s)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->samples.push_back(s);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(s));
+  add_b(s);
   GameApi::SM sm;
   sm.id = env->samples.size()-1;
   return sm;
@@ -850,7 +807,7 @@ GameApi::TRK add_tracker(GameApi::Env &e, Tracker *trk)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->trackers.push_back(trk);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(trk));
+  add_b(trk);
 
   GameApi::TRK sm;
   sm.id = env->trackers.size()-1;
@@ -876,7 +833,7 @@ GameApi::F add_float(GameApi::Env &e, LazyValue<float> *val)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->floats.push_back(val);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(val));
+  add_b(val);
   GameApi::F f;
   f.id = env->floats.size()-1;
   return f;
@@ -886,7 +843,7 @@ GameApi::FA add_float_array(GameApi::Env &e, Array<int,float> *arr)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->float_array.push_back(arr);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(arr));
+  add_b(arr);
   GameApi::FA f;
   f.id = env->float_array.size()-1;
   return f;
@@ -896,7 +853,7 @@ GameApi::FD add_distance(GameApi::Env &e, DistanceRenderable *dist)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->distvolume.push_back(dist);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(dist));
+  add_b(dist);
   GameApi::FD fd;
   fd.id = env->distvolume.size()-1;
   return fd;
@@ -938,7 +895,7 @@ GameApi::BM add_bitmap3(GameApi::Env &e, BitmapHandle *handle)
   Bitmap<Color> *bm2 = ((BitmapColorHandle*)handle)->bm;
   
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(bm2));
+  add_b(bm2);
 
   
   //std::cout << "add_bitmap: " << bm.id << std::endl;
@@ -968,7 +925,7 @@ GameApi::BM add_color_bitmap(GameApi::Env &e, Bitmap<Color> *bm)
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bm;
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(bm));
+  add_b(bm);
   return add_bitmap(e,handle);
 #endif
   
@@ -985,7 +942,7 @@ GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm)
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bm;
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(bm));
+  add_b(bm);
   return add_bitmap(e,handle);
 }
 GameApi::BMA add_bitmap_array(GameApi::Env &e, BitmapArray2<Color> *arr)
@@ -993,7 +950,7 @@ GameApi::BMA add_bitmap_array(GameApi::Env &e, BitmapArray2<Color> *arr)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->bm_array.push_back(arr);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(arr));
+  add_b(arr);
   GameApi::BMA bma;
   bma.id = env->bm_array.size()-1;
   return bma;
@@ -1004,7 +961,7 @@ GameApi::BB add_bool_bitmap(GameApi::Env &e, Bitmap<bool> *bitmap)
   BoolBitmap handle;
   handle.bitmap = bitmap;
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(bitmap));
+  add_b(bitmap);
   env->bool_bm.push_back(handle);
   GameApi::BB bm;
   bm.id = env->bool_bm.size()-1;
@@ -1017,7 +974,7 @@ GameApi::LAY add_layout(GameApi::Env &e, Layout *l)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->layouts.push_back(l);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(l));
+  add_b(l);
   GameApi::LAY ll;
   ll.id = env->layouts.size()-1;
   return ll;
@@ -1028,7 +985,7 @@ GameApi::WV add_waveform(GameApi::Env &e, Waveform *bitmap)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->waveforms.push_back(bitmap);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(bitmap));
+  add_b(bitmap);
   GameApi::WV bm;
   bm.id = env->waveforms.size()-1;
   //bm.type = 0;
@@ -1041,7 +998,7 @@ GameApi::TX add_texture(GameApi::Env &e, TextureI *i)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->textures.push_back(i);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(i));
+  add_b(i);
   GameApi::TX tx;
   tx.id = env->textures.size()-1;
   return tx;
@@ -1064,7 +1021,7 @@ GameApi::FB add_float_bitmap(GameApi::Env &e, Bitmap<float> *bitmap)
   FloatBitmap handle;
   handle.bitmap = bitmap;
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(bitmap));
+  add_b(bitmap);
   env->float_bm.push_back(handle);
   GameApi::FB bm;
   bm.id = env->float_bm.size()-1;
@@ -1078,9 +1035,9 @@ GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexAr
   env->vertex_array.push_back(va);
   env->vertex_array_render.push_back(arr);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(va));
+  add_b(va);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(arr));
+  add_b(arr);
 
   GameApi::VA bm;
   bm.id = env->vertex_array.size()-1;
@@ -1115,7 +1072,7 @@ GameApi::CBM add_continuous_bitmap(GameApi::Env &e, ContinuousBitmap<Color> *bit
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->continuous_bitmaps.push_back(bitmap);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(bitmap));
+  add_b(bitmap);
   GameApi::CBM bm;
   bm.id = env->continuous_bitmaps.size()-1;
   return bm;
@@ -1133,7 +1090,7 @@ GameApi::F add_function(GameApi::Env &e, FunctionImpl &f)
 GameApi::F add_function(GameApi::Env &e, Function<float,float> *f)
 {
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(f));
+  add_b(f);
 
   FunctionImpl ff;
   ff.func = f;
@@ -1144,7 +1101,7 @@ GameApi::SA add_separate(GameApi::Env &e, Separate *sep)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->separates.push_back(sep);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(sep));
+  add_b(sep);
   GameApi::SA p;
   p.id = env->separates.size()-1;
   return p;
@@ -1155,7 +1112,7 @@ GameApi::PL add_plane(GameApi::Env &e, PlanePoints2d *sep)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->plane_points.push_back(sep);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(sep));
+  add_b(sep);
   GameApi::PL p;
   p.id = env->plane_points.size()-1;
   return p;
@@ -1167,7 +1124,7 @@ GameApi::P add_polygon(GameApi::Env &e, FaceCollPolyHandle *handle)
   //stackTrace();
   EnvImpl *env = ::EnvImpl::Environment(&e);
   if (g_current_block != -2)
-    add_b(std::shared_ptr<void>(handle));
+    add_b(handle);
   env->poly.push_back(handle);
   GameApi::P p;
   p.id = env->poly.size()-1;
@@ -1198,7 +1155,7 @@ GameApi::VAA add_move_array(GameApi::Env &e, std::vector<VertexArrayWithPos> *ve
 GameApi::P add_polygon(GameApi::Env &e, FaceCollection *coll, int size)
 {
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(coll));
+  add_b(coll);
 
   FaceCollPolyHandle *h = new FaceCollPolyHandle;
   h->coll = coll;
@@ -1213,7 +1170,7 @@ GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size=1)
 {
   //stackTrace();
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(coll));
+  add_b(coll);
   FaceCollPolyHandle *h = new FaceCollPolyHandle;
   h->coll = coll;
   h->collowned = true;
@@ -1249,7 +1206,7 @@ GameApi::LI add_line_array(GameApi::Env &e, LineCollection *array)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->linearray.push_back(array);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(array));
+  add_b(array);
 
   GameApi::LI pt;
   pt.id = env->linearray.size()-1;
@@ -1260,7 +1217,7 @@ GameApi::PTS add_points_api_points(GameApi::Env &e, PointsApiPoints *pts)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->pointsapi_points.push_back(pts);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(pts));
+  add_b(pts);
 
   GameApi::PTS ptsa;
   ptsa.id = env->pointsapi_points.size()-1;
@@ -1271,7 +1228,7 @@ GameApi::PTA add_point_array3(GameApi::Env &e, PointArray3 *array)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->pointarray3.push_back(array);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(array));
+  add_b(array);
   GameApi::PTA pt;
   pt.id = env->pointarray3.size()-1;
   return pt;
@@ -1281,7 +1238,7 @@ GameApi::MSA add_matrix_array3(GameApi::Env &e, MatrixArray3 *array)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->matrixarray3.push_back(array);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(array));
+  add_b(array);
   GameApi::MSA pt;
   pt.id = env->matrixarray3.size()-1;
   return pt;
@@ -1291,7 +1248,7 @@ GameApi::FOA add_point_array(GameApi::Env &e, PointArray2 *array)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->pointarray.push_back(array);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(array));
+  add_b(array);
   GameApi::FOA pt;
   pt.id = env->pointarray.size()-1;
   return pt;
@@ -1315,7 +1272,7 @@ GameApi::LLA add_lines_array(GameApi::Env &e, PointArray2 *array)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->pointarray.push_back(array);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(array));
+  add_b(array);
   GameApi::LLA pt;
   pt.id = env->pointarray.size()-1;
   return pt;
@@ -1325,7 +1282,7 @@ GameApi::PC add_pointcoll_array(GameApi::Env &e, PointCollection *array)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->pointcollarray.push_back(array);
    if (g_current_block != -2)
- add_b(std::shared_ptr<void>(array));
+ add_b(array);
   GameApi::PC pt;
   pt.id = env->pointcollarray.size()-1;
   return pt;
@@ -1363,7 +1320,7 @@ GameApi::TR add_timerange(GameApi::Env &e, TROArray *arr)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->timeranges.push_back(arr);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(arr));
+  add_b(arr);
   GameApi::TR tr;
   tr.id = env->timeranges.size()-1;
   return tr;
@@ -1393,7 +1350,7 @@ GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->volumes.push_back(o);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(o));
+  add_b(o);
   GameApi::O pt;
   pt.id = env->volumes.size()-1;
   return pt;
@@ -1405,7 +1362,7 @@ GameApi::FO add_float_volume(GameApi::Env &e, FloatVolumeObject *o)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->floatvolumes.push_back(o);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(o));
+  add_b(o);
   GameApi::FO pt;
   pt.id = env->floatvolumes.size()-1;
   return pt;
@@ -1416,7 +1373,7 @@ GameApi::COV add_color_volume(GameApi::Env &e, ColorVolumeObject *o)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->colorvolume.push_back(o);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(o));
+  add_b(o);
   GameApi::COV pt;
   pt.id = env->colorvolume.size()-1;
   return pt;
@@ -1428,7 +1385,7 @@ GameApi::VO add_vector_volume(GameApi::Env &e, VectorVolumeObject *o)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->vectorvolume.push_back(o);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(o));
+  add_b(o);
   GameApi::VO pt;
   pt.id = env->vectorvolume.size()-1;
   return pt;
@@ -1439,7 +1396,7 @@ GameApi::VX add_int_voxel(GameApi::Env &e, Voxel<int> *o)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->voxels2.push_back(o);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(o));
+  add_b(o);
   GameApi::VX pt;
   pt.id = env->voxels2.size()-1;
   return pt;
@@ -1449,7 +1406,7 @@ GameApi::VX add_voxel(GameApi::Env &e, Voxel<unsigned int> *o)
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->voxels.push_back(o);
   if (g_current_block != -2)
-  add_b(std::shared_ptr<void>(o));
+  add_b(o);
   GameApi::VX pt;
   pt.id = env->voxels.size()-1;
   return pt;
@@ -2901,7 +2858,7 @@ bool operator<(const Dep &a1, const Dep &a2)
 }
 std::vector<Dep> g_dep;
 template<class T>
-void add_dep(std::vector<T> vec, std::string name) {
+void add_dep(std::vector<T, GameApiAllocator<T> > vec, std::string name) {
   Dep d;
   d.name = name;
   d.count=vec.size();
@@ -3003,7 +2960,7 @@ void print_dependencies(EnvImpl &impl, int num)
   DEP(matrix_curves);
   DEP(plane_shapes);
   DEP(skeletals);
-  DEP(temp_deletes);
+  //DEP(temp_deletes);
   DEP(polygon_array);
   DEP(va_array);
   DEP(mixed);

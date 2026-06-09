@@ -6293,11 +6293,11 @@ bool is_texture_usage_confirmed(VertexArraySet *set);
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
-  static int uni_id = 0;
-  uni_id++;
-  int unique_id = uni_id;
-  InstallProgress(66665+unique_id,"create_vertex_array", 4);
-  ProgressBar(66665+unique_id,1,4,"create_vertex_array");
+  //static int uni_id = 0;
+  //uni_id++;
+  //int unique_id = uni_id;
+  //InstallProgress(66665+unique_id,"create_vertex_array", 4);
+  //ProgressBar(66665+unique_id,1,4,"create_vertex_array");
   
 
     FaceCollection *faces2 = find_facecoll(e, p);
@@ -6401,8 +6401,10 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr2->prepare(0);
     if (!keep) {
       s->free_memory();
+      //  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+
     }
-    ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
     }
 
@@ -6491,7 +6493,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     if (!keep) {
       s->free_memory();
     }
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
   }
   
@@ -6530,7 +6532,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       {
 	prep.join(vec[i]);
       }
-  ProgressBar(66665+unique_id,2,4,"create_vertex_array");
+    // ProgressBar(66665+unique_id,2,4,"create_vertex_array");
 
     VertexArraySet *set = prep.collect();
 
@@ -6557,7 +6559,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	//::EnvImpl *env = ::EnvImpl::Environment(&e);
 	//env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
       }
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
 
 #else // BATCHING=true, EMSCRIPTEN=??, THREADS=true
     //std::cout << "IMPL#3:BATCHING=true, THREADS=true" << std::endl;
@@ -6578,7 +6580,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr2->prepare(0);
     if (!keep)
       s->free_memory();
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,2,4,"create_vertex_array");
+
+
     return add_vertex_array(e, s, arr2);
 
     }
@@ -6612,10 +6616,10 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-	pthread_mutex_t *gmutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-	pthread_mutex_t *gmutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-	pthread_cond_t *g_cond = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
-	pthread_cond_t *g_cond2 = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
+       pthread_mutex_t *gmutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+       pthread_mutex_t *gmutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+       pthread_cond_t *g_cond = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
+       pthread_cond_t *g_cond2 = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
 
     thread_counter = 0;
     g_lock1 = false;
@@ -6625,13 +6629,13 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //pthread_mutex_lock(mutex2);
     for(int i=0;i<num_threads;i++)
       {
-	
-	int start_range = i*delta_s; 
-	int  end_range = (i+1)*delta_s;
-	if (end_range>s) { end_range = s; }
-	//std::cout << "THREAD#" << i << "::Range=(" << start_range << ".." << end_range << ")" << std::endl;
-	if (i==num_threads-1) {end_range = s; }
-	vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3,gmutex,gmutex2,g_cond,g_cond2));
+       
+       int start_range = i*delta_s; 
+       int  end_range = (i+1)*delta_s;
+       if (end_range>s) { end_range = s; }
+       //std::cout << "THREAD#" << i << "::Range=(" << start_range << ".." << end_range << ")" << std::endl;
+       if (i==num_threads-1) {end_range = s; }
+       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3,gmutex,gmutex2,g_cond,g_cond2));
       }
     int progress = 0;
     //InstallProgress(1,"send to gpu mem",10);
@@ -6642,10 +6646,10 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #if 1
       pthread_mutex_lock(gmutex);
       while(g_lock3==true) {
-	pthread_cond_wait(g_cond,gmutex);
-	//if (g_low->sdl->SDL_GetTicks()-time > 10000.0) { std::cout << "create_vertex_array: BATCHING EXITING ON 10s TIMER" << std::endl; error=true; break; }
+       pthread_cond_wait(g_cond,gmutex);
+       //if (g_low->sdl->SDL_GetTicks()-time > 10000.0) { std::cout << "create_vertex_array: BATCHING EXITING ON 10s TIMER" << std::endl; error=true; break; }
 #ifdef EMSCRIPTEN
-	///	emscripten_sleep(100);
+       ///     emscripten_sleep(100);
 #endif
       }
       pthread_mutex_unlock(gmutex);
@@ -6660,13 +6664,13 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       // now ti_global is available
       ThreadInfo volatile *ti_global2 = ti_global;
       if (ti_global2 && !error) {
-	//std::cout << "transfer"<< std::endl;
+       //std::cout << "transfer"<< std::endl;
 
-	//std::cout << "TRANSFER::ctcounts(" << ti_global2->ct2_counts.tri_count << " " << ti_global2->ct2_counts.quad_count << " " << ti_global2->ct2_counts.poly_count << ")" << std::endl;
-	//std::cout << "TRANSFER::ctoffsets(" << ti_global2->ct2_offsets.tri_count << " " << ti_global2->ct2_offsets.quad_count << " " << ti_global2->ct2_offsets.poly_count << ")" << std::endl;
+       //std::cout << "TRANSFER::ctcounts(" << ti_global2->ct2_counts.tri_count << " " << ti_global2->ct2_counts.quad_count << " " << ti_global2->ct2_counts.poly_count << ")" << std::endl;
+       //std::cout << "TRANSFER::ctoffsets(" << ti_global2->ct2_offsets.tri_count << " " << ti_global2->ct2_offsets.quad_count << " " << ti_global2->ct2_offsets.poly_count << ")" << std::endl;
 
-	
-	ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count *3, ti_global2->ct2_offsets.tri_count *3 + ti_global2->ct2_counts.tri_count *3); 
+       
+       ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count *3, ti_global2->ct2_offsets.tri_count *3 + ti_global2->ct2_counts.tri_count *3); 
       ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 1, ti_global2->ct2_offsets.quad_count *6, ti_global2->ct2_offsets.quad_count *6 + ti_global2->ct2_counts.quad_count *6);
       if (!g_disable_polygons)
       ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 2, std::max(ti_global2->ct2_offsets.poly_count-1,0), std::max(ti_global2->ct2_offsets.poly_count-1,0) + (ti_global2->ct2_offsets.poly_count?ti_global2->ct2_counts.poly_count:ti_global2->ct2_counts.poly_count-1));
@@ -6680,11 +6684,12 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //pthread_mutex_unlock(mutex2); // release other process
       if (thread_counter==num_threads||error) break;
     }
-  ProgressBar(66665+unique_id,2,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,2,4,"create_vertex_array");
+
     
     for(int i=0;i<num_threads;i++)
       {
-	if (error) break;
+	//if (error) break;
 	prep.join(vec[i]);
       }
     pthread_mutex_destroy(mutex1);
@@ -6708,7 +6713,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       {
     	set->free_memory();
     }
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+  //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     
     
 #endif // BATCHING
@@ -6731,7 +6736,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr2->prepare(0); 
     if (!keep)
      s->free_memory();
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
 #else // BATCHING
     // std::cout << "IMPL#5:BATCHING=true, EMSCRIPTEN=true, THREADS=true" << std::endl;
@@ -6794,7 +6799,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //std::cout << "\n";
     if (!keep)
       s->free_memory();
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
 #endif // BATCHING
     //#ifdef __EMSCRIPTEN_PTHREADS__
@@ -6805,7 +6810,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #endif
   //#endif
 #else // EMSCRIPTEN
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
   return add_vertex_array(e, set, arr2);
 #endif // end of EMSCRIPTEN
 
@@ -6822,7 +6827,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   arr2->prepare(0); 
   if (!keep)
     s->free_memory();
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+  //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
   return add_vertex_array(e, s, arr2);
 
 #else // BATCHING=true, THREADS=false
@@ -6883,7 +6888,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //std::cout << "\n";
     if (!keep)
       s->free_memory();
-  ProgressBar(66665+unique_id,4,4,"create_vertex_array");
+    //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
     return add_vertex_array(e, s, arr2);
 #endif // end of BATCHING
 #endif // end of THREADS

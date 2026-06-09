@@ -7333,10 +7333,12 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
+
+
     //move_2->Prepare();
     move_2->execute(e);
     //std::cout << std::endl;
-    clear_block(blk);
+    clear_block(blk); // TODO
     recreate_block(blk);
     set_current_block(c);
   }
