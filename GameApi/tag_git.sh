@@ -8,3 +8,4 @@ else
 fi
 
 git tag $1
+echo "Tagging $1 Done."
