@@ -58,9 +58,114 @@ namespace GameApi
   class Env;
 };
 
+
+class BlockBase
+{
+public:
+  virtual ~BlockBase() { }
+  virtual void del()=0;
+  virtual bool compare(void *ptr) const=0;
+};
+
+
+struct Block2
+{
+  std::vector<BlockBase*> vec;
+};
+
+struct G_BLOCK
+{
+std::vector<Block2*> g_blocks;  
+
+  ~G_BLOCK() {
+    int s = g_blocks.size();
+    for(int i=0;i<s;i++) {
+      delete g_blocks[i];
+    }
+  }
+};
+
+struct Rest {
+  std::vector<BlockBase*> g_rest;
+  //std::vector<std::shared_ptr<void> > g_rest;
+  template<class T>
+  void delete_item_from_rest(T *ptr)
+  {
+    int s = g_rest.size();
+    for(int i=0;i<s;i++) {
+      //T *ptr2 = g_rest[i].get();
+      if (g_rest[i]->compare(ptr)) {
+	g_rest[i]->del();
+	//g_rest[i].reset();
+      }
+    }
+    
+  }
+  ~Rest()
+  {
+    int s = g_rest.size();
+    // doesnt work because global destructors have already been ran
+    // and installprogress uses global variables.
+    //InstallProgress(666, "cleanup", 15);
+    for(int i=0;i<s;i++)
+      {
+	//if (i%10==0) {
+	//  ProgressBar(666,i*15/s,15,"cleanup");
+	//}
+	g_rest[i]->del();
+	//g_rest[i].reset();
+      }
+    //ProgressBar(666,15,15,"cleanup");
+    //std::cout << std::endl;
+
+    int s2 = g_rest.size();
+    for(int i=0;i<s2;i++)
+      {
+	delete g_rest[i];
+	g_rest[i]=0;
+      }
+    g_rest.clear();
+  }
+};
+
+
+extern G_BLOCK g_blocks;
+extern Rest g_rest;
+
+void recreate_block(int id);
+
+
+template<class T> class BlockImpl : public BlockBase
+{
+public:
+  BlockImpl(T *ptr) : ptr(ptr) { }
+  void del() { delete ptr; ptr = 0; }
+  bool compare(void *p) const { return (T*)p==ptr; }
+  virtual ~BlockImpl() { delete ptr; ptr = 0; }
+private:
+  T *ptr;
+};
+
+extern int g_current_block;
+
+template<class T>
+void add_b(T *ptr)
+{
+  if ((g_current_block>=0 && g_current_block<g_blocks.g_blocks.size()) && !g_blocks.g_blocks[g_current_block])
+    {
+      recreate_block(g_current_block);
+    }
+  if (g_current_block>=0 && g_current_block<g_blocks.g_blocks.size() && g_blocks.g_blocks[g_current_block])
+    g_blocks.g_blocks[g_current_block]->vec.push_back(new BlockImpl(ptr));
+  else
+    g_rest.g_rest.push_back(new BlockImpl(ptr)); // these will never be released
+}
+
+
 class ConversionTableInterface
 {
 public:
+  virtual ~ConversionTableInterface() { }
   virtual int get_size() const=0;
   virtual std::string get_label(int i) const=0;
   virtual std::string get_str_ch(int i) const=0;
@@ -76,6 +181,7 @@ class Path // PAT -id.
 public:
   //virtual std::string name() const =0;
   //virtual Path* clone() const=0;
+  virtual ~Path() { }
   
   virtual std::string get_path() const=0;
   virtual std::string get_default_path() const=0;
@@ -180,6 +286,7 @@ IMPORT extern PathHandler *g_path_handler;
 class ByteStore
 {
 public:
+  virtual ~ByteStore() { }
   virtual int Size() const=0;
   virtual unsigned char &Get(int i) const=0;
 };
@@ -188,14 +295,14 @@ public:
 void stackTrace();
 
 template<class T>
-class GameApiAllocator : std::allocator<T>
+class GameApiAllocator : public std::allocator<T>
 {
 public:
   using std::allocator<T>::allocator;
   static uint32_t m_free_mem;
   static uint32_t m_changed_mem;
   static uint32_t m_used_mem;
-  
+
   typedef T* pointer;
   typedef const T* const_pointer;
   typedef void* void_pointer;
@@ -206,6 +313,7 @@ public:
   void print() const
   {
   }
+
 
   // this construct is optimization for vector initialization.
   // it fails to initialize to zero.
@@ -223,6 +331,7 @@ public:
     p->~U();
   }
   
+#if 0  
   T* allocate(uint32_t sz) {
     if (sz==0) return nullptr;
     //if (sz*sizeof(T)>=1024000) {
@@ -265,6 +374,7 @@ public:
     used_mem = a.used_mem;
     return *this;
   }
+#endif
 private:
   uint32_t *free_mem;
   uint32_t *changed_mem;
@@ -327,6 +437,7 @@ enum DSFlags
 class Pipeline
 {
 public:
+  virtual ~Pipeline() { }
   virtual void add_matrix(int id, Matrix m)=0;
   virtual void clear()=0;
   virtual Matrix get_matrix(int id) const=0;
@@ -354,12 +465,14 @@ public:
 class FloatRay
 {
 public:
+  virtual ~FloatRay() { }
   virtual Point Ray(float x) const=0;
 };
 
 class FloatScene : public CollectInterface
 {
 public:
+  virtual ~FloatScene() { }
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual void Prepare()=0;
@@ -382,12 +495,14 @@ class OpenGlNode
 {
 public:
   OpenGlNode(OGLVisitor &vis); 
+  virtual ~OpenGlNode() { }
   virtual void Prepare()=0;
   virtual void Render()=0;
 };
 class OGLVisitor
 {
 public:
+  virtual ~OGLVisitor() { }
   virtual void register_ogl(OpenGlNode *n)=0;
 };
 inline OpenGlNode::OpenGlNode(OGLVisitor &vis) { vis.register_ogl(this); }
@@ -399,6 +514,7 @@ namespace GameApi
 class GlobalIlluminationData
 {
 public:
+  virtual ~GlobalIlluminationData() { }
   virtual int Size() const=0;
   virtual Point Pos(int i) const=0;
   virtual Vector Normal(int i) const=0;
@@ -441,6 +557,7 @@ template<class C>
 class SimpleShape
 { // these use scanline conversion
 public:
+  virtual ~SimpleShape() { }
   virtual int SizeY() const=0; 
   virtual int NumEdges(int y) const=0;
   virtual float Edge(int y, int edge) const=0;
@@ -451,6 +568,7 @@ template<class C, class I>
 class Filler
 {
 public:
+  virtual ~Filler() { }
   virtual C Interpolate(I pos) const=0;
 };
 
@@ -509,6 +627,7 @@ template<class I, class T>
 class DFunction
 {
 public:
+  virtual ~DFunction() { }
   virtual T DIndex(I i) const=0;
 };
 
@@ -523,6 +642,7 @@ public:
 class CompactBitmap
 {
 public:
+  virtual ~CompactBitmap() { }
   
 };
 
@@ -530,6 +650,7 @@ template<class AllocData, class T>
 class LazyAlloc
 {
 public:
+  virtual ~LazyAlloc() { }
   virtual void Alloc(AllocData ad)=0;
   virtual void Destroy()=0;
   virtual bool ValueAvailable() const=0;
@@ -569,6 +690,7 @@ public:
 class UrlMemoryMap : public CollectInterface
 {
 public:
+  virtual ~UrlMemoryMap() { }
   virtual void Prepare()=0;
   virtual int size() const=0;
   virtual std::string get_url(int i) const=0;
@@ -578,6 +700,7 @@ public:
 class VertexArray : public CollectInterface
 {
 public:
+  virtual ~VertexArray() { }
   virtual void Prepare()=0;
   virtual MemoryBlock *triangle_polys()=0;
   virtual MemoryBlock *quad_polys() =0;
@@ -739,6 +862,7 @@ struct LoadInfoSpec
 class LoadImpl
 {
 public:
+  virtual ~LoadImpl() { }
   virtual std::string file_extension() const=0;
   virtual bool use_this_impl(std::string url) const=0;
   virtual MainLoopItem *load(std::string url, std::vector<std::shared_ptr<void> > &del_vec)=0;
@@ -766,6 +890,7 @@ struct WorldBlockSpec
 class OptVoxelWorld : public CollectInterface
 {
 public:
+  virtual ~OptVoxelWorld() { }
   virtual void Prepare()=0;
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
@@ -781,6 +906,7 @@ public:
 class OptVoxel : public CollectInterface
 {
 public:
+  virtual ~OptVoxel() { }
   virtual void Prepare()=0;
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
@@ -804,6 +930,7 @@ class FaceCollection;
 class OptCubes : public CollectInterface
 {
 public:
+  virtual ~OptCubes() { }
   virtual void Prepare()=0;
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
@@ -823,6 +950,7 @@ class OptCubeCache : public CollectInterface
 {
 public:
   // cube cache
+  virtual ~OptCubeCache() { }
   virtual void add_to_cache(const CubeSpec &spec, FaceCollection *coll)=0;
 
   bool is_in_cache(const CubeSpec &spec) const { return find_from_cache(spec)!=0; }
@@ -1303,6 +1431,7 @@ struct MainLoopEvent
 class MainLoopItemWGPU : public CollectInterface
 {
 public:
+  virtual ~MainLoopItemWGPU() { }
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual void execute(MainLoopEnv &e)=0;
@@ -1349,6 +1478,7 @@ private:
 class Timing : public MainLoopItem
 {
 public:
+  virtual ~Timing() { }
   virtual float end_time() const=0;
   virtual float delta_time() const=0;
   //virtual Timing *clone() const=0;
@@ -1543,6 +1673,7 @@ class TriStripForward : public TriStrip
 {
 public:
   TriStripForward(TriStrip &next) : next(next) { }
+  virtual ~TriStripForward() { }
   virtual int Size() const { return next.Size(); }
   virtual Point Pos(int i) const { return next.Pos(i); }
   virtual unsigned int Color(int i) const { return next.Color(i); }
@@ -1716,6 +1847,7 @@ class Frame
 {
 public:
   // all the parameters should go via ctor parameters
+  virtual ~Frame() { }
   virtual void execute(MainLoopEnv &e)=0;
 
   enum ETypes
@@ -2249,6 +2381,7 @@ public:
 class CurveGroup : public CollectInterface
 {
 public:
+  virtual ~CurveGroup() { }
   virtual void Prepare()=0;
   virtual int NumCurves() const=0;
   virtual Point Pos(int num, float t) const=0; // t=[0..1]
@@ -2259,6 +2392,7 @@ public:
 class MeshAnim : public CollectInterface
 {
 public:
+  virtual ~MeshAnim() { }
   virtual void Prepare()=0;
   virtual int NumFaces() const=0;
   virtual int NumPoints(int face) const=0;
@@ -2275,6 +2409,7 @@ public:
 class IStateMachine : public CollectInterface
 {
 public:
+  virtual ~IStateMachine() { }
   virtual int num_flags() const=0;
   virtual std::string flag(int val) const=0;
   
@@ -2375,6 +2510,7 @@ public:
 class QMLLoop : public FrameBufferLoop
 {
 public:
+  virtual ~QMLLoop() { }
   virtual int NumChildren() const=0;
   virtual QMLLoop *Children(int i) const=0;
 
@@ -2384,6 +2520,7 @@ public:
 class QMLData : public CollectInterface
 {
 public:
+  virtual ~QMLData() { }
   virtual void Prepare()=0;
   virtual QMLData* Parent() const=0;
   virtual std::string Type() const=0;
@@ -2402,6 +2539,7 @@ public:
 class SkeletalData : public CollectInterface
 {
 public:
+  virtual ~SkeletalData() { }
   virtual void Prepare()=0;
 
   virtual int NumBones() const=0;
@@ -2802,6 +2940,7 @@ public:
 class LoadStream : public CollectInterface
 {
 public:
+  virtual ~LoadStream() { }
   virtual void Prepare()=0;
   virtual LoadStream *Clone()=0;
   virtual bool get_ch(unsigned char &ch)=0;
@@ -2886,6 +3025,7 @@ class EventSource : public CollectInterface
   // i.e. generating events
   // use MainLoopItem for sending events.
 public:
+  virtual ~EventSource() { }
   virtual void Prepare()=0;
   virtual void handle_event(MainLoopEvent &event)=0;
   virtual void execute(MainLoopEnv &e)=0;
@@ -3470,6 +3610,7 @@ class TexturedVoxel
 {
 public:
   TexturedVoxel(int num) : num(num) { }
+  virtual ~TexturedVoxel() { }
   virtual int SizeX() const { return 192; }
   virtual int SizeY() const { return num*32; }
   virtual Color Map(int x, int y) const=0;
@@ -3863,6 +4004,7 @@ public:
 class GaussianSplat : public CollectInterface
 {
 public:
+  virtual ~GaussianSplat() { }
   virtual void Prepare()=0;
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
@@ -3899,6 +4041,7 @@ template<class T>
 class ParamOutput
 {
 public:
+  virtual ~ParamOutput() { }
   virtual int NumOutputs() const=0;
   virtual T GetOutput(int i) const=0;
 };
@@ -3923,6 +4066,7 @@ class ArrayI : public ParamInput<T>, ParamOutput<T>
 public: // ctors
   ArrayI() : vec() { }
   ArrayI(const std::vector<T> &ref) : vec(ref) { }
+  virtual ~ArrayI() { }
 
 public: // decide dimensions
   void set_dimension(int i)
@@ -3957,6 +4101,7 @@ template<class T>
 class DefaultFunction : public Function<float,T>
 {
 public:
+  virtual ~DefaultFunction() { }
   virtual T Map(float val) const { return T(); }
 };
 
@@ -4060,6 +4205,7 @@ private:
 class Landscape : public CollectInterface
 {
 public:
+  virtual ~Landscape() { }
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual float start_x() const=0;
@@ -4086,6 +4232,7 @@ public:
 class SceneItems : public CollectInterface
 {
 public:
+  virtual ~SceneItems() { }
   virtual int NumItems() const=0;
   virtual Point Loc(int i) const=0;
   virtual int Select(int i) const=0;

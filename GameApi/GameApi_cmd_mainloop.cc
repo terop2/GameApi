@@ -1596,6 +1596,16 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "" },
 			 "ML", "mainloop_api", "concurrent_download"));
 #endif
+
+#if (ALL==1)||(CONCURRENT_DOWNLOAD==1)
+vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::no_concurrent_download,
+			 "no_concurrent_download",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "no_concurrent_download"));
+#endif
+
 #if (ALL==1)||(GET_FACE_COUNT==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::get_face_count,
 			 "eng_face_count",

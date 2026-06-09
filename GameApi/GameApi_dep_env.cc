@@ -690,8 +690,8 @@ public:
     static int uni_id =0;
     uni_id++;
     int unique_id = uni_id;
-    InstallProgress(77777+unique_id,"join_id", 4);
-    ProgressBar(77777+unique_id,0,4,"join_id");
+    //InstallProgress(77777+unique_id,"join_id", 4);
+    //ProgressBar(77777+unique_id,0,4,"join_id");
     
     //std::cout << "join waiting " << id << std::endl;
       in_join=true;
@@ -746,7 +746,7 @@ public:
     queue_mutex_end();
     
       in_join=false;
-    ProgressBar(77777+unique_id,4,4,"join_id");
+      //ProgressBar(77777+unique_id,4,4,"join_id");
     //std::cout << "join exiting " << id << std::endl;
   }
 private:
@@ -817,6 +817,7 @@ struct FetchInBlocksUserData
 };
 
 extern bool g_concurrent_download;
+extern bool g_no_concurrent_download;
 
 EMSCRIPTEN_KEEPALIVE
 extern "C" void head_result(const char *ptr, void *data);
@@ -937,14 +938,19 @@ public:
     if (totalSize==0) { head_result_err(); return; }    
     else {
 
-      // std::cout << "FETCH_SIZE:" << std::endl;
 #ifdef NO_CONCURRENT_TEST
       if (!g_concurrent_download) {
-	//std::cout << "FAILED IMMEDIATELY" << std::endl;
 	failed_after_size(0,totalSize);
 	return;
       }
 #endif
+
+      if (g_no_concurrent_download) {
+	failed_after_size(0,totalSize);
+	return;
+      }
+
+
       //std::cout << "FETCHIND SIZE" << std::endl;
 
       

@@ -21,6 +21,7 @@ template<class I, class T>
 class Array : public Function<I,T>
 {
 public:
+  virtual ~Array() { }
   virtual I Size() const=0;
 };
 
@@ -28,6 +29,7 @@ template<class T>
 class Curve : public Array<float, T>
 {
 public:
+  virtual ~Curve() { }
   //float Length() const { return static_cast<float>(Size()); }
 };
 
@@ -65,6 +67,7 @@ void stackTrace();
 class VertexArrayDyn
 {
 public:
+  virtual ~VertexArrayDyn() { }
   virtual void prepare(int i)=0;
   virtual void update(int i)=0; // i=0..9
   virtual void render()=0;
@@ -133,6 +136,7 @@ void stackTrace();
 class FaceCollection2 : public CollectInterface
 {
 public:
+  virtual ~FaceCollection2() { }
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual void Prepare()=0;
@@ -184,6 +188,7 @@ struct FaceBufferRef
 class MutableFaceCollection : public CollectInterface
 {
 public:
+  virtual ~MutableFaceCollection() { }
   virtual std::string name() const=0;
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;

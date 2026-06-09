@@ -83,6 +83,16 @@ if ($id>0)
 </head>
 <body class="preload-hidden">
 <script>
+var anim_contents_array2 = [];
+var anim_filename_array = [];
+
+var contents_array = [];
+var contents_array2 = [];
+var filename_array = [];
+var g_filename = "";
+var g_path = "";
+
+
 setInterval(() => {
   console.log(
     wasmMemory.buffer.byteLength / 1024 / 1024,
@@ -1140,28 +1150,34 @@ function get_border_width(i)
   }
   return width;
 }
-function get_is_animated()
+function get_is_animated(contents_array2)
 {
 
    var s = contents_array2.length;
-   for(var i=0;i<s;i++) {
-      var filename = filename_array[i];
+   var flag = false;
+    if (s==0) {
+     s=anim_contents_array2.length;
+     flag=true;
+     }
+   var result = false;
+  //console.log("animations-s");
+  //console.log(s);
+for(var i=0;i<s;i++) {
+      var filename = flag ? anim_filename_array[i] : filename_array[i];
+      //console.log(filename);
       if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
-      var contents = contents_array2[i];
-      var length = contents.length;
-      var buffer = new ArrayBuffer( length );
-      var view = new Uint8Array(buffer);
-      for(var i=0;i<length;i++) { view[i] = contents[i]; }
-      let str = new TextDecoder().decode(buffer);
-      return str.indexOf("\"animations\"") !== -1; //str.includes("\"animations\"");
+      let str = new TextDecoder().decode(flag ? anim_contents_array2[i] : contents_array2[i]);
+     // console.log(str);
+      if (str.indexOf("animations") !== -1) result=true; 
+
       }
   }
        
      // TODO, how to handle zip files.
-  return false;
+  return result;
 }
 
-function get_border(i,m,filename,border_avoid,aces_value)
+function get_border(i,m,filename,border_avoid,aces_value,contents_array2)
 {
   var color = "000000";
   var width = "0";
@@ -1171,7 +1187,9 @@ function get_border(i,m,filename,border_avoid,aces_value)
      width = parse_border_width(name2);
   }
 
-  var anim_value = get_is_animated();
+  var anim_value = get_is_animated(contents_array2);
+  console.log("ANIM_VALUE2");
+  console.log(anim_value);
 
   var res = "";
   var variable = "I2";
@@ -1439,7 +1457,7 @@ if (parse_material_type(line)==='Textured') return [textured_material,texcoord_n
 
 return [phongmaterial,normals_select];
 }
-function create_script(filename, contents, filenames)
+function create_script(filename, contents, filenames, contents_array2)
 {
   var res = "";
 
@@ -1466,7 +1484,10 @@ function create_script(filename, contents, filenames)
   var aces_value = get_acesfilm_value();
   
 
-  var anim_value = get_is_animated(); //true;
+  var anim_value = get_is_animated(contents_array2); //true;
+  console.log("ANIM_VALUE");
+console.log(anim_value);
+
 
   var normals_val = get_normals_value();
   var border_color = "000000";
@@ -1555,7 +1576,7 @@ function create_script(filename, contents, filenames)
 	}
 
 
-  var border = get_border(border_value,material_value,filename,border_avoid,aces_value);
+  var border = get_border(border_value,material_value,filename,border_avoid,aces_value, contents_array2);
 var out = "I4";
 
   if (brd>=0 && brd<store.state.border_db.length) {
@@ -1773,11 +1794,6 @@ function publish_face_count(state)
    }
 }
 
-var contents_array = [];
-var contents_array2 = [];
-var filename_array = [];
-var g_filename = "";
-var g_path = "";
 
 function set_model_info(state,val)
 {
@@ -1823,11 +1839,22 @@ function extract_contents(state,file_array,filenames, filename, path)
    g_filename = filename;
    set_filename_info(state,g_filename);
    state.url = g_path;
+   
    if (file_array===""||filenames==="") {
       return new Promise((resolve,reject) => {
+         //console.log("FETCHING");
+	 //console.log(path+"/"+filename);
+         fetch(filename, { headers: { Range: "bytes=0-40960" } })
+	 .then(response => response.arrayBuffer())
+	 .then(buffer => {
+	   anim_filename_array = [filename];
+	   anim_contents_array2 = [buffer];
            resolve("success");
+	   });
+	   
       });
    }
+   
    if (path!="") {
 
    return new Promise((resolve,reject) => {  
@@ -1836,6 +1863,8 @@ function extract_contents(state,file_array,filenames, filename, path)
    contents_array2 = [];
    filename_array = [];
    var s = file_array.length;
+   console.log("filearray_length");
+   console.log(s);
    var counter = 0;
    var enc = new TextDecoder("x-user-defined");
    for(var i = 0;i<s;i++) {
@@ -1871,7 +1900,10 @@ function extract_contents(state,file_array,filenames, filename, path)
    contents_array2 = [];
    filename_array = [];
    var s = file_array.length;
-   var counter = 0;
+   console.log("filearray_length2");
+   console.log(s);
+
+var counter = 0;
    var enc = new TextDecoder("x-user-defined");
    for(var i = 0;i<s;i++) {
      var file = file_array[i];
@@ -1901,7 +1933,7 @@ var loading_data = 0;
 function load_finished(value)
 {
    load_files(contents_array2,filename_array);
-   load_emscripten(store.state,g_filename, contents_array, filename_array);
+   load_emscripten(store.state,g_filename, contents_array, filename_array, contents_array2);
    set_label("Load finished..");
 }
 function fix_filename(filename)
@@ -1970,6 +2002,10 @@ function drop2(state)
   var model_val = get_model_value();
   var model = get_model(model_val);
   var url = state.url;
+  console.log("DROP2");
+  console.log(model_val);
+  console.log(model);
+  console.log(url);
   var path = "";
   if (url!="") {
      let result = url.lastIndexOf("/");
@@ -2115,7 +2151,7 @@ canvas : canv,
    };
 
 
-function load_emscripten(state,filename, contents, filenames)
+function load_emscripten(state,filename, contents, filenames, contents_array2)
 {
     var data2 = "<?php echo $date ?>";
     var agent = navigator.userAgent;
@@ -2141,7 +2177,7 @@ function load_emscripten(state,filename, contents, filenames)
       if (filename==="") {
       Module.arguments = [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
       } else {
-      Module.arguments = [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", convert_enter_to_at(create_script(filename,contents,filenames)), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
+      Module.arguments = [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", convert_enter_to_at(create_script(filename,contents,filenames,contents_array2)), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
       }
 
       var script = document.createElement("script");
@@ -2151,7 +2187,7 @@ function load_emscripten(state,filename, contents, filenames)
       } else {
       // loading contents:
 
-      var script = create_script(filename,contents,filenames);
+      var script = create_script(filename,contents,filenames,contents_array2);
       Module.ccall('set_string', null, ['number', 'string'],[0,script]);
       }
       setTimeout(function() { check_emscripten_ready(state) }, 1000);

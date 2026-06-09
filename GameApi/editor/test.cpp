@@ -4372,6 +4372,9 @@ void save_mod_txt_from_script_file2(GameApi::EveryApi &ev, std::string input_scr
 IMPORT extern const char * g_html_dir;
 IMPORT const char * get_html_directory2();
 
+std::string g_http_server_ip = "127.0.0.1";
+int g_http_server_port = 50000;
+
 
 int main(int argc, char *argv[]) {
 
@@ -4490,7 +4493,32 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 		std::cout << "  --dump (list all functions)" << std::endl;
 		std::cout << "  --tempdir <dir> (choose temporary dir)" << std::endl;
 		std::cout << "  --script script.txt -o mod.txt  (convert from script to mod.txt)" << std::endl;
+		std::cout << "  --httpaddr 127.0.0.1:50000 (will scan up to 50040 for free port)" << std::endl;
 		exit(0);
+	      }
+	    if (std::string(argv[i])=="--httpaddr")
+	      {
+		std::string addr = std::string(argv[i+1]);
+		int s = addr.size();
+		int pos = -1;
+		for(int i=0;i<s;i++) if (addr[i]==':') pos=i;
+		int port=8080;
+		std::string httpaddr="127.0.0.1";
+		if (pos!=-1)
+		  {
+		    std::string start = addr.substr(0,pos);
+		    std::string end = addr.substr(pos+1);
+		    std::stringstream ss;
+		    httpaddr = start;
+		    ss >> port;
+		  }
+		else
+		  {
+		    httpaddr = addr;
+		  }
+		g_http_server_ip = httpaddr;
+		g_http_server_port = port;
+		i++;
 	      }
 	    if (std::string(argv[i])=="--dump_count")
 	      {

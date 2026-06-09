@@ -3929,4 +3929,17 @@ get_cookie_status();
 }
 
 </style>
+<script>
+document.addEventListener("copy", function(e) {
+    const selected = window.getSelection().toString();
 
+
+const modified = selected
+        .split(/\r?\n/)
+        .filter(line => line.trim() !== "")
+        .join("\n");
+
+    e.clipboardData.setData("text/plain", modified);
+    e.preventDefault();
+});
+</script>

@@ -4830,6 +4830,8 @@ GameApi::ML GameApi::MainLoopApi::timing_exit(TT link)
 }
 
 bool g_concurrent_download=false;
+bool g_no_concurrent_download=false;
+
 
 class ConcurrentDownload : public MainLoopItem
 {
@@ -4853,6 +4855,31 @@ GameApi::ML GameApi::MainLoopApi::concurrent_download(ML ml)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new ConcurrentDownload(item));
 }
+
+
+class NoConcurrentDownload : public MainLoopItem
+{
+public:
+  NoConcurrentDownload(MainLoopItem *next) : next(next) {
+    g_no_concurrent_download=true;
+  }
+  ~NoConcurrentDownload() { g_no_concurrent_download=false; }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e) { next->execute(e); }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+};
+
+GameApi::ML GameApi::MainLoopApi::no_concurrent_download(ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new NoConcurrentDownload(item));
+}
+
 
 
 #if 0

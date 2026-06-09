@@ -1,56 +1,56 @@
 test
 
 
-(94,186)gltf_load2 uid3334 0 0 3 url:*https?//meshpage.org/santa_model.glb:false:-1:0
-(400,200)ml_gltf_all uid3335 0 0 1 ev:*ev:false:-1:0 tf:*uid202040621:false:-1:0 mix:*1.0:false:-1:0 self_mult:*3.5:false:-1:0 rest_mult:*0.0:false:-1:0 mode:*0:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0 border_width:*0.0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*false:false:-1:0
+(94,186)gltf_load2 uid3334 0 0 3 url:*file?///home/terop/.gameapi_builder/Downloads/vespa.glb:false:-1:0:*file?///home/terop/.gameapi_builder/Downloads/vespa.glb:*std??string
+(400,200)ml_gltf_all uid3335 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& tf:*uid202040621:false:-1:0:*uid202040621:*TF mix:*1.0:false:-1:0:*1.0:*float self_mult:*3.5:false:-1:0:*3.5:*float rest_mult:*0.0:false:-1:0:*0.0:*float mode:*0:false:-1:0:*0:*int light_dir_x:*400.0:false:-1:0:*400.0:*float light_dir_y:*-400.0:false:-1:0:*-400.0:*float light_dir_z:*300.0:false:-1:0:*300.0:*float border_width:*0.0:false:-1:0:*0.0:*float border_color:*ff000000:false:-1:0:*ff000000:*unsigned#int transparent:*false:false:-1:0:*false:*bool acesfilm:*true:false:-1:0:*true:*bool emissive:*true:false:-1:0:*true:*bool
 (600,200)mn_empty uid3336 0 0 1
-(800,200)android_landscape uid3337 0 0 1 next:*uid3336:false:-1:0
-(998,200)anim_rotate uid3338 0 0 1 next:*uid3337:false:-1:0 start_time:*0:false:-1:0 end_time:*10:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*0.7:false:-1:0
-(1200,200)anim_rotate uid3339 0 0 1 next:*uid3338:false:-1:0 start_time:*10:false:-1:0 end_time:*30:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*-1.4:false:-1:0
-(199,400)anim_rotate uid3340 0 0 1 next:*uid3339:false:-1:0 start_time:*30:false:-1:0 end_time:*40:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*0.7:false:-1:0
-(400,400)inv_android_landscape uid3341 0 0 1 next:*uid3340:false:-1:0
-(600,400)anim_repeat uid3342 0 0 1 next:*uid3341:false:-1:0 start_time:*0:false:-1:0 repeat_duration:*40:false:-1:0
-(800,400)mn_translate uid3343 0 0 1 next:*uid3342:false:-1:0 dx:*0:false:-1:0 dy:*0:false:-1:0 dz:*-30:false:-1:0
-(998,400)move_ml uid3344 0 0 1 ev:*ev:false:-1:0 ml:*uid3335:false:-1:0 mn:*uid3343:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
-(1200,400)gltf_load2 uid3345 0 0 1 url:*https?//meshpage.org/christmas_tree.glb:false:-1:0
-(199,600)ml_gltf_all uid3346 0 0 1 ev:*ev:false:-1:0 tf:*uid3345:false:-1:0 mix:*1.0:false:-1:0 self_mult:*3.5:false:-1:0 rest_mult:*0.0:false:-1:0 mode:*0:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0 border_width:*0.0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*false:false:-1:0
+(800,200)android_landscape uid3337 0 0 1 next:*uid3336:false:-1:0:*uid3336:*MN
+(998,200)anim_rotate uid3338 0 0 1 next:*uid3337:false:-1:0:*uid3337:*MN start_time:*0:false:-1:0:*0:*float end_time:*10:false:-1:0:*10:*float p_x:*0:false:-1:0:*0:*float p_y:*0:false:-1:0:*0:*float p_z:*0:false:-1:0:*0:*float v_x:*0:false:-1:0:*0:*float v_y:*1:false:-1:0:*1:*float v_z:*0:false:-1:0:*0:*float angle:*0.7:false:-1:0:*0.7:*float
+(1200,200)anim_rotate uid3339 0 0 1 next:*uid3338:false:-1:0:*uid3338:*MN start_time:*10:false:-1:0:*10:*float end_time:*30:false:-1:0:*30:*float p_x:*0:false:-1:0:*0:*float p_y:*0:false:-1:0:*0:*float p_z:*0:false:-1:0:*0:*float v_x:*0:false:-1:0:*0:*float v_y:*1:false:-1:0:*1:*float v_z:*0:false:-1:0:*0:*float angle:*-1.4:false:-1:0:*-1.4:*float
+(199,400)anim_rotate uid3340 0 0 1 next:*uid3339:false:-1:0:*uid3339:*MN start_time:*30:false:-1:0:*30:*float end_time:*40:false:-1:0:*40:*float p_x:*0:false:-1:0:*0:*float p_y:*0:false:-1:0:*0:*float p_z:*0:false:-1:0:*0:*float v_x:*0:false:-1:0:*0:*float v_y:*1:false:-1:0:*1:*float v_z:*0:false:-1:0:*0:*float angle:*0.7:false:-1:0:*0.7:*float
+(400,400)inv_android_landscape uid3341 0 0 1 next:*uid3340:false:-1:0:*uid3340:*MN
+(600,400)anim_repeat uid3342 0 0 1 next:*uid3341:false:-1:0:*uid3341:*MN start_time:*0:false:-1:0:*0:*float repeat_duration:*40:false:-1:0:*40:*float
+(800,400)mn_translate uid3343 0 0 1 next:*uid3342:false:-1:0:*uid3342:*MN dx:*0:false:-1:0:*0:*float dy:*0:false:-1:0:*0:*float dz:*-30:false:-1:0:*-30:*float
+(998,400)move_ml uid3344 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3335:false:-1:0:*uid3335:*ML mn:*uid3343:false:-1:0:*uid3343:*MN clone_count:*1:false:-1:0:*1:*int time_delta:*10.0:false:-1:0:*10.0:*float
+(1200,400)gltf_load2 uid3345 0 0 1 url:*https?//meshpage.org/christmas_tree.glb:false:-1:0:*https?//meshpage.org/christmas_tree.glb:*std??string
+(199,600)ml_gltf_all uid3346 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& tf:*uid3345:false:-1:0:*uid3345:*TF mix:*1.0:false:-1:0:*1.0:*float self_mult:*3.5:false:-1:0:*3.5:*float rest_mult:*0.0:false:-1:0:*0.0:*float mode:*0:false:-1:0:*0:*int light_dir_x:*400.0:false:-1:0:*400.0:*float light_dir_y:*-400.0:false:-1:0:*-400.0:*float light_dir_z:*300.0:false:-1:0:*300.0:*float border_width:*0.0:false:-1:0:*0.0:*float border_color:*ff000000:false:-1:0:*ff000000:*unsigned#int transparent:*false:false:-1:0:*false:*bool acesfilm:*true:false:-1:0:*true:*bool emissive:*true:false:-1:0:*true:*bool
 (400,600)mn_empty uid3347 0 0 1
-(600,600)mn_translate uid3348 0 0 1 next:*uid3347:false:-1:0 dx:*-250:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
-(800,600)move_ml uid3349 0 0 1 ev:*ev:false:-1:0 ml:*uid3346:false:-1:0 mn:*uid3348:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
-(998,600)mn_translate uid3350 0 0 1 next:*uid3347:false:-1:0 dx:*250:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
-(1200,600)move_ml uid3351 0 0 1 ev:*ev:false:-1:0 ml:*uid3346:false:-1:0 mn:*uid3350:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
-(199,800)array_ml uid3352 0 0 1 ev:*ev:false:-1:0 arr:*[uid3346,uid3349,uid3351]:false:-1:-1
+(600,600)mn_translate uid3348 0 0 1 next:*uid3347:false:-1:0:*uid3347:*MN dx:*-250:false:-1:0:*-250:*float dy:*0:false:-1:0:*0:*float dz:*0:false:-1:0:*0:*float
+(800,600)move_ml uid3349 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3346:false:-1:0:*uid3346:*ML mn:*uid3348:false:-1:0:*uid3348:*MN clone_count:*1:false:-1:0:*1:*int time_delta:*10.0:false:-1:0:*10.0:*float
+(998,600)mn_translate uid3350 0 0 1 next:*uid3347:false:-1:0:*uid3347:*MN dx:*250:false:-1:0:*250:*float dy:*0:false:-1:0:*0:*float dz:*0:false:-1:0:*0:*float
+(1200,600)move_ml uid3351 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3346:false:-1:0:*uid3346:*ML mn:*uid3350:false:-1:0:*uid3350:*MN clone_count:*1:false:-1:0:*1:*int time_delta:*10.0:false:-1:0:*10.0:*float
+(199,800)array_ml uid3352 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& arr:*[uid3346,uid3349,uid3351]:false:-1:-1:*[uid3346,uid3349,uid3351]:*[ML]
 (400,800)mn_empty uid3353 0 0 1
-(600,800)mn_translate uid3354 0 0 1 next:*uid3353:false:-1:0 dx:*0:false:-1:0 dy:*0:false:-1:0 dz:*-350:false:-1:0
-(800,800)move_ml uid3355 0 0 1 ev:*ev:false:-1:0 ml:*uid3352:false:-1:0 mn:*uid3354:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
-(998,800)or_elem_ml uid3356 0 0 1 ev:*ev:false:-1:0 m1:*uid3344:false:-1:0 m2:*uid3355:false:-1:0
-(1200,800)gltf_load2 uid3357 0 0 1 url:*https?//meshpage.org/unopenable_gift.glb:false:-1:0
-(199,1000)ml_gltf_all uid3358 0 0 1 ev:*ev:false:-1:0 tf:*uid202040620:false:-1:0 mix:*1.0:false:-1:0 self_mult:*3.5:false:-1:0 rest_mult:*0.0:false:-1:0 mode:*0:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0 border_width:*0.0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*false:false:-1:0
+(600,800)mn_translate uid3354 0 0 1 next:*uid3353:false:-1:0:*uid3353:*MN dx:*0:false:-1:0:*0:*float dy:*0:false:-1:0:*0:*float dz:*-350:false:-1:0:*-350:*float
+(800,800)move_ml uid3355 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3352:false:-1:0:*uid3352:*ML mn:*uid3354:false:-1:0:*uid3354:*MN clone_count:*1:false:-1:0:*1:*int time_delta:*10.0:false:-1:0:*10.0:*float
+(998,800)or_elem_ml uid3356 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& m1:*uid3344:false:-1:0:*uid3344:*ML m2:*uid3355:false:-1:0:*uid3355:*ML
+(1200,800)gltf_load2 uid3357 0 0 1 url:*https?//meshpage.org/unopenable_gift.glb:false:-1:0:*https?//meshpage.org/unopenable_gift.glb:*std??string
+(199,1000)ml_gltf_all uid3358 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& tf:*uid202040620:false:-1:0:*uid202040620:*TF mix:*1.0:false:-1:0:*1.0:*float self_mult:*3.5:false:-1:0:*3.5:*float rest_mult:*0.0:false:-1:0:*0.0:*float mode:*0:false:-1:0:*0:*int light_dir_x:*400.0:false:-1:0:*400.0:*float light_dir_y:*-400.0:false:-1:0:*-400.0:*float light_dir_z:*300.0:false:-1:0:*300.0:*float border_width:*0.0:false:-1:0:*0.0:*float border_color:*ff000000:false:-1:0:*ff000000:*unsigned#int transparent:*false:false:-1:0:*false:*bool acesfilm:*true:false:-1:0:*true:*bool emissive:*true:false:-1:0:*true:*bool
 (400,1000)mn_empty uid3359 0 0 1
-(600,1000)mn_scale uid3360 0 0 1 next:*uid3359:false:-1:0 sx:*0.3:false:-1:0 sy:*0.3:false:-1:0 sz:*0.3:false:-1:0
-(800,1000)mn_translate uid3361 0 0 1 next:*uid3360:false:-1:0 dx:*-250:false:-1:0 dy:*-120:false:-1:0 dz:*-150:false:-1:0
-(998,1000)move_ml uid3362 0 0 1 ev:*ev:false:-1:0 ml:*uid3358:false:-1:0 mn:*uid3361:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
-(1200,1000)mn_translate uid3363 0 0 1 next:*uid3360:false:-1:0 dx:*250:false:-1:0 dy:*-120:false:-1:0 dz:*-150:false:-1:0
-(199,1200)move_ml uid3364 0 0 1 ev:*ev:false:-1:0 ml:*uid3358:false:-1:0 mn:*uid3363:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
-(400,1200)or_elem_ml uid3365 0 0 1 ev:*ev:false:-1:0 m1:*uid3362:false:-1:0 m2:*uid3364:false:-1:0
-(600,1200)or_elem_ml uid3366 0 0 1 ev:*ev:false:-1:0 m1:*uid3356:false:-1:0 m2:*uid3365:false:-1:0
+(600,1000)mn_scale uid3360 0 0 1 next:*uid3359:false:-1:0:*uid3359:*MN sx:*0.3:false:-1:0:*0.3:*float sy:*0.3:false:-1:0:*0.3:*float sz:*0.3:false:-1:0:*0.3:*float
+(800,1000)mn_translate uid3361 0 0 1 next:*uid3360:false:-1:0:*uid3360:*MN dx:*-250:false:-1:0:*-250:*float dy:*-120:false:-1:0:*-120:*float dz:*-150:false:-1:0:*-150:*float
+(998,1000)move_ml uid3362 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3358:false:-1:0:*uid3358:*ML mn:*uid3361:false:-1:0:*uid3361:*MN clone_count:*1:false:-1:0:*1:*int time_delta:*10.0:false:-1:0:*10.0:*float
+(1200,1000)mn_translate uid3363 0 0 1 next:*uid3360:false:-1:0:*uid3360:*MN dx:*250:false:-1:0:*250:*float dy:*-120:false:-1:0:*-120:*float dz:*-150:false:-1:0:*-150:*float
+(199,1200)move_ml uid3364 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3358:false:-1:0:*uid3358:*ML mn:*uid3363:false:-1:0:*uid3363:*MN clone_count:*1:false:-1:0:*1:*int time_delta:*10.0:false:-1:0:*10.0:*float
+(400,1200)or_elem_ml uid3365 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& m1:*uid3362:false:-1:0:*uid3362:*ML m2:*uid3364:false:-1:0:*uid3364:*ML
+(600,1200)or_elem_ml uid3366 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& m1:*uid3356:false:-1:0:*uid3356:*ML m2:*uid3365:false:-1:0:*uid3365:*ML
 (800,1200)mn_empty uid3367 0 0 1
-(998,1200)mn_scale uid3368 0 0 1 next:*uid3367:false:-1:0 sx:*2:false:-1:0 sy:*2:false:-1:0 sz:*2:false:-1:0
-(1200,1200)anim_translate uid3369 0 0 1 next:*uid3368:false:-1:0 start_time:*0:false:-1:0 end_time:*100:false:-1:0 dx:*240:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
-(199,1400)anim_translate uid3370 0 0 1 next:*uid3369:false:-1:0 start_time:*100:false:-1:0 end_time:*400:false:-1:0 dx:*-480:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
-(400,1400)anim_translate uid3371 0 0 1 next:*uid3370:false:-1:0 start_time:*400:false:-1:0 end_time:*500:false:-1:0 dx:*240:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
-(600,1400)anim_repeat uid3372 0 0 1 next:*uid3371:false:-1:0 start_time:*0:false:-1:0 repeat_duration:*500:false:-1:0
-(800,1400)move_ml uid3373 0 0 1 ev:*ev:false:-1:0 ml:*uid3366:false:-1:0 mn:*uid3372:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
-(998,1400)quad_z uid3374 0 0 1 x1:*-450:false:-1:0 x2:*450:false:-1:0 y1:*0:false:-1:0 y2:*100:false:-1:0 z:*150:false:-1:0
-(1200,1400)FI_load uid3375 0 0 1 url:*https?//meshpage.org/assets/Chunkfive.otf:false:-1:0 sx:*20:false:-1:0 sy:*20:false:-1:0
-(1039,1609)FI_drawtext uid3376 0 0 1 font:*uid3375:false:-1:0 str:*Merry_Christmas:false:-1:0 x_gap:*5:false:-1:0 line_height:*30:false:-1:0
-(400,1600)flip_y uid3377 0 0 1 orig:*uid3376:false:-1:0
-(600,1600)m_texture uid3378 0 0 1 ev:*ev:false:-1:0 bm:*uid3377:false:-1:0 mix:*1.0:false:-1:0
-(800,1600)m_fade uid3379 0 0 1 ev:*ev:false:-1:0 next:*uid3378:false:-1:0 start_time:*0:false:-1:0 end_time:*10:false:-1:0 start_time2:*15:false:-1:0 end_time2:*25:false:-1:0
-(1027,1762)m_bind uid3380 0 0 1 p:*uid3374:false:-1:0 mat:*uid3379:false:-1:0
-(1200,1600)or_elem_ml uid3381 0 0 1 ev:*ev:false:-1:0 m1:*uid3373:false:-1:0 m2:*uid3380:false:-1:0
-(199,1800)run_window uid3382 0 0 1 ev:*ev:false:-1:0 ml:*uid3381:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
-(210,82)decimate_tf_zero uid1642052499 0 0 1 mesh:*uid3334:false:-1:0
-(2,956)decimate_tf_zero uid1642052500 0 0 1 mesh:*uid3357:false:-1:0
-(47,906)decimate_tf uid202040620 0 0 1 mesh:*uid3357:false:-1:0 val:*0.5:false:-1:713160112
-(240,205)decimate_tf uid202040621 0 0 1 mesh:*uid3334:false:-1:0 val:*0.5:false:-1:713159984
+(998,1200)mn_scale uid3368 0 0 1 next:*uid3367:false:-1:0:*uid3367:*MN sx:*2:false:-1:0:*2:*float sy:*2:false:-1:0:*2:*float sz:*2:false:-1:0:*2:*float
+(1200,1200)anim_translate uid3369 0 0 1 next:*uid3368:false:-1:0:*uid3368:*MN start_time:*0:false:-1:0:*0:*float end_time:*100:false:-1:0:*100:*float dx:*240:false:-1:0:*240:*float dy:*0:false:-1:0:*0:*float dz:*0:false:-1:0:*0:*float
+(199,1400)anim_translate uid3370 0 0 1 next:*uid3369:false:-1:0:*uid3369:*MN start_time:*100:false:-1:0:*100:*float end_time:*400:false:-1:0:*400:*float dx:*-480:false:-1:0:*-480:*float dy:*0:false:-1:0:*0:*float dz:*0:false:-1:0:*0:*float
+(400,1400)anim_translate uid3371 0 0 1 next:*uid3370:false:-1:0:*uid3370:*MN start_time:*400:false:-1:0:*400:*float end_time:*500:false:-1:0:*500:*float dx:*240:false:-1:0:*240:*float dy:*0:false:-1:0:*0:*float dz:*0:false:-1:0:*0:*float
+(600,1400)anim_repeat uid3372 0 0 1 next:*uid3371:false:-1:0:*uid3371:*MN start_time:*0:false:-1:0:*0:*float repeat_duration:*500:false:-1:0:*500:*float
+(800,1400)move_ml uid3373 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3366:false:-1:0:*uid3366:*ML mn:*uid3372:false:-1:0:*uid3372:*MN clone_count:*1:false:-1:0:*1:*int time_delta:*10.0:false:-1:0:*10.0:*float
+(998,1400)quad_z uid3374 0 0 1 x1:*-450:false:-1:0:*-450:*float x2:*450:false:-1:0:*450:*float y1:*0:false:-1:0:*0:*float y2:*100:false:-1:0:*100:*float z:*150:false:-1:0:*150:*float
+(1200,1400)FI_load uid3375 0 0 1 url:*https?//meshpage.org/assets/Chunkfive.otf:false:-1:0:*https?//meshpage.org/assets/Chunkfive.otf:*std??string sx:*20:false:-1:0:*20:*int sy:*20:false:-1:0:*20:*int
+(1039,1609)FI_drawtext uid3376 0 0 1 font:*uid3375:false:-1:0:*uid3375:*FI str:*Merry_Christmas:false:-1:0:*Merry_Christmas:*std??string x_gap:*5:false:-1:0:*5:*int line_height:*30:false:-1:0:*30:*int
+(400,1600)flip_y uid3377 0 0 1 orig:*uid3376:false:-1:0:*uid3376:*BM
+(600,1600)m_texture uid3378 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& bm:*uid3377:false:-1:0:*uid3377:*BM mix:*1.0:false:-1:0:*1.0:*float
+(800,1600)m_fade uid3379 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& next:*uid3378:false:-1:0:*uid3378:*MT start_time:*0:false:-1:0:*0:*float end_time:*10:false:-1:0:*10:*float start_time2:*15:false:-1:0:*15:*float end_time2:*25:false:-1:0:*25:*float
+(1027,1762)m_bind uid3380 0 0 1 p:*uid3374:false:-1:0:*uid3374:*P mat:*uid3379:false:-1:0:*uid3379:*MT
+(1200,1600)or_elem_ml uid3381 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& m1:*uid3373:false:-1:0:*uid3373:*ML m2:*uid3380:false:-1:0:*uid3380:*ML
+(199,1800)run_window uid3382 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3381:false:-1:0:*uid3381:*ML logo:*false:false:-1:0:*false:*bool fpscounter:*false:false:-1:0:*false:*bool start_time:*0.0:false:-1:0:*0.0:*float duration:*100000.0:false:-1:0:*100000.0:*float
+(210,82)decimate_tf_zero uid1642052499 0 0 1 mesh:*uid3334:false:-1:0:*uid3334:*
+(2,956)decimate_tf_zero uid1642052500 0 0 1 mesh:*uid3357:false:-1:0:*uid3357:*
+(47,906)decimate_tf uid202040620 0 0 1 mesh:*uid3357:false:-1:0:*uid3357:*TF val:*0.5:false:-1:713160112:*0.5:*float
+(240,205)decimate_tf uid202040621 0 0 1 mesh:*uid3334:false:-1:0:*uid3334:*TF val:*0.5:false:-1:713159984:*0.5:*float

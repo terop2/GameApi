@@ -35,9 +35,12 @@
 
 #ifndef ARM
 #ifndef NO_THREADS
-#define THREADS 1
+//#define THREADS 1
 #endif
 #endif
+
+#undef THREADS
+
 void RenderVoxel(VolumeObject &orv, int size, float wholesize, HandleValue<std::pair<Vector, unsigned int> > &hv)
 {
   float step = wholesize/size;
@@ -1037,12 +1040,12 @@ IMPORT void InstallProgress(int num, std::string label, int max=15);
 struct ThreadInfo_sprite
 {
   pthread_t thread_id;
-  const Sprite *s;
-  BufferRef *ref;
-  int start_y;
-  int end_y;
-  int sx;
-  int num;
+  const Sprite *s=0;
+  BufferRef *ref=0;
+  int start_y =0;
+  int end_y = 0;
+  int sx = 0;
+  int num =0;
 };
 
 int g_sprite_count=0;
@@ -1052,10 +1055,24 @@ void *thread_func_sprite(void *data)
 {
   ThreadInfo_sprite *ti = (ThreadInfo_sprite*)data;
   //std::cout << "SPRITE:" << ti->start_y << " " << ti->end_y << " " << ti->sx << std::endl;
-  for(int y=ti->start_y;y<ti->end_y;y++)
-    for(int x=0;x<ti->sx;x++)
+  if (ti->s==0) return 0;
+  if (ti->ref==0) return 0;
+  
+  int start = ti->start_y;
+  int end = ti->end_y;
+
+  BufferRef &ref = ti->ref[ti->num];    
+  start = std::max(start,0);
+  end = std::min(end,(int)ref.height);
+  
+  int sx = ti->sx;
+
+  sx = std::min(sx,(int)ref.width);
+  
+  for(int y=start;y<end;y++)
+    for(int x=0;x<sx;x++)
 	{
-	  ti->ref[ti->num].buffer[x+y*ti->ref[ti->num].ydelta] = ti->s->Pixel(ti->num, x, y).Pixel();
+	  ref.buffer[x+y*ref.ydelta] = ti->s->Pixel(ti->num, x, y).Pixel();
 	}
 #if 0
   g_sprite_count++;
