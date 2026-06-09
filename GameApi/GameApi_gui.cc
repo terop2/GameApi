@@ -4132,6 +4132,9 @@ EXPORT GameApi::W GameApi::GuiApi::license_dialog(std::vector<std::string> filen
 
 int progress_lock=0;
 
+extern int g_val2;
+extern int g_max2;
+
 EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max)
 {
   std::vector<std::string> prog;
@@ -4194,7 +4197,7 @@ BB I5=ev.bool_bitmap_api.rectangle(I4,308,0,2,40);
 BM I6=ev.bool_bitmap_api.to_bitmap(I5,255,255,255,255,0,0,0,0);
 BB I7=ev.bool_bitmap_api.bb_empty(300,30);
 //std::cout << "Progress: " << rest << " :: " << val << " " << max << std::endl;
- BB I8=ev.bool_bitmap_api.rectangle(I7,0,0,300*val/max,30);
+ BB I8=ev.bool_bitmap_api.rectangle(I7,0,0,300*g_val2/g_max2,30);
 BM I9=ev.bool_bitmap_api.to_bitmap(I8,255,255,255,255,0,0,0,0);
 BM I10=ev.bitmap_api.blitbitmap(I6,I9,5,5);
 

@@ -391,10 +391,17 @@ int g_async_pending_count_failures=0;
 
 IMPORT std::string striphomepage(std::string url);
 IMPORT std::string stripprefix(std::string s);
+IMPORT void ClearProgress();
 IMPORT void InstallProgress(int num, std::string label, int max);
 IMPORT void ProgressBar(int num, int val, int max, std::string label);
 extern int g_logo_status;
 int get_process_script_max();
+long long FindProgressMax();
+long long FindProgressVal();
+
+extern int g_val2;
+extern int g_max2;
+
 
 extern task_interface &g_tasks;
 
@@ -518,6 +525,20 @@ int wait_with_timeout(pthread_cond_t *cond, pthread_mutex_t *mutex, int timeout_
     return -1;
   }
 }
+
+IMPORT extern std::vector<std::string> g_prog_labels;
+IMPORT extern GameApi::EveryApi *g_everyapi2;
+IMPORT extern volatile GameApi::W g_progress_dialog;
+IMPORT extern GameApi::GuiApi *g_everyapi_gui;
+IMPORT extern GameApi::FtA g_atlas;
+IMPORT extern GameApi::BM g_atlas_bm;
+IMPORT extern bool g_progress_callback_set;
+IMPORT extern void (*g_progress_callback)();
+long long get_current_size();
+long long get_total_size();
+IMPORT extern void (*update_progress_dialog_cb)(volatile GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max, int process);
+
+
 
 class task_implementation : public task_interface
 {
@@ -687,6 +708,8 @@ public:
   }
   virtual void join_id(int id)
   {
+
+    
     static int uni_id =0;
     uni_id++;
     int unique_id = uni_id;
@@ -719,6 +742,31 @@ public:
 	if (val==1) // timeout
 	  {
 	    timeout_getevent();
+
+	    pthread_mutex_unlock(mutex2);
+
+	    static bool repeat_prevent=false;
+	    if (!repeat_prevent) {
+	      repeat_prevent=true;
+#ifndef EMSCRIPTEN
+	      std::cout << "ProgressDraw" << std::endl;
+	      //std::cout << stream.str() << l << stream3.str() << std::flush;
+	if (g_everyapi2)
+	  {
+
+	    
+	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,g_val2 /*FindProgressVal()*/,g_max2 /*FindProgressMax()*/,g_last_loaded_script);
+	    if (g_progress_callback_set) {
+	      g_progress_callback();
+	    }
+	  }
+	
+#endif
+	repeat_prevent=false;
+	    }
+	    pthread_mutex_lock(mutex2);
+
+	    
 	    //std::cout << "Warning: wait timeout!" << std::endl;
 	    goto repeat;
 	  }
@@ -2091,7 +2139,7 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 {
   // progress bar
 
-#if 1
+#if 0
   int s = url.size();
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
@@ -2214,6 +2262,8 @@ void* process(void *ptr)
 bool g_progress_already_done = false;
 std::map<int,long long> g_current_size;
 std::map<int,long long> g_total_size;
+
+long long get_total_size();
 long long get_current_size()
 {
   long long res=0;
@@ -2230,6 +2280,7 @@ long long get_current_size()
       res+=0;
       ii++;
     }
+  if (res>get_total_size()) res=get_total_size();
   return res;
 }
 long long get_total_size()
@@ -2253,6 +2304,10 @@ long long get_total_size()
 
 void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, std::string homepage)
 {
+  static int unique_id = 0;
+  unique_id ++;
+  
+  
   //std::cout<< "URLS_SIZE:" << urls.size() << std::endl;
 #if 0
   int s2 = urls.size();
@@ -2300,8 +2355,8 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
   s = urls.size();
   if (!s)
     {
-	InstallProgress(444,"loading assets (cached)",15);
-	ProgressBar(444,15,15,"loading assets (cached)");
+	InstallProgress(444+unique_id,"loading assets (cached)",15);
+	ProgressBar(444+unique_id,15,15,"loading assets (cached)");
 
     }
   //int sk = s;
@@ -2309,8 +2364,8 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
   int u=0;
 
     {
-	InstallProgress(444,"loading assets",15);
-	ProgressBar(444,0,15,"loading assets");
+	InstallProgress(444+unique_id,"loading assets",15);
+	ProgressBar(444+unique_id,0,15,"loading assets");
     }
 
     
@@ -2369,7 +2424,7 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
 	    //sum = sum % 1000;
 	    //std::cout << g_current_size << "*15/" << total_size << std::endl; 
 	    if (!g_progress_lock_assets) // script_ml works odd.
-	      ProgressBar(444,get_current_size()*15/get_total_size(),15,"loading assets");
+	      ProgressBar(444+unique_id,get_current_size()*15/get_total_size(),15,"loading assets");
 	    last_size=get_current_size();
 	  }
 #ifdef LINUX
@@ -2927,11 +2982,11 @@ void ASyncLoader::load_urls2(GameApi::Env &e, std::string url, std::string homep
   //std::cout << "InstallProgress:" << sum << " " << url << std::endl;
   if (g_del_map.async_find(url2)) {
 #if 1
-    InstallProgress(sum,url + " (cached)",15*150);
+    //InstallProgress(sum,url + " (cached)",15*150);
 #endif
   } else {
 #if 1
-  InstallProgress(sum,url,15*150);
+    //InstallProgress(sum,url,15*150);
 #endif
   }
     }
@@ -3310,6 +3365,7 @@ int find_str(std::string s, std::string s2);
 IMPORT void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
 IMPORT void InstallProgress(int num, std::string label, int max=15)
 {
+  std::cout << "InstallProgress: " << num << " " << max << " " << label << std::endl;
   if (find_str(label,"script")!=-1) return;
   //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
@@ -3336,7 +3392,7 @@ IMPORT void InstallProgress(int num, std::string label, int max=15)
   if (!max_done)
     progress_label.push_back(label);
   SetTicks(num, p.ticks);
-  ProgressBar(num,0,max,"installprogress");
+  //ProgressBar(num,0,max,"installprogress");
 #ifndef EMSCRIPTEN
     // g_low->sdl->SDL_SetWindowTitle(sdl_window, l.c_str());
   // std::cout << std::endl;
@@ -3422,6 +3478,7 @@ IMPORT long long FindProgressVal()
   long long sum = 0;
   for(int i=0;i<s;i++)
     {
+      std::cout << "Progval:" << i << "=" << progress_val[i].value;
       sum+=(long long)progress_val[i].value;
     }
   return sum;
@@ -3488,6 +3545,7 @@ long long FindProgressMax()
   long long sum = 0;
   for(int i=0;i<s;i++)
     {
+      std::cout << "Progmax:" << i << "=" << progress_max[i].value;
       sum+=(long long)progress_max[i].value;
     }
   return sum;
@@ -3539,11 +3597,6 @@ void ProgressBar(int num, int val, int max, std::string label)
 {
   std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
   if (find_str(label,"script")!=-1) return;
-#ifndef EMSCRIPTEN
-  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
-  pthread_t curr = pthread_self();
-  if (!pthread_equal(curr, g_main_thread_id)) return;
-#endif
   /// std::cout << "ProgressBar: '" << num << " " << label << " " << val << " " << max << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
@@ -3613,6 +3666,9 @@ void ProgressBar(int num, int val, int max, std::string label)
   int max2 = int(vv);
   if (max2<1) max2=1;
   if (max2>15) max2=15;
+
+
+  
   static std::string old_label = "";
   if (label!="installprogress" /*&& (ticks>40||val==max)*/) {
 
@@ -3646,6 +3702,8 @@ void ProgressBar(int num, int val, int max, std::string label)
 	    << " " << label ;
   std::string l = stream2.str();
 
+  std::cout << "ProgLabel:" << l << std::endl;
+  
     std::stringstream sk;
     sk << val2 << "/" << max2;
     std::string kk = sk.str();
@@ -3658,6 +3716,11 @@ void ProgressBar(int num, int val, int max, std::string label)
     //std::string start = l.substr(0,std::max(0,std::min(val2,int(l.size()))));
     //std::string end = l.substr(std::max(1,std::min(val2+1,int(l.size()))));
     
+#ifndef EMSCRIPTEN
+  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
+  pthread_t curr = pthread_self();
+  if (!pthread_equal(curr, g_main_thread_id)) return;
+#endif
     
 
 #ifdef EMSCRIPTEN
@@ -3675,7 +3738,7 @@ void ProgressBar(int num, int val, int max, std::string label)
 	if (g_everyapi2)
 	  {
 	    
-	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,val1,max1,g_last_loaded_script);
+	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,/*FindProgressVal()*/ val2,/*FindProgressMax()*/ max2 /*max1*/,g_last_loaded_script);
 	    if (g_progress_callback_set) {
 	      g_progress_callback();
 	    }
@@ -3882,6 +3945,15 @@ std::string take_prefix(std::string cd, std::string path)
 
 extern GameApi::PAT gameapi_temp_dir;
 
+
+std::string toLower(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) {
+                       return std::tolower(c);
+                   });
+    return s;
+}
+
 long long load_size_from_url(GameApi::Env &e, std::string url)
 {
   //std::cout << "POPEN SIZE" << url << std::endl;
@@ -3963,7 +4035,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
   url=convert_spaces_to_url_encoding(url);
   //std::cout << "size url: " << url << std::endl;
   
-  if (url=="") return 1;
+  if (url=="") return 50000;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
     bool succ=false;
 #ifndef ANDROID
@@ -3990,7 +4062,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
     std::string cmdsize = "curl -sI --url \"" + url + "\"";
     succ = true;
 #endif
-    long long num = 1;
+    long long num = 50000;
     if (succ) {
 #ifdef __APPLE__
     FILE *f2 = my_popen(cmdsize.c_str(), "r");
@@ -4010,7 +4082,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
     std::string s(vec2.begin(),vec2.end());
 #endif
 #ifdef ANDROID
-    long long num = 1;
+    long long num = 50000;
     std::string s = popen_curl_replacement(url,true); // headers only
 #endif
     //std::cout << "Headers:" << s << std::endl;
@@ -4020,7 +4092,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
       //std::cout << "Line: " << line << std::endl;
       //if (line.size()>15)
       //std::cout << "Substr: " << line.substr(0,15) << std::endl;
-      if (line.size()>15 && line.substr(0,15)=="Content-Length:") {
+      if (line.size()>15 && toLower(line.substr(0,15))=="content-length:") {
 	std::stringstream ss2(line);
 	std::string dummy;
 	ss2 >> dummy >> num;
@@ -4030,7 +4102,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
 #ifndef ANDROID
     }
 #endif
-    //std::cout << "POPEN1 END" << url << std::endl;
+    //std::cout << "POPEN1 END" << num << std::endl;
     return num;
 }
 
@@ -4534,7 +4606,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
       //std::cout << "Line: " << line << std::endl;
       //if (line.size()>20)
       //	std::cout << "Substr: " << line.substr(0,20) << std::endl;
-      if (line.size()>15 && line.substr(0,15)=="Content-Length:") {
+      if (line.size()>15 && toLower(line.substr(0,15))=="content-length:") {
 	std::stringstream ss2(line);
 	std::string dummy;
 	ss2 >> dummy >> num;
@@ -4643,7 +4715,9 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #if 1
 	//if (progress_script_num==-1)
   g_last_loaded_script=progress_script_num;
-	ProgressBar(445 /*sum*/,get_current_size()*15/get_total_size(),15,url);
+  std::cout << "get_current_size=" << get_current_size() << std::endl;
+  std::cout << "get_total_size=" << get_total_size() << std::endl;
+  ProgressBar(445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 #endif
       }
       for(int ii=0;ii<bytes_read;ii++)
@@ -4677,7 +4751,9 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #if 1
 	//if (progress_script_num==-1)
   g_last_loaded_script=progress_script_num;
-	ProgressBar(445 /*sum*/,get_current_size()*15/get_total_size(),15,url);
+  std::cout << "get_current_size=" << get_current_size() << std::endl;
+  std::cout << "get_total_size=" << get_total_size() << std::endl;
+	ProgressBar(445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 #endif
       }
       buffer->push_back(c);
@@ -4731,7 +4807,9 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #if 1
 	//if (progress_script_num==-1)
   g_last_loaded_script=progress_script_num;
-	  ProgressBar( 445 /*sum*/,get_current_size()*15/get_total_size(),15,url);
+  std::cout << "get_current_size=" << get_current_size() << std::endl;
+  std::cout << "get_total_size=" << get_total_size() << std::endl;
+	  ProgressBar( 445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 #endif
       }
       buffer->push_back(c); }
