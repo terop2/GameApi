@@ -3190,8 +3190,13 @@ BM I3=ev.bool_bitmap_api.to_bitmap(I2,255,255,255,255,0,0,0,0);
 ML I4=ev.sprite_api.vertex_array_render(ev,I3);
 MN I5=ev.move_api.mn_empty();
 MN I6=ev.move_api.trans2(I5,4,4,0);
-MN I7=ev.move_api.scale_progress_max(I6,true,false,false);
-ML I8=ev.move_api.move_ml(ev,I4,I7,1,10.0);
+ MN I7a=ev.move_api.scale_progress_max(I6,true,false,false,0);
+ML I8a=ev.move_api.move_ml(ev,I4,I7a,1,10.0);
+ MN I7b=ev.move_api.scale_progress_max(I6,true,false,false,1);
+ML I8b=ev.move_api.move_ml(ev,I4,I7b,1,10.0);
+ MN I7c=ev.move_api.scale_progress_max(I6,true,false,false,2);
+ML I8c=ev.move_api.move_ml(ev,I4,I7c,1,10.0);
+ML I90=ev.mainloop_api.choose_ml_from_status(I8a,I8b,I8c);
     
 BB AI1=ev.bool_bitmap_api.bb_empty(92,12/2);
 BB AI2=ev.bool_bitmap_api.rectangle(AI1,0,0,92,12/2);
@@ -3199,12 +3204,16 @@ BM AI3=ev.bool_bitmap_api.to_bitmap(AI2,255,255,255,255,0,0,0,0);
 ML AI4=ev.sprite_api.vertex_array_render(ev,AI3);
 MN AI5=ev.move_api.mn_empty();
 MN AI6=ev.move_api.trans2(AI5,4,4+6,0);
-MN AI7=ev.move_api.scale_progress(AI6,true,false,false);
-ML AI8=ev.move_api.move_ml(ev,AI4,AI7,1,10.0);
-
+ MN AI7a=ev.move_api.scale_progress(AI6,true,false,false,0);
+ML AI8a=ev.move_api.move_ml(ev,AI4,AI7a,1,10.0);
+ MN AI7b=ev.move_api.scale_progress(AI6,true,false,false,1);
+ML AI8b=ev.move_api.move_ml(ev,AI4,AI7b,1,10.0);
+ MN AI7c=ev.move_api.scale_progress(AI6,true,false,false,2);
+ML AI8c=ev.move_api.move_ml(ev,AI4,AI7c,1,10.0);
+ML A19=ev.mainloop_api.choose_ml_from_status(AI8a,AI8b,AI8c);
 
  
- ML BI8=ev.mainloop_api.array_ml(ev,std::vector<ML>{I8,AI8}); // I8
+ ML BI8=ev.mainloop_api.array_ml(ev,std::vector<ML>{I90,A19}); // I8
  
 
 
