@@ -3153,7 +3153,7 @@ public:
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual bool ReadyToPrepare() const { return true; }
-
+  virtual bool ReadyToFetch() const { return true; } // tasks_async_join
   virtual void execute() { }
   
   virtual std::string name() const=0;
@@ -3215,6 +3215,8 @@ public:
   virtual std::string BaseUrl() const { return next->BaseUrl(); }
   virtual std::string Url() const { return next->Url(); }
 
+  virtual bool ReadyToFetch() const { return next->ReadyToFetch(); }
+  
   virtual void execute() { next->execute(); }
   
   virtual int get_default_scene() const { return next->get_default_scene(); }

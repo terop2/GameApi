@@ -9625,8 +9625,9 @@ public:
     vis.register_obj(this);
   }
   virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
-  virtual void HeavyPrepare() {
 
+  void DoHeavy()
+  {
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
@@ -9661,14 +9662,29 @@ public:
       if (item)
 	item->Prepare();
     }
+
+  }
+
+  virtual void HeavyPrepare() {
+    //DoHeavy();
   }
   virtual void Prepare() {
     interface->Prepare();
 
     HeavyPrepare();
-    
+  }
+  void ZipDecodeDone()
+  {
+    zip_decode_done = true;
   }
   virtual void execute(MainLoopEnv &e) {
+    if (interface->ReadyToFetch()) { ZipDecodeDone(); }
+    interface->execute();
+    if (zip_decode_done && firsttime) {
+      DoHeavy();
+      firsttime=false;
+    }
+
     if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
@@ -9709,6 +9725,8 @@ private:
   bool acesfilm;
   GameApi::TRB transfer_id;
   bool emissive;
+  bool firsttime=true;
+  bool zip_decode_done=false;
 };
 
 
@@ -14741,6 +14759,7 @@ struct ZipThreadData
   int i;
   mz_zip_archive *pZip;
   float mult;
+  mz_zip_archive_file_stat *file_stat;
 };
 
 void *thread_sketchfab_zip(void *data);
@@ -14760,6 +14779,7 @@ std::string remove_dirs(std::string url);
 IMPORT int g_progress_urls_size2;
 IMPORT int g_progress_urls_curr2;
 
+void Zip_done(void *ptr);
 
 class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
 {
@@ -14800,9 +14820,6 @@ public:
   void Prepare() {
     if (firsttime) {
     UncompressZip();
-    load->Prepare();
-    model=&load->model;
-    self=model;
     firsttime=false;
     }
   }
@@ -14810,9 +14827,6 @@ public:
   void HeavyPrepare() {
     if (firsttime) {
     UncompressZip();
-    load->Prepare();
-    model=&load->model;
-    self=model;
     firsttime=false;
     }
   }
@@ -14824,7 +14838,8 @@ public:
 #endif
     GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
     if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
-    std::vector<unsigned char> vec2(vec->begin(), vec->end());
+    
+     vec2 = std::vector<unsigned char>(vec->begin(), vec->end());
     mz_ulong size = vec2.end()-vec2.begin();
 
     g_zip_file_size = g_zip_file_size > size ? g_zip_file_size : size;
@@ -14843,7 +14858,6 @@ public:
     //std::cout << "VECTOR SIZE=" << size << std::endl;
 
     
-    mz_zip_archive pZip;
     std::memset(&pZip,0,sizeof(mz_zip_archive));
 
     mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
@@ -14855,7 +14869,7 @@ public:
 
     zip_mutex_create();
 
-    std::vector<ZipThreadData*> thread_data;
+    //std::vector<ZipThreadData*> thread_data;
 
     float mult = num!=0?float(100)/float(num):0;
     for(int i=0;i<num;i++)
@@ -14865,6 +14879,7 @@ public:
 	info->obj = this;
 	info->i = i;
 	info->pZip = &pZip;
+	info->file_stat = &file_stat;
 	info->mult = mult;
 #ifdef THREADS
 	//pthread_attr_t attr;
@@ -14874,13 +14889,15 @@ public:
 	//pthread_create(&info->thread_id, &attr, &thread_sketchfab_zip, (void*)info);
 	tasks_add(3009,&thread_sketchfab_zip,(void*)info);
 	
-	thread_data.push_back(info);
+	//thread_data.push_back(info);
 #else
 	thread_sketchfab_zip((void*)info);
 #endif
       }
 #ifdef THREADS
-    tasks_join(3009);
+    tasks_async_join(3009, &Zip_done,(void*)this);
+    //tasks_join(3009);
+    //ZipDone();
     /*
     for(int i2=0;i2<num;i2++)
       {
@@ -14889,7 +14906,24 @@ public:
 	pthread_join(thread_data[i2]->thread_id, &res);
       }
     */
+#else
+    ZipDone();
 #endif
+  }
+  void ZipDone()
+  {
+    uncompress_done=true;
+  }
+  bool ReadyToFetch() const
+  {
+    std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
+    return uncompress_done;
+  }
+  void execute()
+  {
+    if (uncompress_done && firsttime2)
+      {
+	firsttime2=false;
     mz_zip_reader_end(&pZip);
 
     if (mainfilename!="")
@@ -14950,6 +14984,17 @@ public:
     zip_result_urls.clear();
     
     uncompress_done = true;
+
+      }
+
+    if (firsttime3 && uncompress_done)
+      {
+	load->Prepare();
+	model=&load->model;
+	self=model;
+	firsttime3 = false;
+      }
+
   }
 public:
   GameApi::Env &e;
@@ -14957,17 +15002,27 @@ public:
   std::string homepage;
   LoadGltf *load;
   tinygltf::Model *model;	       
-  bool firsttime;
+  bool firsttime=true;
+  bool firsttime2=true;
+  bool firsttime3=true;
   std::string mainfilename;
   bool uncompress_done=false;
   bool async = false;
+  mz_zip_archive pZip;
+  mz_zip_archive_file_stat file_stat;
+  std::vector<unsigned char> vec2;
+  //bool uncompress_done=false;
 };
 void Zip_callback(void* ptr)
   {
     GLTF_Model_with_prepare_sketchfab_zip *p = (GLTF_Model_with_prepare_sketchfab_zip*)ptr;
     p->Zip_cb();
   }
-
+void Zip_done(void *ptr)
+{
+    GLTF_Model_with_prepare_sketchfab_zip *p = (GLTF_Model_with_prepare_sketchfab_zip*)ptr;
+    p->ZipDone();
+}
   
 
 std::vector<std::string> zip_result_urls;
@@ -15002,6 +15057,7 @@ size_t writer_cb(void *pOpaque, mz_uint64 offset, const void *pBuf, size_t n)
 {
   //std::cout << "CB:" << offset << " " << n << std::endl;
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = (std::vector<unsigned char,GameApiAllocator<unsigned char> > *)pOpaque;
+  std::cout << "VECTOR SIZE:" << vec->size() << std::endl;
   std::copy((const unsigned char*)pBuf,((const unsigned char*)pBuf)+n,vec->begin()+offset);
   return n;
 }
@@ -15046,11 +15102,11 @@ void *thread_sketchfab_zip(void *data)
 	    
 	    //size_t sz=0;
 	    //void *ptr = mz_zip_reader_extract_to_heap(pZip, i, &sz, 0);
-	    mz_zip_archive_file_stat file_stat;
 	    std::vector<unsigned char, GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char, GameApiAllocator<unsigned char> >;
-	    if (mz_zip_reader_file_stat(pZip, i, &file_stat))
+	    if (mz_zip_reader_file_stat(pZip, i, dt->file_stat))
 	      {
-		size_t uncompressed_size = (size_t)file_stat.m_uncomp_size;
+		size_t uncompressed_size = (size_t)dt->file_stat->m_uncomp_size;
+		std::cout << "RESIZE:" << uncompressed_size << std::endl;
 		data->resize(uncompressed_size);
 	      }
 	    else

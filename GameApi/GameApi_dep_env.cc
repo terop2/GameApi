@@ -499,7 +499,7 @@ IMPORT void tasks_join(int id)
 
 pthread_mutex_t *g_queue_mutex;
 std::vector<task_data> *g_queue_tasks_done=0;
-
+std::vector<task_data> *g_tasks_in_execute=0;
 struct ASyncJoinProcessData
 {
   int id;
@@ -512,6 +512,15 @@ void *async_join_process(void *data)
   ASyncJoinProcessData *dt = (ASyncJoinProcessData*)data;
   while(1) {
     pthread_mutex_lock(g_queue_mutex);
+
+    bool found_stilltodo=false;
+    int s4 = g_tasks_in_execute->size();
+    for(int i=0;i<s4;i++)
+      {
+	if (g_tasks_in_execute->operator[](i).id==dt->id) { found_stilltodo=true; }
+      }
+
+    
     bool found = false;
     int s5 = g_queue_tasks_done->size();
     for(int i=0;i<s5;i++)
@@ -521,9 +530,8 @@ void *async_join_process(void *data)
 	    found=true;
 	  }
       }
-    pthread_mutex_unlock(g_queue_mutex);
-    if (found) {
-      pthread_mutex_lock(g_queue_mutex);
+    if (found && !found_stilltodo) {
+      //pthread_mutex_lock(g_queue_mutex);
       int s5 = g_queue_tasks_done->size();
       for(int i=0;i<s5;i++)
 	{
@@ -534,6 +542,7 @@ void *async_join_process(void *data)
       dt->fptr(dt->data);
       break;
     }
+   pthread_mutex_unlock(g_queue_mutex);
 #ifdef EMSCRIPTEN
     emscripten_sleep(300);
 #endif
@@ -688,6 +697,7 @@ public:
   task_implementation()
   {
     g_queue_tasks_done = &queue_tasks_done;
+    g_tasks_in_execute = &tasks_in_execute;
   }
   virtual void spawn_thread()
   {
