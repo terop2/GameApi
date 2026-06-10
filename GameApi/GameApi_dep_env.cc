@@ -11,6 +11,8 @@
 #endif
 
 #include <atomic>
+#include <thread>
+#include <chrono>
 
 #include "Tasks.hh"
 
@@ -494,6 +496,60 @@ IMPORT void tasks_join(int id)
 #endif
 }
 
+
+pthread_mutex_t *g_queue_mutex;
+std::vector<task_data> *g_queue_tasks_done=0;
+
+struct ASyncJoinProcessData
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+void *async_join_process(void *data)
+{
+  if (!g_queue_tasks_done) return 0;
+  ASyncJoinProcessData *dt = (ASyncJoinProcessData*)data;
+  while(1) {
+    pthread_mutex_lock(g_queue_mutex);
+    bool found = false;
+    int s5 = g_queue_tasks_done->size();
+    for(int i=0;i<s5;i++)
+      {
+	if (dt->id==g_queue_tasks_done->operator[](i).id)
+	  {
+	    found=true;
+	  }
+      }
+    pthread_mutex_unlock(g_queue_mutex);
+    if (found) {
+      dt->fptr(dt->data);
+      break;
+    }
+#ifdef EMSCRIPTEN
+    emscripten_sleep(1000);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+#endif
+  }
+  return 0;
+}
+
+
+IMPORT void tasks_async_join(int id, void (*fptr)(void*), void *data)
+{
+
+  ASyncJoinProcessData *dt = new ASyncJoinProcessData;
+  dt->id = id;
+  dt->fptr = fptr;
+  dt->data = data;
+  tasks_add(65536+id, &async_join_process, (void*)dt);
+}
+
 extern GameApi::EveryApi *g_everyapi;
 extern int g_disable_draws;
 
@@ -621,6 +677,10 @@ void check_for_progressbar(pthread_mutex_t *mutex_or_null)
 class task_implementation : public task_interface
 {
 public:
+  task_implementation()
+  {
+    g_queue_tasks_done = &queue_tasks_done;
+  }
   virtual void spawn_thread()
   {
     pthread_attr_t attr;
@@ -666,6 +726,7 @@ public:
   virtual void queue_mutex_init()
   {
     queue_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    g_queue_mutex = queue_mutex; // only for async join
   }
   virtual void queue_mutex_start()
   {
