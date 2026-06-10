@@ -21,6 +21,8 @@ IMPORT void ClearProgress();
 IMPORT void InstallProgress(int num, std::string label, int max);
 IMPORT void ProgressBar(int num, int val, int max, std::string label);
 
+extern std::vector<GameApi::TF> g_tf_instances;
+
 
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
@@ -14300,6 +14302,9 @@ void ASyncGltfCB(void *data);
 
 IMPORT extern std::vector<std::string> g_registered_urls;
 
+IMPORT int g_async_progress_counter=0;
+IMPORT bool g_async_progress_counter_firsttime=true;
+
 class ASyncGltf : public MainLoopItem
 {
 public:
@@ -14310,6 +14315,7 @@ public:
       env.async_load_callback(interface->Url(), &ASyncGltfCB, this);
       }
   }
+  ~ASyncGltf() { g_async_progress_counter_firsttime = false; }
   //~ASyncGltf()
   //{
   //  if (interface)
@@ -14359,6 +14365,7 @@ public:
 	//std::cout << "URL:" << url2 << std::endl;
 	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
 	//std::cout << "g_registered_urls:" << url2 << std::endl;
+	g_async_progress_counter++;
 	g_registered_urls.push_back(url2);
 	found_urls.push_back(url2);
 #ifdef EMSCRIPTEN
@@ -14366,6 +14373,10 @@ public:
 #endif
       }
     }
+    if (g_async_progress_counter_firsttime) {
+      InstallProgress(111,"file count", g_async_progress_counter);
+    }
+
     }
 #ifndef EMSCRIPTEN
     env.async_load_all_urls(found_urls, gameapi_homepageurl);
@@ -14619,6 +14630,7 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
       set_current_block(-1);
   GameApi::TF tf = add_gltf(e,i);
   set_current_block(c);
+  g_tf_instances.push_back(tf);
   return tf;
 }
 
@@ -14661,6 +14673,7 @@ GameApi::TF LoadGLBFromString(GameApi::Env &e, std::string base_url, std::string
       set_current_block(-1);
   GameApi::TF tf = add_gltf(e,i);
   set_current_block(c);
+  g_tf_instances.push_back(tf);
   return tf;
 }
 
@@ -15670,7 +15683,9 @@ GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip
   LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary);
   GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
-  return add_gltf(e,i);
+  GameApi::TF tf = add_gltf(e,i);
+  g_tf_instances.push_back(tf);
+  return tf;
 }
 /*
 GameApi::TF GameApi::MainLoopApi::glb_load_sketchfab_zip(std::string url_to_zip)

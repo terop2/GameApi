@@ -4511,8 +4511,17 @@ EXPORT GameApi::W GameApi::GuiApi::va(VA p, SH sh2, int sx, int sy, int screen_s
 {
   return add_widget(e, new VAGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
+
+std::vector<GameApi::TF> g_tf_instances;
+
 EXPORT  GameApi::W GameApi::GuiApi::ml(ML p, SH sh2, SH sh3, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y)
 {
+  int s = g_tf_instances.size();
+  for(int i=0;i<s;i++)
+    {
+      p = ev.mainloop_api.async_gltf(p,g_tf_instances[i]);
+    }
+  
   
   return add_widget(e, new MLGuiWidget(e, ev, p, sh2, sh3, sh_2d, sh_arr, sh, sx,sy, screen_size_x, screen_size_y));
 }
@@ -7597,12 +7606,25 @@ bool is_in_registered(std::string url)
   for(int i=0;i<s;i++) if (g_registered_urls[i]==url) return true;
   return false;
 }
+
+IMPORT extern int g_async_progress_counter;
+IMPORT extern bool g_async_progress_counter_firsttime;
+IMPORT void ClearProgress();
+IMPORT void InstallProgress(int num, std::string label, int max);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+
+
 class RegisterUrl : public MainLoopItem
 {
 public:
   RegisterUrl(std::string url, MainLoopItem *next) : next(next) {
+    g_async_progress_counter++;
+    if (g_async_progress_counter_firsttime) {
+      InstallProgress(111,"file count", g_async_progress_counter);
+    }
     g_registered_urls.push_back(url);
   }
+  ~RegisterUrl() { g_async_progress_counter_firsttime=false; }
   void Collect(CollectVisitor &vis) { next->Collect(vis); }
   void HeavyPrepare() { }
   virtual void Prepare() { next->Prepare(); }

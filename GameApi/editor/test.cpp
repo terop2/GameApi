@@ -52,6 +52,10 @@ IMPORT extern int g_progress_urls_curr;
 IMPORT extern int g_progress_urls_size2;
 IMPORT extern int g_progress_urls_curr2;
 
+IMPORT extern int g_async_progress_counter;
+IMPORT extern bool g_async_progress_counter_firsttime;
+
+
 IMPORT extern bool g_reload_edit_dialog;
 bool g_edit_dialog_available=false;
 std::vector<std::string> g_edit_labels;
@@ -1384,9 +1388,9 @@ public:
 	std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
 	std::vector<std::string> urls = ids.second;
 
-	std::vector<std::string> urls2 = g_registered_urls;
-	int s2 = urls2.size();
-	for(int i=0;i<s2;i++) urls.push_back(urls2[i]);
+	//std::vector<std::string> urls2 = g_registered_urls;
+	//int s2 = urls2.size();
+	//for(int i=0;i<s2;i++) urls.push_back(urls2[i]);
 
 	// TODO, looks like not all sanmiguel files are included.
 	// where to find the rest?
@@ -1400,7 +1404,8 @@ public:
 	InstallProgress(444,"loading assets",15);
 	static bool firsttime = true;
 	if (firsttime) {
-	  InstallProgress(111,"file count",urls.size());
+	  g_async_progress_counter_firsttime=true;
+	  //InstallProgress(111,"file count",urls.size());
 	  firsttime = false;
 	}
 	g_progress_urls_curr = 0;

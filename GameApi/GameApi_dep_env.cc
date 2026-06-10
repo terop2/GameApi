@@ -594,7 +594,7 @@ void check_for_progressbar(pthread_mutex_t *mutex_or_null)
 	    }
 	    if (mutex_or_null) pthread_mutex_lock(mutex_or_null);
 	  }
-  } else { std::cout << "Wrong thread used for cyheck_for_progressbar()" << std::endl; }
+  } else { /*std::cout << "Wrong thread used for cyheck_for_progressbar()" << std::endl;*/ }
 #endif
     
   }
@@ -3774,6 +3774,7 @@ void ProgressBar(int num, int val, int max, std::string label)
 #ifndef EMSCRIPTEN
     return;
 #else
+    return; // TEST
     // NOTE THIS BLOCK IS PROBABLY BROKEN, BUT WE NEED InstallProgress()
     // TO BE DONE CORRECTLY FOR EMSCRIPTEN BEFORE THIS CAN BE REMOVED!
       ProgressI p; p.num = num; p.value=0; p.ticks=0;
