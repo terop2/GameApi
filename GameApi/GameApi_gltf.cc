@@ -22,6 +22,9 @@ extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
 extern int g_pthread_count;
 
+std::vector<GameApi::TF> g_tf_instances;
+
+
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
 
 
@@ -541,6 +544,7 @@ struct ThreadInfo_gltf_bitmap
 GameApi::Env *g_e = 0;
 
 extern bool g_concurrent_download;
+extern bool g_no_concurrent_download;
 
 class LoadGltf;
 struct LoadGltf2_data
@@ -830,7 +834,7 @@ public:
       //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
       int sz = str.size();
 
-      if (g_concurrent_download) {
+      if (g_concurrent_download || !g_no_concurrent_download) {
 #ifdef EMSCRIPTEN
     int s = g_urls.size();
     bool has_space = true;
@@ -849,7 +853,7 @@ public:
     } else {
       int sz = vec->size();
       //std::cout << "File size: " << url  << "::" << sz << std::endl;
-      if (g_concurrent_download) {
+      if (g_concurrent_download || !g_no_concurrent_download) {
 #ifdef EMSCRIPTEN
     int s = g_urls.size();
     bool has_space = true;
@@ -14614,6 +14618,7 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
       set_current_block(-1);
   GameApi::TF tf = add_gltf(e,i);
   set_current_block(c);
+  g_tf_instances.push_back(tf);
   return tf;
 }
 
@@ -14656,6 +14661,7 @@ GameApi::TF LoadGLBFromString(GameApi::Env &e, std::string base_url, std::string
       set_current_block(-1);
   GameApi::TF tf = add_gltf(e,i);
   set_current_block(c);
+  g_tf_instances.push_back(tf);
   return tf;
 }
 
@@ -15641,7 +15647,9 @@ GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip
   LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary);
   GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
-  return add_gltf(e,i);
+  GameApi::TF tf = add_gltf(e,i);
+  g_tf_instances.push_back(tf);
+  return tf;
 }
 /*
 GameApi::TF GameApi::MainLoopApi::glb_load_sketchfab_zip(std::string url_to_zip)

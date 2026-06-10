@@ -1713,6 +1713,9 @@ public:
 
 extern int g_time_id;
 
+extern std::vector<GameApi::TF> g_tf_instances;
+
+
 class MLGuiWidget : public GuiWidgetForward
 {
 public:
@@ -4510,6 +4513,12 @@ EXPORT GameApi::W GameApi::GuiApi::va(VA p, SH sh2, int sx, int sy, int screen_s
 }
 EXPORT  GameApi::W GameApi::GuiApi::ml(ML p, SH sh2, SH sh3, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y)
 {
+  int s = g_tf_instances.size();
+  for(int i=0;i<s;i++)
+    {
+      p = ev.mainloop_api.async_gltf(p,g_tf_instances[i]);
+    }
+  g_tf_instances.clear();
   
   return add_widget(e, new MLGuiWidget(e, ev, p, sh2, sh3, sh_2d, sh_arr, sh, sx,sy, screen_size_x, screen_size_y));
 }
