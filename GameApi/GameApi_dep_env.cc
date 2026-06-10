@@ -3533,7 +3533,7 @@ IMPORT pthread_t g_main_thread_id;
 bool g_progress_bar_show_logo=false;
 void (*g_progress_bar_logo_cb)(void*);
 void *g_progress_bar_logo_cb_data=0;
-
+extern int g_progress_bar_config; 
 
 void ProgressBar(int num, int val, int max, std::string label)
 {
@@ -3582,7 +3582,17 @@ void ProgressBar(int num, int val, int max, std::string label)
     {
       int num2 = progress_max[i].num;
       if (num2==num) {
-	progress_max[i].value = max;
+	//progress_max[i].value = std::max(progress_max[i].value,(long long)max);
+	if (g_progress_bar_config==0)
+	  progress_max[i].value = max;
+	if (g_progress_bar_config==1)
+	  progress_max[i].value = std::max(progress_max[i].value,(long long)max);
+	if (g_progress_bar_config==2)
+	  {
+	    // doesn't do anything.
+	  }
+
+	// This changes progressbar behaviour quite much. (choose between ProgressBar() call and InstallProgress() call for max.
 	max_index=i;
       }
       max_value += progress_max[i].value;

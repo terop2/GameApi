@@ -397,6 +397,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML progress_bar_config(GameApi::ML ml, bool progress_impl, bool max_impl, bool install_impl);
   IMPORT ML ogl_set_frame_rate(ML ml, int fps);
   IMPORT float get_frame_time() const;
   IMPORT TRB transfer_id();
