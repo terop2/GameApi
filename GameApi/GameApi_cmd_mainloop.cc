@@ -1607,9 +1607,9 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 #endif
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::progress_bar_config,
 			"progressbar_config",
-			{ "ml", "progress_impl", "max_impl", "install_impl" },
-			{ "ML", "bool", "bool", "bool" },
-			{ "", "false", "true", "false" },
+			{ "ml", "progress_impl", "max_impl", "install_impl", "ems_mult_connecting", "ems_mult_download", "ems_mult_preparing", "builder_mult" },
+			{ "ML", "bool", "bool", "bool", "float", "float","float","float" },
+			{ "", "false", "true", "false", "1.0", "1.0","1.0","1.0" },
 			"ML", "mainloop_api", "progress_bar_config"));
 #if (ALL==1)||(GET_FACE_COUNT==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::get_face_count,

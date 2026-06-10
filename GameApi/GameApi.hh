@@ -397,7 +397,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  IMPORT ML progress_bar_config(GameApi::ML ml, bool progress_impl, bool max_impl, bool install_impl);
+  IMPORT ML progress_bar_config(GameApi::ML ml, bool progress_impl, bool max_impl, bool install_impl, float mult_ems0, float mult_ems1, float mult_ems2, float mult_builder);
   IMPORT ML ogl_set_frame_rate(ML ml, int fps);
   IMPORT float get_frame_time() const;
   IMPORT TRB transfer_id();
@@ -2056,8 +2056,8 @@ public:
   IMPORT MN debug_translate(MN next);
   IMPORT MN translate(MN next, float start_time, float end_time,float dx, float dy, float dz);
   IMPORT MN translate_wave(MN next, float start_time, float end_time, WV wave, float dx, float dy, float dz);
-  IMPORT MN scale_progress(MN next, bool is_x, bool is_y, bool is_z);
-  IMPORT MN scale_progress_max(MN next, bool is_x, bool is_y, bool is_z);
+  IMPORT MN scale_progress(MN next, bool is_x, bool is_y, bool is_z, int state);
+  IMPORT MN scale_progress_max(MN next, bool is_x, bool is_y, bool is_z, int state);
   IMPORT MN mn_fetcher(PF pf);
   IMPORT MN scale(MN next, float start_time, float end_time,float sx, float sy, float sz);
   IMPORT MN scale_wave(MN next, float start_time, float end_time,WV wave,float sx, float sy, float sz);
