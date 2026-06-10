@@ -27891,7 +27891,7 @@ GameApi::ML GameApi::PolygonApi::fade_pic(GameApi::EveryApi &ev, BM bm1, float s
 #include <opencv2/videoio.hpp>
 
 void *writer(void*);
-
+void writer_task_done(void*);
 class VideoSource : public TextureID, public CollectInterface
 {
 public:
@@ -27914,7 +27914,7 @@ public:
   virtual void HeavyPrepare() {
     preparing_async = true;
       tasks_add(111,&writer,(void*)this);
-      //tasks_join(111);
+      tasks_async_join(111, &writer_task_done,(void*)this);
       preparing_async = false;
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glGenTextures(1,&tex);
@@ -27952,10 +27952,11 @@ public:
     ss.close();
 
     cap = cv::VideoCapture(path + "video"+id+".mp4");
-    cap_ready=true;
     }
   }
-  
+  void Prepare2Done() {
+    cap_ready = true;
+  }
   virtual void render(MainLoopEnv &e)
   {
     OpenglLowApi *ogl = g_low->ogl;
@@ -28092,6 +28093,11 @@ void *writer(void* ptr)
   VideoSource *src = (VideoSource*)ptr;
   src->Prepare2();
   return 0;
+}
+void writer_task_done(void* ptr)
+{
+  VideoSource *src = (VideoSource*)ptr;
+  src->Prepare2Done();
 }
 #endif
 

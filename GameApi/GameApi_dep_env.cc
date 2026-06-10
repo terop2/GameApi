@@ -527,7 +527,7 @@ void *async_join_process(void *data)
       int s5 = g_queue_tasks_done->size();
       for(int i=0;i<s5;i++)
 	{
-	  if (q_queue_tasks_done->operator()(i).id==id) { q_queue_tasks_done->erase(queue_tasks_done.begin()+i); i--; s5--; }
+	  if (g_queue_tasks_done->operator[](i).id==dt->id) { g_queue_tasks_done->erase(g_queue_tasks_done->begin()+i); i--; s5--; }
 	}
       pthread_mutex_unlock(g_queue_mutex);
 
@@ -535,13 +535,13 @@ void *async_join_process(void *data)
       break;
     }
 #ifdef EMSCRIPTEN
-    emscripten_sleep(1000);
+    emscripten_sleep(300);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
   }
   return 0;
