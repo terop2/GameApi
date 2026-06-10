@@ -22,6 +22,8 @@ extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
 extern int g_pthread_count;
 
+extern std::vector<GameApi::TF> g_tf_instances; // DO NOT USE THIS FOR ANYTHING EXCEPT game_window2.
+
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
 
 
@@ -14614,6 +14616,7 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
       set_current_block(-1);
   GameApi::TF tf = add_gltf(e,i);
   set_current_block(c);
+  g_tf_instances.push_back(tf);
   return tf;
 }
 
@@ -14656,6 +14659,7 @@ GameApi::TF LoadGLBFromString(GameApi::Env &e, std::string base_url, std::string
       set_current_block(-1);
   GameApi::TF tf = add_gltf(e,i);
   set_current_block(c);
+  g_tf_instances.push_back(tf);
   return tf;
 }
 
@@ -15641,7 +15645,9 @@ GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip
   LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary);
   GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
-  return add_gltf(e,i);
+  GameApi::TF t = add_gltf(e,i);
+  g_tf_instances.push_back(t);
+  return t;
 }
 /*
 GameApi::TF GameApi::MainLoopApi::glb_load_sketchfab_zip(std::string url_to_zip)

@@ -18997,8 +18997,18 @@ EXPORT GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML m
   Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   return add_blocker(e, blk);
 }
+
+std::vector<GameApi::TF> g_tf_instances;
+
 EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
+
+  int s = g_tf_instances.size();
+  for(int i=0;i<s;i++)
+    {
+      ml = ev.mainloop_api.async_gltf(ml,g_tf_instances[i]);
+    }
+  g_tf_instances.clear();
   // these are magic numbers because they change the projection matrix.
   // and that should be constant recardless of screen resolution, since
   // we've already handled this with viewport.
