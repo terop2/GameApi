@@ -39868,6 +39868,8 @@ extern Matrix g_last_resize;
 
 //bool g_execute_block = true;
 
+extern int g_progress_bar_config;
+
 void ClearProgress();
 KP extern "C" void set_new_script(const char *script2_)
 {
@@ -39884,6 +39886,7 @@ KP extern "C" void set_new_script(const char *script2_)
   
   
   //std::cout << "set_new_script::" << script2 << std::endl;
+  g_progress_bar_config = 0;
   ClearProgress();
   g_last_resize=Matrix::Identity();
   g_mainloop_ptr = (void*)script2;
@@ -45208,3 +45211,16 @@ private:
     }
   };
 };
+
+int g_progress_bar_config = 0;
+
+GameApi::ML GameApi::MainLoopApi::progress_bar_config(GameApi::ML ml,
+						      bool progress_impl,
+						      bool max_impl,
+						      bool install_impl)
+{
+  if (progress_impl) g_progress_bar_config=0;
+  else if (max_impl) g_progress_bar_config=1;
+  else if (install_impl) g_progress_bar_config=2;
+  return ml;
+}

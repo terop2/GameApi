@@ -1605,7 +1605,12 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "" },
 			 "ML", "mainloop_api", "no_concurrent_download"));
 #endif
-
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::progress_bar_config,
+			"progressbar_config",
+			{ "ml", "progress_impl", "max_impl", "install_impl" },
+			{ "ML", "bool", "bool", "bool" },
+			{ "", "false", "true", "false" },
+			"ML", "mainloop_api", "progress_bar_config"));
 #if (ALL==1)||(GET_FACE_COUNT==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::get_face_count,
 			 "eng_face_count",
