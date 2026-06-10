@@ -19,6 +19,10 @@
 
 extern GameApi::PAT gameapi_temp_dir;
 
+IMPORT extern int g_progress_urls_size;
+IMPORT extern int g_progress_urls_curr;
+
+
 bool g_disable_polygons=false;
 bool g_filter_execute = false;
 int g_progress_script_num=-1;
@@ -74,6 +78,7 @@ struct del_map : public del_map_interface
   ~del_map() { pthread_mutex_destroy(&lock); }
   void async_cache_clear()
   {
+    std::cout << "async_cache_clear" << std::endl;
     pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
     for(int i=0;i<s;i++)
@@ -84,6 +89,7 @@ struct del_map : public del_map_interface
     load_url_buffers_async.clear();
     //std::cout << "Map Clear! -> 0" << std::endl;
     pthread_mutex_unlock(&lock);
+    std::cout << "async_cache_clear (end)" << std::endl;
   }
 
 #ifdef EMSCRIPTEN
@@ -106,8 +112,9 @@ struct del_map : public del_map_interface
   }
 #endif
   void del_async_url(std::string url)
-  {
-    //std::cout << "del_async_url: 1"<< std::endl;
+  { 
+    std::cout << "del_async_url" << url << std::endl;
+   //std::cout << "del_async_url: 1"<< std::endl;
     pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
     //std::cout << "del_async_url: 2"<< std::endl;
@@ -133,6 +140,7 @@ struct del_map : public del_map_interface
       }
     //std::cout << "del_async_url: 11"<< std::endl;
     pthread_mutex_unlock(&lock);
+    std::cout << "del_async_url (end)" << url << std::endl;
   }
 #ifdef EMSCRIPTEN
   void push_fetch_url(std::string url, FetchInBlocks *blk)
@@ -147,6 +155,7 @@ struct del_map : public del_map_interface
 #endif
   void push_async_url(std::string url, const GameApi::ASyncVec *ptr)
   {
+    std::cout << "push_async_url" << url << std::endl;
     // std::cout << "Push async url: " << url << " " << std::hex << (long)ptr << std::dec << std::endl;
     pthread_mutex_lock(&lock);
     VECENTRY e;
@@ -155,6 +164,7 @@ struct del_map : public del_map_interface
     load_url_buffers_async.push_back(e);
     //std::cout << "Map Push() -> " << load_url_buffers_async.size() << " " << std::hex << (long)ptr << std::dec << std::endl;
     pthread_mutex_unlock(&lock);
+    std::cout << "push_async_url (end)" << url << std::endl;
   }
   //~del_map() {
 
@@ -165,6 +175,7 @@ struct del_map : public del_map_interface
   }
   void del_vec(GameApi::ASyncVec * vec)
   {
+    std::cout << "del_vec" << std::endl;
     pthread_mutex_lock(&lock);
 
     int s = load_url_buffers_async.size();
@@ -182,6 +193,7 @@ struct del_map : public del_map_interface
       }
 
     pthread_mutex_unlock(&lock);
+    std::cout << "del_vec (end)" << std::endl;
 
     /*
     std::map<std::string,std::shared_ptr<const std::vector<unsigned char, GameApiAllocator<unsigned char> >> >::iterator it=load_url_buffers_async.begin();
@@ -199,6 +211,7 @@ struct del_map : public del_map_interface
 #ifdef EMSCRIPTEN
   bool fetch_find(std::string url)
   {
+    std::cout << "fetch_find " << url << std::endl;
     pthread_mutex_lock(&lock);
     int s = fetches.size();
     for(int i=0;i<s;i++)
@@ -211,12 +224,14 @@ struct del_map : public del_map_interface
 	  }
       }
     pthread_mutex_unlock(&lock);
+    std::cout << "fetch_find (end)" << url << std::endl;
     return false;
   }
 #endif
   bool async_find(std::string url)
 {
   //std::cout << "ASYNC FIND:" << url << std::endl;
+  //std::cout << "async find" << url << std::endl;
     pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
     for(int i=0;i<s;i++)
@@ -226,9 +241,11 @@ struct del_map : public del_map_interface
 	if (e.first == url)
 	  {
 	    pthread_mutex_unlock(&lock);
+	    //std::cout << "async find (end)" << url << std::endl;
 	    return true; }
       }
     pthread_mutex_unlock(&lock);
+    //std::cout << "async find (end2)" << url << std::endl;
     return false;
 }
 
@@ -521,8 +538,8 @@ int wait_with_timeout(pthread_cond_t *cond, pthread_mutex_t *mutex, int timeout_
     // Timeout expired
     return 1;
   } else {
-    // Some other error occurred
-    return -1;
+    // Some other error occurred 
+   return -1;
   }
 }
 
@@ -537,8 +554,52 @@ IMPORT extern void (*g_progress_callback)();
 long long get_current_size();
 long long get_total_size();
 IMPORT extern void (*update_progress_dialog_cb)(volatile GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max, int process);
-
 extern pthread_t g_main_thread_id;
+
+
+
+void check_for_progressbar(pthread_mutex_t *mutex_or_null)
+  {
+#ifndef EMSCRIPTEN
+  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
+  pthread_t curr = pthread_self();
+  if (pthread_equal(curr, g_main_thread_id)) {
+
+	static int g_val2_cache=0;
+	static int g_max2_cache=0;
+	if (g_val2_cache != g_val2 || g_max2_cache != g_max2)
+	  {
+	    
+	    if (mutex_or_null) pthread_mutex_unlock(mutex_or_null);
+
+	    static bool repeat_prevent=false;
+	    if (!repeat_prevent) {
+	      repeat_prevent=true;
+#ifndef EMSCRIPTEN
+	      std::cout << "ProgressDraw" << std::endl;
+	      //std::cout << stream.str() << l << stream3.str() << std::flush;
+	if (g_everyapi2)
+	  {
+
+	    g_val2_cache = g_val2;
+	    g_max2_cache = g_max2;
+	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,g_val2 /*FindProgressVal()*/,g_max2 /*FindProgressMax()*/,g_last_loaded_script);
+	    if (g_progress_callback_set) {
+	      g_progress_callback();
+	    }
+	  }
+	
+#endif
+	repeat_prevent=false;
+	    }
+	    if (mutex_or_null) pthread_mutex_lock(mutex_or_null);
+	  }
+  }
+#endif
+    
+  }
+
+
 
 class task_implementation : public task_interface
 {
@@ -679,13 +740,22 @@ public:
 	pthread_mutex_unlock(mutex2);
 	// }
   }
+
+  
   virtual void wait_for_push_or_shutdown()
   {
+
+
+    check_for_progressbar(NULL);
+    
     pthread_mutex_lock(mutex);
     while(queue.size()==0&&!m_shutdown_ongoing)
       {
 	//pthread_cond_wait(cond, mutex);
-	int val = wait_with_timeout(cond,mutex,1000);
+	int val = wait_with_timeout(cond,mutex,30);
+
+	check_for_progressbar(mutex);
+	
 	if (val==1) // timeout
 	  {
 	    //std::cout << "Warning: wait timeout!" << std::endl;
@@ -718,8 +788,13 @@ public:
     
     //std::cout << "join waiting " << id << std::endl;
       in_join=true;
-    pthread_mutex_lock(mutex2);
+
+      check_for_progressbar(NULL);
+
+
+      pthread_mutex_lock(mutex2);
     while(1) {
+      check_for_progressbar(mutex2);
 
     queue_mutex_start();
     
@@ -740,43 +815,7 @@ public:
     {
       int val = wait_with_timeout(cond2,mutex2,30); // 1000
 
-
-#ifndef EMSCRIPTEN
-  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
-  pthread_t curr = pthread_self();
-  if (pthread_equal(curr, g_main_thread_id)) {
-
-	static int g_val2_cache=0;
-	static int g_max2_cache=0;
-	if (g_val2_cache != g_val2 || g_max2_cache != g_max2)
-	  {
-	    
-	    pthread_mutex_unlock(mutex2);
-
-	    static bool repeat_prevent=false;
-	    if (!repeat_prevent) {
-	      repeat_prevent=true;
-#ifndef EMSCRIPTEN
-	      std::cout << "ProgressDraw" << std::endl;
-	      //std::cout << stream.str() << l << stream3.str() << std::flush;
-	if (g_everyapi2)
-	  {
-
-	    g_val2_cache = g_val2;
-	    g_max2_cache = g_max2;
-	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,g_val2 /*FindProgressVal()*/,g_max2 /*FindProgressMax()*/,g_last_loaded_script);
-	    if (g_progress_callback_set) {
-	      g_progress_callback();
-	    }
-	  }
-	
-#endif
-	repeat_prevent=false;
-	    }
-	    pthread_mutex_lock(mutex2);
-	  }
-  }
-#endif
+      check_for_progressbar(mutex2);
 
 	if (val==1) // timeout
 	  {
@@ -2067,6 +2106,10 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
     }
 #endif
 
+  g_progress_urls_curr++;
+  if (g_progress_urls_curr>g_progress_urls_size) g_progress_urls_curr=g_progress_urls_size;
+  ProgressBar(111,g_progress_urls_curr,g_progress_urls_size,"file count");
+
     
     g_del_map.push_async_url(url_only, new ASyncDataFetcher(buffer) );
   async_pending_count--;
@@ -2252,6 +2295,9 @@ struct ProcessData
   GameApi::Env *env;
 };
 
+IMPORT int g_progress_urls_size=0;
+IMPORT int g_progress_urls_curr=0;
+
 void* process(void *ptr)
 {
   ProcessData *dt = (ProcessData*)ptr;
@@ -2271,7 +2317,13 @@ void* process(void *ptr)
 #endif
 
   g_del_map.push_async_url(url2,new ASyncDataFetcher(buf) );
-    //g_del_map.load_url_buffers_async[url2] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(*buf); //new std::vector<unsigned char>(buf);  
+
+
+  g_progress_urls_curr++;
+  if (g_progress_urls_curr>g_progress_urls_size) g_progress_urls_curr=g_progress_urls_size;
+  ProgressBar(111,g_progress_urls_curr,g_progress_urls_size,"file count");
+
+  //g_del_map.load_url_buffers_async[url2] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(*buf); //new std::vector<unsigned char>(buf);  
   //pthread_exit(0);
   return 0;
 }
@@ -2372,8 +2424,8 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
   s = urls.size();
   if (!s)
     {
-	InstallProgress(444+unique_id,"loading assets (cached)",15);
-	ProgressBar(444+unique_id,15,15,"loading assets (cached)");
+
+      ProgressBar(444,15,15,"loading assets (cached)");
 
     }
   //int sk = s;
@@ -2381,8 +2433,8 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
   int u=0;
 
     {
-	InstallProgress(444+unique_id,"loading assets",15);
-	ProgressBar(444+unique_id,0,15,"loading assets");
+      //InstallProgress(444+unique_id,"loading assets",15);
+      ProgressBar(444,0,15,"loading assets");
     }
 
     
@@ -2424,6 +2476,10 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
     tasks_add(3007,&process,(void*)processdata);
     
   }
+
+  //tasks_join(3007);
+  
+#if 1
   long long current_size = 0;
   long long last_size = 0;
   for(int j=0;j<s;j++)
@@ -2433,7 +2489,7 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
       std::string url2 = "load_url.php?url=" + url ;
       while (!(g_del_map.async_find(url2)))
 	{
-	  if (get_current_size() > last_size+(get_total_size()/15))
+	  //if (get_current_size() > last_size+(get_total_size()/15))
 	  {
 	    //int s = url.size();
 	    //int sum=0;
@@ -2441,10 +2497,8 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
 	    //sum = sum % 1000;
 	    //std::cout << g_current_size << "*15/" << total_size << std::endl; 
 	    if (!g_progress_lock_assets) { // script_ml works odd.
-	      ProgressBar(444+unique_id,get_current_size()*15/get_total_size(),15,"loading assets");
-
-
-
+	      ProgressBar(444,get_current_size()*15/get_total_size(),15,"loading assets");
+	      check_for_progressbar(NULL);
 	    }
 	    last_size=get_current_size();
 	  }
@@ -2476,6 +2530,9 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
     }
   //  }
 
+#endif
+
+  
   int sr = dt.size();
   for(int i=0;i<sr;i++)
     {
@@ -2502,7 +2559,7 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
 
     }
 #if 0
-	ProgressBar(444,15,15,"loading assets");
+  //ProgressBar(444,15,15,"loading assets");
 #endif
 	
 #endif
@@ -2944,6 +3001,10 @@ void ASyncLoader::load_urls2(GameApi::Env &e, std::string url, std::string homep
 	  g_del_map.del_async_url(url_only);
 	}
 #endif
+  g_progress_urls_curr++;
+  if (g_progress_urls_curr>g_progress_urls_size) g_progress_urls_curr=g_progress_urls_size;
+  ProgressBar(111,g_progress_urls_curr,g_progress_urls_size,"file count");
+
 	g_del_map.push_async_url(url_only,new ASyncDataFetcher(g_content[i],g_content_end[i]));
 	
 	std::string oldurl = url;
@@ -3225,6 +3286,10 @@ void ASyncLoader::load_urls2(GameApi::Env &e, std::string url, std::string homep
 #endif
 
     // std::cout << "push_async_url: " << url2 << std::endl;
+
+  g_progress_urls_curr++;
+  if (g_progress_urls_curr>g_progress_urls_size) g_progress_urls_curr=g_progress_urls_size;
+  ProgressBar(111,g_progress_urls_curr,g_progress_urls_size,"file count");
     
     g_del_map.push_async_url(url2,new ASyncDataFetcher(buf));
     //g_del_map.load_url_buffers_async[url2] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(*buf); //new std::vector<unsigned char>(buf);
@@ -3425,7 +3490,10 @@ std::vector<int> g_setup_count;
 int find_str(std::string s, std::string s2);
 
 
-IMPORT void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
+IMPORT void ClearProgress() {
+  std::cout << "ClearProgress" << std::endl;
+  stackTrace();
+  progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
 IMPORT void InstallProgress(int num, std::string label, int max=15)
 {
   std::cout << "InstallProgress: " << num << " " << max << " " << label << std::endl;
@@ -3541,8 +3609,17 @@ IMPORT long long FindProgressVal()
   long long sum = 0;
   for(int i=0;i<s;i++)
     {
-      std::cout << "Progval:" << i << "=" << progress_val[i].value;
-      sum+=(long long)progress_val[i].value;
+      std::cout << "Progval:" << i << "=" << progress_val[i].value << "/" << progress_max[i].value << "::" << progress_val[i].num << " " << progress_max[i].num << " " << progress_label[i] << std::endl;
+      float mult = 1.0;
+      /*
+      int m = progress_max[i].value;
+      if (m<15) mult=10.0; else
+	if (m<150) mult=1.0; else
+	  if (m<1500) mult=0.1; else
+	    if (m<15000) mult=0.01;
+      */
+      
+      sum+=(long long)progress_val[i].value*mult;
     }
   return sum;
   
@@ -3608,8 +3685,17 @@ long long FindProgressMax()
   long long sum = 0;
   for(int i=0;i<s;i++)
     {
-      std::cout << "Progmax:" << i << "=" << progress_max[i].value;
-      sum+=(long long)progress_max[i].value;
+      float mult = 1.0;
+      int m = progress_max[i].value;
+
+      /*
+      if (m<15) mult=10.0; else
+	if (m<150) mult=1.0; else
+	  if (m<1500) mult=0.1; else
+	    if (m<15000) mult=0.01;
+      */
+      //std::cout << "Progmax:" << i << "=" << progress_max[i].value;
+      sum+=(long long)progress_max[i].value*mult;
     }
   return sum;
 
@@ -3659,6 +3745,8 @@ void *g_progress_bar_logo_cb_data=0;
 void ProgressBar(int num, int val, int max, std::string label)
 {
   std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
+  
+  
   if (find_str(label,"script")!=-1) return;
   /// std::cout << "ProgressBar: '" << num << " " << label << " " << val << " " << max << "'" << std::endl;
 
@@ -3683,12 +3771,15 @@ void ProgressBar(int num, int val, int max, std::string label)
       }
   }
   if (!done) {
+    return;
+    /*
       ProgressI p; p.num = num; p.value=0; p.ticks=0;
       p.value = val;
       progress_val.push_back(p);
       p.value = max;
       progress_max.push_back(p);
       progress_label.push_back(label);
+    */
   }
   //std::cout << "P2" << std::endl;
 
@@ -3713,8 +3804,8 @@ void ProgressBar(int num, int val, int max, std::string label)
   //std::cout << "Progress3:" << val_value << " " << max_value << std::endl;
 
   
-  int val1 = val_index!=-1?progress_val[val_index].value:0; //FindProgressVal();
-  int max1 = max_index!=-1?progress_max[max_index].value:1; //FindProgressMax();
+  int val1 = FindProgressVal(); //val_index!=-1?progress_val[val_index].value:0; //FindProgressVal();
+  int max1 = FindProgressMax(); //max_index!=-1?progress_max[max_index].value:1; //FindProgressMax();
   //int ticks1 = progress_val[val_index].ticks;
   //int ticks2 = g_low->sdl->SDL_GetTicks();
   //g_last_tick = ticks2;
@@ -4746,6 +4837,14 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
       if (cnt>5000) {
 	cnt=0;
 	timeout_getevent();
+
+  g_last_loaded_script=progress_script_num;
+  std::cout << "get_current_size=" << get_current_size() << std::endl;
+  std::cout << "get_total_size=" << get_total_size() << std::endl;
+  ProgressBar(445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
+
+  check_for_progressbar(NULL);
+
 	//if (!g_disable_draws) g_low->sdl->SDL_GL_SwapWindow(sdl_window);
 	//else g_env->ev->mainloop_api.delay(16);
       }
@@ -4782,45 +4881,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
   std::cout << "get_total_size=" << get_total_size() << std::endl;
   ProgressBar(445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 
-#ifndef EMSCRIPTEN
-  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
-  pthread_t curr = pthread_self();
-  if (pthread_equal(curr, g_main_thread_id)) {
-
-    
-	static int g_val2_cache=0;
-	static int g_max2_cache=0;
-	if (g_val2_cache != g_val2 || g_max2_cache != g_max2)
-	  {
-	    
-	    //pthread_mutex_unlock(mutex2);
-
-	    static bool repeat_prevent=false;
-	    if (!repeat_prevent) {
-	      repeat_prevent=true;
-#ifndef EMSCRIPTEN
-	      std::cout << "ProgressDraw" << std::endl;
-	      //std::cout << stream.str() << l << stream3.str() << std::flush;
-	if (g_everyapi2)
-	  {
-
-	    g_val2_cache = g_val2;
-	    g_max2_cache = g_max2;
-	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,g_val2 /*FindProgressVal()*/,g_max2 /*FindProgressMax()*/,g_last_loaded_script);
-	    if (g_progress_callback_set) {
-	      g_progress_callback();
-	    }
-	  }
-	
-#endif
-	repeat_prevent=false;
-	    }
-	    //pthread_mutex_lock(mutex2);
-	  }
-  }
-#endif
-
-
+  check_for_progressbar(NULL);
+ 
 #endif
       }
       for(int ii=0;ii<bytes_read;ii++)
@@ -4858,46 +4920,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
   std::cout << "get_total_size=" << get_total_size() << std::endl;
 	ProgressBar(445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 
-#ifndef EMSCRIPTEN
-  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
-  pthread_t curr = pthread_self();
-  if (pthread_equal(curr, g_main_thread_id)) {
-
-    
-	static int g_val2_cache=0;
-	static int g_max2_cache=0;
-	if (g_val2_cache != g_val2 || g_max2_cache != g_max2)
-	  {
-	    
-	    //pthread_mutex_unlock(mutex2);
-
-	    static bool repeat_prevent=false;
-	    if (!repeat_prevent) {
-	      repeat_prevent=true;
-#ifndef EMSCRIPTEN
-	      std::cout << "ProgressDraw" << std::endl;
-	      //std::cout << stream.str() << l << stream3.str() << std::flush;
-	if (g_everyapi2)
-	  {
-
-	    g_val2_cache = g_val2;
-	    g_max2_cache = g_max2;
-	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,g_val2 /*FindProgressVal()*/,g_max2 /*FindProgressMax()*/,g_last_loaded_script);
-	    if (g_progress_callback_set) {
-	      g_progress_callback();
-	    }
-	  }
-	
-#endif
-	repeat_prevent=false;
-	    }
-	    //pthread_mutex_lock(mutex2);
-	  }
-  }
-#endif
-
-
-	
+	check_for_progressbar(NULL);
 #endif
       }
       buffer->push_back(c);

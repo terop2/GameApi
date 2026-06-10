@@ -47,6 +47,11 @@ using namespace GameApi;
 
 extern GameApi::PAT gameapi_temp_dir;
 
+IMPORT extern int g_progress_urls_size;
+IMPORT extern int g_progress_urls_curr;
+IMPORT extern int g_progress_urls_size2;
+IMPORT extern int g_progress_urls_curr2;
+
 IMPORT extern bool g_reload_edit_dialog;
 bool g_edit_dialog_available=false;
 std::vector<std::string> g_edit_labels;
@@ -1373,7 +1378,47 @@ public:
     bool next_stage2=false;
     if (!env->display_visible && !env->license_dialog_visible && display_button)
       {
+	{
+	GameApi::ExecuteEnv exeenv;
+	std::string uid = popup_uid;
+	std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
+	std::vector<std::string> urls = ids.second;
 
+	std::vector<std::string> urls2 = g_registered_urls;
+	int s2 = urls2.size();
+	for(int i=0;i<s2;i++) urls.push_back(urls2[i]);
+
+	// TODO, looks like not all sanmiguel files are included.
+	// where to find the rest?
+	
+	std::sort(urls.begin(),urls.end());
+	auto it = std::unique(urls.begin(),urls.end());
+	urls.erase(it,urls.end());
+	
+	ClearProgress();
+	InstallProgress(33344, "collect", 15*15);
+	InstallProgress(444,"loading assets",15);
+	static bool firsttime = true;
+	if (firsttime) {
+	  InstallProgress(111,"file count",urls.size());
+	  firsttime = false;
+	}
+	g_progress_urls_curr = 0;
+	g_progress_urls_size = urls.size();
+	int s = urls.size();
+	g_progress_urls_curr2 = 0;
+	g_progress_urls_size2 = 0;
+	for(int i=0;i<s;i++)
+	  {
+	    if (urls[i].substr(urls[i].size()-3)=="zip")
+	      {
+		g_progress_urls_size2+=100;
+	      }
+	  }
+	if (g_progress_urls_size2>0)
+	  InstallProgress(555,"zip count", g_progress_urls_size2);
+	}
+	
 	std::string uid = popup_uid;
 	std::string s = env->ev->mod_api.get_funcname(env->mod,0,uid);
 	if (s=="save_deploy") {	
@@ -1611,6 +1656,8 @@ public:
 		  
 		  //std::cout << "URLS:" << ids.second << std::endl;
 		  std::vector<std::string> urls = ids.second;
+
+		  
 		  std::vector<std::string> urls2 = g_registered_urls;
 		  int s = urls2.size();
 		  for(int i=0;i<s;i++) urls.push_back(urls2[i]);
@@ -1634,7 +1681,7 @@ public:
 		g_id = add_block();
 		set_current_block(g_id);
 		set_codegen_values(env->mod,0,uid,1000);
-		ClearProgress();
+
 		reset_process_script_num();
 		int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000,0); // TODO last 0=wrong
 		set_current_block(-2);
@@ -2956,7 +3003,10 @@ public:
 	 
 	//pid_t pid = getpid();
 	//std::cout << "pid: " << (long)pid << std::endl;
+	InstallProgress(898, "create boxes", 15);
 	InstallProgress(888,"init",10);
+	InstallProgress(868,"insert_links", 15);
+
 	//ProgressBar(888,0,10,"init");
 	set_current_block(-2);
 	

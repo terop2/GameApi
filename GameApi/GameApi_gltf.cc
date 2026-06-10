@@ -17,6 +17,11 @@ int hhhh_gggg=1;
 //#define GLTF_ANIM_RESIZE_TEST 1
 //#define GLTF_ANIM_COORD_TEST 1
 
+IMPORT void ClearProgress();
+IMPORT void InstallProgress(int num, std::string label, int max);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+
+
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
@@ -14722,6 +14727,7 @@ struct ZipThreadData
   GLTF_Model_with_prepare_sketchfab_zip *obj;
   int i;
   mz_zip_archive *pZip;
+  float mult;
 };
 
 void *thread_sketchfab_zip(void *data);
@@ -14736,6 +14742,10 @@ extern std::string gameapi_homepageurl;
 struct ASyncCallback { void (*fptr)(void*); void *data; };
 ASyncCallback *rem_async_cb(std::string url);
 std::string remove_dirs(std::string url);
+
+
+IMPORT int g_progress_urls_size2;
+IMPORT int g_progress_urls_curr2;
 
 
 class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
@@ -14833,6 +14843,8 @@ public:
     zip_mutex_create();
 
     std::vector<ZipThreadData*> thread_data;
+
+    float mult = num!=0?float(100)/float(num):0;
     for(int i=0;i<num;i++)
       {
 
@@ -14840,6 +14852,7 @@ public:
 	info->obj = this;
 	info->i = i;
 	info->pZip = &pZip;
+	info->mult = mult;
 #ifdef THREADS
 	//pthread_attr_t attr;
 	//pthread_attr_init(&attr);
@@ -14990,7 +15003,7 @@ void *thread_sketchfab_zip(void *data)
   GLTF_Model_with_prepare_sketchfab_zip *obj = dt->obj;
   mz_zip_archive *pZip = dt->pZip;
   int i = dt->i;
-  
+  float mult = dt->mult;
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(pZip, i);
 	if (is_dir) {
 	    char *filename = new char[256];
@@ -15051,6 +15064,13 @@ void *thread_sketchfab_zip(void *data)
 	      //delete g_del_map.load_url_buffers_async[url];
 	    }
 	    //std::cout << "Pushing zip file: " << url << std::endl;
+	    //*curr += mult;
+	    //g_progress_urls_curr2 = int(*curr);
+	    g_progress_urls_curr2 += mult;
+	    if (g_progress_urls_curr2>g_progress_urls_size2) g_progress_urls_curr2=g_progress_urls_size2;
+	    ProgressBar(555,g_progress_urls_curr2,g_progress_urls_size2,"file count");
+
+	    
 	    g_del_map.push_async_url(url,get_fetcher(data) );
 
 	    zip_push(url_plain);
@@ -15118,6 +15138,7 @@ public:
     
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
     //std::cout << "ZIp num=" << num << std::endl;
+    float mult = float(100)/float(num);
     for(int i=0;i<num;i++)
       {
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
@@ -15159,6 +15180,10 @@ public:
 	    if (find_indexhtml_string(url,"engine/")==-1) {
 	      //std::cout << "URL:" << url << std::endl;
 	      //g_del_map.load_url_buffers_async[url] = data;
+	    g_progress_urls_curr2 += mult;
+	    if (g_progress_urls_curr2>g_progress_urls_size2) g_progress_urls_curr2=g_progress_urls_size2;
+	    ProgressBar(555,g_progress_urls_curr2,g_progress_urls_size2,"file count");
+	      
 	      g_del_map.push_async_url(url,get_fetcher(data) );
 	      g_content.push_back(&data->operator[](0));
 	      g_content_end.push_back(&(*data->end()));
@@ -15255,6 +15280,7 @@ public:
     
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
     //std::cout << "ZIp num=" << num << std::endl;
+    float mult = float(100)/float(num);
     for(int i=0;i<num;i++)
       {
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
@@ -15295,6 +15321,9 @@ public:
 	    }
 	    if (find_indexhtml_string(url,"engine/")==-1) {
 	      //std::cout << "URL:" << url << std::endl;
+	    g_progress_urls_curr2 += mult;
+	    if (g_progress_urls_curr2>g_progress_urls_size2) g_progress_urls_curr2=g_progress_urls_size2;
+	    ProgressBar(555,g_progress_urls_curr2,g_progress_urls_size2,"file count");
 	      g_del_map.push_async_url(url,get_fetcher(data) );
 		//g_del_map.load_url_buffers_async[url] = data;
 	      g_content.push_back(&data->operator[](0));

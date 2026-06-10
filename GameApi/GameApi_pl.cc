@@ -1724,6 +1724,11 @@ int CalcUrlIndex(std::string url);
 std::vector<std::string> mtl_urls;
 int g_previous_texid_material = 0;
 void stackTrace();
+
+IMPORT extern int g_progress_urls_size;
+IMPORT extern int g_progress_urls_curr;
+
+
 class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
 public:
@@ -1854,6 +1859,7 @@ public:
     std::string s(&ptr2->operator[](0), &ptr2->operator[](0) + ptr2->size());
     delete ptr2;
     std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(s /*a_filename*/);
+    g_progress_urls_size += mat.size()*3;
     materials = mat;
     BufferRef ref; ref.buffer=0;
     BufferRef ref2; ref2.buffer=0;
@@ -1910,6 +1916,9 @@ public:
 	if (s!=""&&!skip) {
 	flags.push_back(1);
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
+
+	
+	
 #ifdef EMSCRIPTEN
 	//if (load_url_buffers_async[std::string("load_url.php?url=")+dt->url]==0) {
 	//std::cout << "Loading url:" << dt->url << std::endl;
@@ -2024,7 +2033,9 @@ public:
       buffer[i] = img;
   }
   void Prepare2(std::string url, int i)
-  {
+  { 
+    g_progress_urls_curr++;
+   
     //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
       if (!vec) {

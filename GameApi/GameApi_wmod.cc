@@ -821,7 +821,6 @@ IMPORT void ProgressBar(int num, int val, int max, std::string label);
 
 EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh)
 {
-  InstallProgress(868,"insert_links", 15);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
@@ -2453,7 +2452,6 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gu
       for(int k=0;k<count;k++)
 	connect_clicks.push_back(w);
     }
-  InstallProgress(898, "create boxes", 15);
   int ret_count=0;
   for(int i=0;i<s;i++)
     {

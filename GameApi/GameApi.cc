@@ -18291,6 +18291,8 @@ public:
      //InstallProgress(777,"prepare",100);
      //#endif
      g_logo_shown = 0;
+     //ClearProgress(); // messes up downloading progressbar
+      ProgressBar(33344, 0, 15*15, "collect");
   }
   virtual int Iter()
   {
@@ -18463,8 +18465,6 @@ public:
       has_vis = true;
       real_counter=0;
       g_prepare_done = true;
-      ClearProgress();
-      InstallProgress(33344, "collect", 15*15);
       //InstallProgress(33345, "collect2", 15*15);
       firsttime = false;
     }
