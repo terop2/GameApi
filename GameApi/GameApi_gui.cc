@@ -7655,6 +7655,7 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 
 	  if (!is_async_loaded_urls_in_vec(url)) {
 	    //std::cout << "LoadUrls_async Loading " << url << std::endl;
+
 	    e.async_load_url(url,homepage);
 	    g_async_loaded_urls.push_back(url);
 	  } else {

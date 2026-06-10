@@ -523,6 +523,14 @@ void *async_join_process(void *data)
       }
     pthread_mutex_unlock(g_queue_mutex);
     if (found) {
+      pthread_mutex_lock(g_queue_mutex);
+      int s5 = g_queue_tasks_done->size();
+      for(int i=0;i<s5;i++)
+	{
+	  if (q_queue_tasks_done->operator()(i).id==id) { q_queue_tasks_done->erase(queue_tasks_done.begin()+i); i--; s5--; }
+	}
+      pthread_mutex_unlock(g_queue_mutex);
+
       dt->fptr(dt->data);
       break;
     }
