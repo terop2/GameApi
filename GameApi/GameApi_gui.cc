@@ -1858,8 +1858,10 @@ public:
 	// COLLECT LOGIC
 
 	g_inside_mesh_display=true;
+	std::cout << "MLGuiWidget calling ML prepapre" << std::endl;
 	item->Prepare(); 
 	g_inside_mesh_display=false;
+	std::cout << "MLGuiWidget finished ML prepapre" << std::endl;
 	firsttime2 = false;
       } 
     }
@@ -1923,7 +1925,9 @@ public:
 
 	}
 	g_inside_mesh_display=true;
+	std::cout << "MLGUIWiget::Execute_ml" << std::endl;
 	ev.mainloop_api.execute_ml(ev,p, sh, sh2, sh2, sh_arr,mat, in_T, in_N, sz.dx, sz.dy);
+	std::cout << "MLGUIWiget::finished Execute_ml" << std::endl;
 	g_inside_mesh_display=false;
 	e.type = -1;
 	e.ch = -1;

@@ -538,19 +538,18 @@ void *async_join_process(void *data)
 	  if (g_queue_tasks_done->operator[](i).id==dt->id) { g_queue_tasks_done->erase(g_queue_tasks_done->begin()+i); i--; s5--; }
 	}
       pthread_mutex_unlock(g_queue_mutex);
-
       dt->fptr(dt->data);
       break;
     }
    pthread_mutex_unlock(g_queue_mutex);
 #ifdef EMSCRIPTEN
-    emscripten_sleep(300);
+    emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
 #ifdef WINDOWS
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
   }
   return 0;

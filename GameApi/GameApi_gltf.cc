@@ -9621,13 +9621,17 @@ public:
 
 
   virtual void Collect(CollectVisitor &vis) {
+    std::cout << "gltfmeshall::collect" << std::endl;
     interface->Collect(vis);
     vis.register_obj(this);
   }
-  virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
+  virtual bool ReadyToPrepare() const {
+    std::cout << "gltfmeshall::readytoprepare" << std::endl;
+    return interface->ReadyToPrepare(); }
 
   void DoHeavy()
   {
+    std::cout << "gltfmeshall::DoHeavy 1" << std::endl;
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
@@ -9636,14 +9640,18 @@ public:
     }
     // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+    std::cout << "gltfmeshall::DoHeavy 2" << std::endl;
     int scene_id = interface->get_default_scene();
     GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
+    std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
 
 
     GameApi::TRR resize_transfer_id;
     resize_transfer_id.id = transfer_id.id;
+    std::cout << "gltfmeshall::DoHeavy 4" << std::endl;
     
     GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, transfer_id, emissive ); // 0 = take numtimeindexes from first animation
+    std::cout << "gltfmeshall::DoHeavy 5" << std::endl;
     bool is_animated_g = is_animated(env,interface,mesh);
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(env,interface,mesh))
@@ -9656,30 +9664,41 @@ public:
 #else
   res = scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);
 #endif
+    std::cout << "gltfmeshall::DoHeavy 6" << std::endl;
     
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
       if (item)
 	item->Prepare();
     }
+    std::cout << "gltfmeshall::DoHeavy 7" << std::endl;
 
   }
 
   virtual void HeavyPrepare() {
+    std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
     //DoHeavy();
   }
   virtual void Prepare() {
+    std::cout << "gltfmeshall::Prepare 1" << std::endl;
     interface->Prepare();
+    std::cout << "gltfmeshall::Prepare 2" << std::endl;
 
     HeavyPrepare();
+    std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
   }
   void ZipDecodeDone()
   {
+    std::cout << "gltfmeshall::ZipDecodeDone" << std::endl;
     zip_decode_done = true;
   }
   virtual void execute(MainLoopEnv &e) {
-    if (interface->ReadyToFetch()) { ZipDecodeDone(); }
-    interface->execute();
+    std::cout << "ml_gltf_all_execute" << std::endl;
+    if (interface->ReadyToFetch()) {
+      ZipDecodeDone();
+      interface->execute();
+    }
+    std::cout << "gltfmeshall::execute" << std::endl;
     if (zip_decode_done && firsttime) {
       DoHeavy();
       firsttime=false;
@@ -9690,15 +9709,19 @@ public:
     if (item)
       item->execute(e);
     }
+    std::cout << "gltfmeshall::execute 2" << std::endl;
   }
   virtual void handle_event(MainLoopEvent &e) {
+    std::cout << "gltfmeshall::handle_event" << std::endl;
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
       if (item)
 	item->handle_event(e);
     }
+    std::cout << "gltfmeshall::handleevenrt2" << std::endl;
   }
   virtual std::vector<int> shader_id() {
+    std::cout << "gltfmeshall::shader_id" << std::endl;
     if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
@@ -14759,7 +14782,7 @@ struct ZipThreadData
   int i;
   mz_zip_archive *pZip;
   float mult;
-  mz_zip_archive_file_stat *file_stat;
+  // mz_zip_archive_file_stat *file_stat;
 };
 
 void *thread_sketchfab_zip(void *data);
@@ -14820,6 +14843,10 @@ public:
   void Prepare() {
     if (firsttime) {
     UncompressZip();
+    load->Prepare();
+    model=&load->model;
+    self=model;
+    
     firsttime=false;
     }
   }
@@ -14827,6 +14854,10 @@ public:
   void HeavyPrepare() {
     if (firsttime) {
     UncompressZip();
+    load->Prepare();
+    model=&load->model;
+    self=model;
+    
     firsttime=false;
     }
   }
@@ -14838,6 +14869,7 @@ public:
 #endif
     GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
     if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
+    std::vector<unsigned char> vec2;
     
      vec2 = std::vector<unsigned char>(vec->begin(), vec->end());
     mz_ulong size = vec2.end()-vec2.begin();
@@ -14858,6 +14890,7 @@ public:
     //std::cout << "VECTOR SIZE=" << size << std::endl;
 
     
+    mz_zip_archive pZip;
     std::memset(&pZip,0,sizeof(mz_zip_archive));
 
     mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
@@ -14879,7 +14912,7 @@ public:
 	info->obj = this;
 	info->i = i;
 	info->pZip = &pZip;
-	info->file_stat = &file_stat;
+	//info->file_stat = &file_stat;
 	info->mult = mult;
 #ifdef THREADS
 	//pthread_attr_t attr;
@@ -14895,9 +14928,9 @@ public:
 #endif
       }
 #ifdef THREADS
-    tasks_async_join(3009, &Zip_done,(void*)this);
-    //tasks_join(3009);
-    //ZipDone();
+    //tasks_async_join(3009, &Zip_done,(void*)this);
+    tasks_join(3009);
+    ZipDone();
     /*
     for(int i2=0;i2<num;i2++)
       {
@@ -14909,21 +14942,8 @@ public:
 #else
     ZipDone();
 #endif
-  }
-  void ZipDone()
-  {
-    uncompress_done=true;
-  }
-  bool ReadyToFetch() const
-  {
-    std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
-    return uncompress_done;
-  }
-  void execute()
-  {
-    if (uncompress_done && firsttime2)
-      {
-	firsttime2=false;
+
+
     mz_zip_reader_end(&pZip);
 
     if (mainfilename!="")
@@ -14981,18 +15001,39 @@ public:
       }
 	
       }
-    zip_result_urls.clear();
-    
-    uncompress_done = true;
+    // SOMETHING WRONG WITH THIS?
+    //zip_result_urls.clear();
 
+
+
+  }
+  void ZipDone()
+  {
+    uncompress_done=true;
+  }
+  bool ReadyToFetch() const
+  {
+    std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
+    return uncompress_done3;
+  }
+  void execute()
+  {
+    std::cout << "ZipDecode::execute" << std::endl;
+    if (uncompress_done && firsttime2)
+      {
+    std::cout << "ZipDecode::uncompress_done && firsttime2" << std::endl;
+	firsttime2=false;
+    
+    uncompress_done2 = true;
+    std::cout << "Uncompress_done2=true" << std::endl;
       }
 
-    if (firsttime3 && uncompress_done)
+    if (firsttime3 && uncompress_done2)
       {
-	load->Prepare();
-	model=&load->model;
-	self=model;
+    std::cout << "firsttime3 && Uncompress_done2=true" << std::endl;
 	firsttime3 = false;
+	uncompress_done3 = true;
+	std::cout << "uncompressdone3=true" << std::endl;
       }
 
   }
@@ -15007,10 +15048,10 @@ public:
   bool firsttime3=true;
   std::string mainfilename;
   bool uncompress_done=false;
+  bool uncompress_done2=false;
+  bool uncompress_done3=false;
   bool async = false;
-  mz_zip_archive pZip;
   mz_zip_archive_file_stat file_stat;
-  std::vector<unsigned char> vec2;
   //bool uncompress_done=false;
 };
 void Zip_callback(void* ptr)
@@ -15103,9 +15144,10 @@ void *thread_sketchfab_zip(void *data)
 	    //size_t sz=0;
 	    //void *ptr = mz_zip_reader_extract_to_heap(pZip, i, &sz, 0);
 	    std::vector<unsigned char, GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char, GameApiAllocator<unsigned char> >;
-	    if (mz_zip_reader_file_stat(pZip, i, dt->file_stat))
+	    mz_zip_archive_file_stat file_stat;
+	    if (mz_zip_reader_file_stat(pZip, i, &file_stat))
 	      {
-		size_t uncompressed_size = (size_t)dt->file_stat->m_uncomp_size;
+		size_t uncompressed_size = (size_t)file_stat.m_uncomp_size;
 		std::cout << "RESIZE:" << uncompressed_size << std::endl;
 		data->resize(uncompressed_size);
 	      }
