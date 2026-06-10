@@ -27914,7 +27914,7 @@ public:
   virtual void HeavyPrepare() {
     preparing_async = true;
       tasks_add(111,&writer,(void*)this);
-      tasks_join(111);
+      //tasks_join(111);
       preparing_async = false;
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glGenTextures(1,&tex);
@@ -27952,19 +27952,25 @@ public:
     ss.close();
 
     cap = cv::VideoCapture(path + "video"+id+".mp4");
+    cap_ready=true;
     }
   }
   
   virtual void render(MainLoopEnv &e)
   {
     OpenglLowApi *ogl = g_low->ogl;
+    bool frame_available=false;
+    bool ref_available=false;
     cv::Mat frame;
+    bool done=false;
+    if (cap_ready) {
     if (cap.grab())
       {
 	cap.retrieve(frame);
+	done=true;
+	frame_available=true;
       }
-    else
-      {
+    if (!done) {
    std::string home = getenv("HOME");
 
   const char *dd = getenv("BUILDER_DOCKER_DIR");
@@ -27975,8 +27981,9 @@ public:
 	
 	cap.grab();
 	cap.retrieve(frame);
+	frame_available=true;
       }
-
+      if (frame_available) {
     int channels = frame.channels();
     int nRows = frame.rows;
     int nCols = frame.cols;
@@ -27992,7 +27999,6 @@ public:
 	sx=nCols;
 	sy=nRows;
       }
-    
     //std::cout << "Channels: " << channels << std::endl;
     
     
@@ -28032,13 +28038,15 @@ public:
 	{
 	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
 	}
+    ref_available=true;
+      }
     //for(int y=0;y<sy;y++)
     //  for(int x=0;x<sx/2;x++)
     //	{
     //	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
     //	}
 
-    
+      if (ref_available) {
 #ifndef EMSCRIPTEN
   ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -28052,6 +28060,8 @@ public:
     ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
 
     ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
+      }
+    }
   }
   virtual int texture() const
       {
@@ -28069,6 +28079,7 @@ private:
   GameApi::Env &e;
   int sx,sy;
   std::string filename;
+  bool cap_ready=false;
   cv::VideoCapture cap;
   unsigned int tex;
   BufferRef ref;
@@ -31083,3 +31094,4 @@ GameApi::ARR GameApi::PolygonApi::interpolate_mesh_pair_arr(std::vector<P> start
     }
   return add_array(e,t);
 }
+

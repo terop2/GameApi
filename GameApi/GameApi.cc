@@ -1692,6 +1692,10 @@ int g_shows_hundred=0;
 extern int g_logo_shown;
 long long FindProgressVal();
 long long FindProgressMax();
+extern int g_val2;
+extern int g_max2;
+
+
 class ScaleProgress : public Movement
 {
 public:
@@ -1721,8 +1725,19 @@ public:
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
 
-    long long val = FindProgressVal();
-    long long max = FindProgressMax();
+    long long val = g_val2; //FindProgressVal();
+    long long max = g_max2; //FindProgressMax();
+
+    static long long old_g_val2 =0;
+    static long long old_g_max2 =0;
+    if (val != old_g_val2 || max!=old_g_max2)
+      {
+	std::cout << "ShowProgress (emscripten)" << std::endl;
+	old_g_val2 = val;
+	old_g_max2 = max;
+      }
+
+
     //std::cout << "PROGRESSBAR:" << val << "/" << max << std::endl;
     val*=(long long)256;
     float val2 = max!=0?float(val/max):0.0;
@@ -1781,9 +1796,20 @@ public:
     // if you change the numbers, change logo_iter too
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
+    
+    long long v1 = g_val2; //FindProgressVal();
+    long long v2 = g_max2; //FindProgressMax();
 
-    long long v1 = FindProgressVal();
-    long long v2 = FindProgressMax();
+    static long long old_g_val2 =0;
+    static long long old_g_max2 =0;
+    if (v1 != old_g_val2 || v2!=old_g_max2)
+      {
+	std::cout << "ShowProgress (emscripten)" << std::endl;
+	old_g_val2 = v1;
+	old_g_max2 = v2;
+      }
+    
+
     v1*=(long long)256;
     float val3 = v2<1?0.0:float(v1/v2);
     val3/=256.0;
@@ -39869,6 +39895,30 @@ extern Matrix g_last_resize;
 
 //bool g_execute_block = true;
 
+std::string get_new_script_to_end(std::string val, int pos,
+				  std::string allowed_chars)
+{
+  int s = val.size();
+  int s2 = allowed_chars.size();
+  int i=pos;
+  for(;i<s;i++)
+    {
+      bool found = false;
+      for(int j=0;j<s2;j++) {
+	if (val[i]==allowed_chars[j])
+	  {
+	    found=true;
+	    break;
+	  }
+      }
+      if (!found) break;
+    }
+  return val.substr(pos,i-pos);
+}
+
+ extern int g_async_progress_counter;
+ extern bool g_async_progress_counter_firsttime;
+
 void ClearProgress();
 KP extern "C" void set_new_script(const char *script2_)
 {
@@ -39885,7 +39935,51 @@ KP extern "C" void set_new_script(const char *script2_)
   
   
   //std::cout << "set_new_script::" << script2 << std::endl;
+  // PROGRESS BAR
   ClearProgress();
+  g_async_progress_counter=0;
+
+  
+  std::string script = script2_a;
+
+  int s2 = script.size();
+  int counter =0;
+  std::vector<std::string> urls;
+  for(int i=0;i<s2-4;i++)
+    {
+      if (script[i]=='h'&&
+	  script[i+1]=='t'&&
+	  script[i+2]=='t'&&
+	  script[i+3]=='p')
+	{
+	  counter++;
+	  std::string u = get_new_script_to_end(script,i,"abcdefghijklmnopqrstuvwxyz./\\ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:_");
+	  std::cout << "UU:" << u << std::endl;
+	  urls.push_back(u);
+	}
+      if (script[i]=='f'&&
+	  script[i+1]=='i'&&
+	  script[i+2]=='l'&&
+	  script[i+3]=='e')
+	{
+	  counter++;
+	  std::string u = get_new_script_to_end(script,i,"abcdefghijklmnopqrstuvwxyz./\\ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:_");
+	  std::cout << "UU:" << u << std::endl;
+	  urls.push_back(u);
+	}
+    }
+  std::sort(urls.begin(),urls.end());
+  auto it = std::unique(urls.begin(),urls.end());
+  urls.erase(it,urls.end());
+  
+  g_async_progress_counter+=urls.size();
+  if (g_async_progress_counter_firsttime) {
+    InstallProgress(111,"file count", g_async_progress_counter);
+  }
+
+
+  // PROGRESS BAR end
+  
   g_last_resize=Matrix::Identity();
   g_mainloop_ptr = (void*)script2;
     g_mainloop_callback = &run_callback;
