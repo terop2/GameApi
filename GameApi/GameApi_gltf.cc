@@ -941,6 +941,7 @@ public:
   {
     std::cout << "LoadGltf::execute" << std::endl;
     if (!prepare_done) Prepare();
+    if (m_interface) m_interface->execute();
     std::cout << "LoadGltf::execute done" << std::endl;
   }
 public:
@@ -9716,6 +9717,7 @@ public:
 
   void DoHeavy(CollectVisitor *vis, bool is_prepare)
   {
+    if (!DoHeavyDone) {
     std::cout << "gltfmeshall::DoHeavy 1" << std::endl;
     std::string url = interface->Url();
     bool is_binary=false;
@@ -9758,10 +9760,12 @@ public:
       if (is_prepare)
 	item->Prepare();
       else
-	item->Collect(*vis);
+	item->Prepare();
+      //item->Collect(*vis);
     }
     std::cout << "gltfmeshall::DoHeavy 7" << std::endl;
-
+    DoHeavyDone = true;
+    }
   }
 
   virtual void HeavyPrepare() {
@@ -9783,10 +9787,10 @@ public:
   }
   virtual void execute(MainLoopEnv &e) {
     std::cout << "ml_gltf_all_execute" << std::endl;
-    if (interface->ReadyToFetch()) {
+    //if (interface->ReadyToFetch()) { // TODO, async join needs this?
       ZipDecodeDone();
       interface->execute();
-    }
+      //}
     std::cout << "gltfmeshall::execute" << std::endl;
     if (zip_decode_done && firsttime) {
       //DoHeavy();  // TODO, IS THIS NEEDED?
@@ -9839,6 +9843,7 @@ private:
   bool emissive;
   bool firsttime=true;
   bool zip_decode_done=false;
+  bool DoHeavyDone = false;
 };
 
 
@@ -14934,6 +14939,8 @@ public:
   {
   }
   void Prepare() {
+    //load->Prepare();
+    //HeavyPrepare();
     if (firsttime) {
     UncompressZip();
     load->Prepare();
@@ -14947,7 +14954,7 @@ public:
   void HeavyPrepare() {
     if (firsttime) {
     UncompressZip();
-    load->Prepare();
+    //load->Prepare(); // should not call prepare in HeavyPrepare().
     model=&load->model;
     self=model;
     
@@ -15021,8 +15028,13 @@ public:
       }
 #ifdef THREADS
     //tasks_async_join(3009, &Zip_done,(void*)this);
-    tasks_join(3009);
-    ZipDone();
+    std::cout << "JOINING" << std::endl;
+    tasks_join(3009); // normal join onlt
+    std::cout << "ZIPDONE CB" << std::endl;
+    Zip_done((void*)this); // normal join only
+    std::cout << "ZIPDONE2 CB" << std::endl;
+    ZipDone(); // normal join only
+    std::cout << "ZIPDONE ok" << std::endl;
     /*
     for(int i2=0;i2<num;i2++)
       {
@@ -15041,7 +15053,9 @@ public:
   }
   void ZipDone()
   {
+    std::cout << "ZIPDONE FLAG SET" << std::endl;
     uncompress_done=true;
+    std::cout << "ZIPDONE FLAG OK" << std::endl;
   }
   bool ReadyToFetch() const
   {
@@ -15086,10 +15100,17 @@ public:
       {
     std::cout << "firsttime3 && Uncompress_done2=true" << std::endl;
 
-#if NOT_ASYNC_JOIN
+    std::cout << "Sending event from ZipDecode to LoadGltf" << std::endl;
+    fptr(data);
+    std::cout << "Sending event from ZipDecode to LoadGltf (end)" << std::endl;
+
+    
+    //#if NOT_ASYNC_JOIN
     int s = zip_result_urls.size();
     for(int i=0;i<s;i++)
       {
+	std::cout << "Sending callback of file: " << zip_result_urls[i] << std::endl;
+	//if (zip_result_urls[i]==url) continue; // small fix
 	std::string url_plain = remove_dirs(zip_result_urls[i]);
 
 	//std::cout << "URL for cb: " << url_plain << std::endl;
@@ -15122,15 +15143,13 @@ public:
 	//std::cout << "Load cb!4" << url_only << std::endl;
 	(*cb4->fptr)(cb4->data);
       }
+	std::cout << "Sending callback of file(end): " << zip_result_urls[i] << std::endl;
 	
       }
     // SOMETHING WRONG WITH THIS?
     zip_result_urls.clear();
-#else
-    std::cout << "Sending event from ZipDecode to LoadGltf" << std::endl;
-    fptr(data);
-    std::cout << "Sending event from ZipDecode to LoadGltf (end)" << std::endl;
-#endif
+    //#else
+    //#endif
 
 
     firsttime3 = false;
