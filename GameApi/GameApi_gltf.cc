@@ -636,6 +636,7 @@ public:
     //std::cout << "LoadGltf_cb using url: " << url << std::endl;
     //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     fptr2(&LoadGltf_cb,(void*)this);
+    //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
   }
 
@@ -936,7 +937,9 @@ public:
     HeavyPrepare();
     std::cout << "LoadGltf::Prepare done" << std::endl;
   }
-  void set_urls(std::string burl, std::string url2) { base_url=burl; url=url2; }
+  void set_urls(std::string burl, std::string url2) {
+    base_url=burl; url=url2;
+  }
   void execute()
   {
     std::cout << "LoadGltf::execute" << std::endl;
@@ -15030,10 +15033,9 @@ public:
     //tasks_async_join(3009, &Zip_done,(void*)this);
     std::cout << "JOINING" << std::endl;
     tasks_join(3009); // normal join onlt
-    std::cout << "ZIPDONE CB" << std::endl;
-    Zip_done((void*)this); // normal join only
-    std::cout << "ZIPDONE2 CB" << std::endl;
     ZipDone(); // normal join only
+    execute(); // normal join only
+    execute(); // normal join only
     std::cout << "ZIPDONE ok" << std::endl;
     /*
     for(int i2=0;i2<num;i2++)

@@ -43790,11 +43790,13 @@ IMPORT std::vector<std::string> async_infos;
 
 void async_pending_plus(std::string label, std::string info)
 {
+  std::cout << "PLUS:" << label << " " << info << std::endl;
   async_labels.push_back(label);
   async_infos.push_back(info);
 }
 void async_pending_minus(std::string label, std::string info)
 {
+  std::cout << "MINUS:" << label << " " << info << std::endl;
   if (async_pending_count<0)
     {
       std::cout << "async_pending_minus detected negative async_pending_count" << std::endl;
