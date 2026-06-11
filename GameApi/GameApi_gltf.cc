@@ -601,6 +601,45 @@ public:
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
   }
+
+
+  // TO USE THIS CTOR, YOU MUST DO:
+  //     e.async_load_callback(url, &yourownfunc, (void*)this);
+  // INSIDE YOU CODE, and once that callback is fired, do your own
+  // operations, and then call f(d); // this is used in ZIP decode currently
+  // in sketchfab zips.
+  LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary, void (*fptr2)(void (*f)(void*), void* d)) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
+    //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
+    g_e = &e;
+    decoder = new GLTFImageDecoder(base_url,this);
+    tinygltf::FsCallbacks fs = {
+      &FileExists,
+      &ExpandFilePath,
+      &ReadWholeFile,
+      &WriteWholeFile,
+      (void*)this
+    };
+    tiny.SetFsCallbacks(fs);
+    //#ifdef CONCURRENT_IMAGE_DECODE
+#ifdef THREADS
+    if (url.substr(url.size()-3,3)!="glb")
+      tiny.SetImageLoader(&LoadImageData, this);
+#endif
+    //#endif
+    //tiny.SetImageWriter(&WriteImageData, this);
+#ifdef EMSCRIPTEN
+    async_pending_count++;
+    async=true;
+    async_pending_plus("LoadGltf", "LoadGltf_cb");
+#endif
+    //std::cout << "LoadGltf_cb using url: " << url << std::endl;
+    //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
+    fptr2(&LoadGltf_cb,(void*)this);
+    //std::cout << "Callback started for " << url << std::endl;
+  }
+
+
+  void set_model(GLTFModelInterface *interface) { m_interface = interface; }
   ~LoadGltf()
   {
     unasync();
@@ -637,130 +676,11 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    if (m_interface) m_interface->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
   {
-    Prepare();
-  }
-  void PrePrePrepare(int i, FETCHID id)
-  {
-    if (!decoder) return;
-    //std::cout << "PrePrePrepare" << i << std::endl;
-    if (url.substr(url.size()-3,3)!="glb") {
-    prepreprepare_done = true;
-    std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = decoder->get_file(e,id);
-    if (!vec) return;
-    //std::cout << "PrePrePrepare vecsize=" << vec->size() << std::endl;
-    std::string filename = decoder->get_fetch_filename(id);
-    //std::cout << "PrePrePrepare()" << filename << std::endl;
-    FILEID iid = decoder->add_file(vec,filename);
-#ifdef EMSCRIPTEN
-    if (async_vec.size()>i && async_vec[i]==true) {
-      async_pending_count--;
-      async_vec[i]=false;
-      std::stringstream ss; ss << i;
-      async_pending_minus("LoadGltf", "async_vec " + ss.str());
-    } else
-      {
-	std::cout << "i=" << i << " < " << async_vec.size() << std::endl;
-	std::cout << "PrePrePrepare() fail, propably callbacks called wrong!" << std::endl;
-      }
-#endif
-
-    //#ifdef THREADS
-    //delete vec;
-    //#endif
-#ifdef EMSCRIPTEN
-     async_pending_count++;
-     std::stringstream ss; ss<<i;
-     async_pending_plus("LoadGltf", "decode_process " + ss.str());
-#endif
-     
-     decoder->start_decode_process(i,id,iid,256,256);
-    }
-  }
-  void PrePrepare() {
-    //std::cout << "PREPREPARE CALLED WITH async=" << async << std::endl;
-#ifdef EMSCRIPTEN
-    if (async) {
-      async_pending_count--;
-      async_pending_minus("LoadGltf", "LoadGltf_cb");
-      async=false;
-  }
-#endif
-    //unasync();
-    if (!decoder) { std::cout << "NoDecoder" << std::endl; return; }
-    if (preprepare_done) { std::cout << "PrePrepare already done" << std::endl; return; }
-    //std::cout << "PrePrepare" << url << std::endl;
-    preprepare_done = true;
-    if (url.substr(url.size()-3,3)!="glb") {
-      //std::cout << "PrePrepare()" << url << std::endl;
-#ifndef EMSCRIPTEN
-    e.async_load_url(url, homepage);
-
-#endif
-    
-    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
-    if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << std::endl; stackTrace();  return; }
-    if (!vec->size()) { std::cout << "PrePrepare FILE SIZE=0!" << std::endl; stackTrace();  return; }
-    //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
-
-    g_glb_file_size = g_glb_file_size > vec->size() ? g_glb_file_size : vec->size();
-
-
-
-    
-    std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec);
-
-
-
-    
-    //int ss6 = image_filenames.size();
-    //std::cout << "filenames_count:" << ss6 << std::endl;
-    //for(int i=0;i<ss6;i++)
-    //  {
-	//std::cout << "IMAGE:" << image_filenames[i] << std::endl;
-    // }
-    
-    
-    std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
-    int ss = image_ids.size();
-    async_vec.resize(ss);
-
-#ifdef EMSCRIPTEN
-	async_pending_count+=ss;
-	for(int kk=0;kk<ss;kk++) {
-	  async_vec[kk]=true;
-	  std::stringstream ss; ss << kk;
-	  async_pending_plus("LoadGltf", "async_vec " + ss.str());
-	}
-#endif
-
-    for(int ii=0;ii<ss;ii++)
-      {
-	LoadGltf2_data *dt = new LoadGltf2_data;
-	dt->obj = this;
-	dt->id = ii;
-	dt->iid = image_ids[ii];
-	decoder->set_fetch_callback(e, image_ids[ii], &LoadGltf2_cb, (void*)dt);
-
-      }
-    decoder->fetch_all_files(e,image_ids);
-
-#ifndef EMSCRIPTEN
-    std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
-    int ig = 0;
-    for(;it!=decoder->filenames.end();it++)
-      {
-	std::pair<FETCHID,std::string> p = *it;
-	PrePrePrepare(ig,p.first);
-	ig++;
-      }
-#endif
-    }
-  }
-  void Prepare() {
     if (prepare_done) return;
     //std::cout << "Prepare" << std::endl;
     unasync();
@@ -881,6 +801,128 @@ public:
     prepare_done = true;
     delete vec;
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
+    //Prepare();
+  }
+  void PrePrePrepare(int i, FETCHID id)
+  {
+    if (!decoder) return;
+    //std::cout << "PrePrePrepare" << i << std::endl;
+    if (url.substr(url.size()-3,3)!="glb") {
+    prepreprepare_done = true;
+    std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = decoder->get_file(e,id);
+    if (!vec) return;
+    //std::cout << "PrePrePrepare vecsize=" << vec->size() << std::endl;
+    std::string filename = decoder->get_fetch_filename(id);
+    //std::cout << "PrePrePrepare()" << filename << std::endl;
+    FILEID iid = decoder->add_file(vec,filename);
+#ifdef EMSCRIPTEN
+    if (async_vec.size()>i && async_vec[i]==true) {
+      async_pending_count--;
+      async_vec[i]=false;
+      std::stringstream ss; ss << i;
+      async_pending_minus("LoadGltf", "async_vec " + ss.str());
+    } else
+      {
+	std::cout << "i=" << i << " < " << async_vec.size() << std::endl;
+	std::cout << "PrePrePrepare() fail, propably callbacks called wrong!" << std::endl;
+      }
+#endif
+
+    //#ifdef THREADS
+    //delete vec;
+    //#endif
+#ifdef EMSCRIPTEN
+     async_pending_count++;
+     std::stringstream ss; ss<<i;
+     async_pending_plus("LoadGltf", "decode_process " + ss.str());
+#endif
+     
+     decoder->start_decode_process(i,id,iid,256,256);
+    }
+  }
+  void PrePrepare() {
+    //std::cout << "PREPREPARE CALLED WITH async=" << async << std::endl;
+#ifdef EMSCRIPTEN
+    if (async) {
+      async_pending_count--;
+      async_pending_minus("LoadGltf", "LoadGltf_cb");
+      async=false;
+  }
+#endif
+    //unasync();
+    if (!decoder) { std::cout << "NoDecoder" << std::endl; return; }
+    if (preprepare_done) { std::cout << "PrePrepare already done" << std::endl; return; }
+    //std::cout << "PrePrepare" << url << std::endl;
+    preprepare_done = true;
+    if (url.substr(url.size()-3,3)!="glb") {
+      //std::cout << "PrePrepare()" << url << std::endl;
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+
+#endif
+    
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << std::endl; stackTrace();  return; }
+    if (!vec->size()) { std::cout << "PrePrepare FILE SIZE=0!" << std::endl; stackTrace();  return; }
+    //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
+
+    g_glb_file_size = g_glb_file_size > vec->size() ? g_glb_file_size : vec->size();
+
+
+
+    
+    std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec);
+
+
+
+    
+    //int ss6 = image_filenames.size();
+    //std::cout << "filenames_count:" << ss6 << std::endl;
+    //for(int i=0;i<ss6;i++)
+    //  {
+	//std::cout << "IMAGE:" << image_filenames[i] << std::endl;
+    // }
+    
+    
+    std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
+    int ss = image_ids.size();
+    async_vec.resize(ss);
+
+#ifdef EMSCRIPTEN
+	async_pending_count+=ss;
+	for(int kk=0;kk<ss;kk++) {
+	  async_vec[kk]=true;
+	  std::stringstream ss; ss << kk;
+	  async_pending_plus("LoadGltf", "async_vec " + ss.str());
+	}
+#endif
+
+    for(int ii=0;ii<ss;ii++)
+      {
+	LoadGltf2_data *dt = new LoadGltf2_data;
+	dt->obj = this;
+	dt->id = ii;
+	dt->iid = image_ids[ii];
+	decoder->set_fetch_callback(e, image_ids[ii], &LoadGltf2_cb, (void*)dt);
+
+      }
+    decoder->fetch_all_files(e,image_ids);
+
+#ifndef EMSCRIPTEN
+    std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
+    int ig = 0;
+    for(;it!=decoder->filenames.end();it++)
+      {
+	std::pair<FETCHID,std::string> p = *it;
+	PrePrePrepare(ig,p.first);
+	ig++;
+      }
+#endif
+    }
+  }
+  void Prepare() {
+    if (m_interface) m_interface->Prepare();
+    HeavyPrepare();
   }
   void set_urls(std::string burl, std::string url2) { base_url=burl; url=url2; }
   void execute()
@@ -889,6 +931,7 @@ public:
   }
 public:
   GameApi::Env &e;
+  GLTFModelInterface *m_interface=0;
   std::string base_url;
   std::string url;
   std::string homepage;
@@ -1406,6 +1449,33 @@ LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string 
   g_gltf_instances.push_back(s2);
   return obj;
 }
+
+// for sketchfab zip.
+LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary, void (*fptr)(void (*f)(void*),void *d))
+{
+#ifdef EMSCRIPTEN
+  if (instance_deleter_installed==false)
+    {
+      register_cache_deleter(&del_instances,(void*)0);
+      instance_deleter_installed=true;
+  }
+#endif
+  
+  std::string key = base_url + ":" + url;
+
+  int s = g_gltf_instances.size();
+  for(int i=0;i<s;i++) {
+    if (g_gltf_instances[i].key == key) return g_gltf_instances[i].obj;
+  }
+  LoadGltf *obj = new LoadGltf(e,base_url,url,homepage,is_binary,fptr);
+  //obj->Prepare();
+  KeyStruct s2;
+  s2.key = key;
+  s2.obj = obj;
+  g_gltf_instances.push_back(s2);
+  return obj;
+}
+
 
 
 LoadGltf_from_string *find_gltf_instance_from_string(GameApi::Env &e, std::string data, std::string base_url, std::string url, std::string homepage, bool is_binary)
@@ -14665,6 +14735,7 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
   
   LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  load->set_model(model);
   g_model_del_items.push_back(model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
       int c = get_current_block();
@@ -14808,7 +14879,7 @@ class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
 {
 public:
   std::string name() const { return "GLTF_Model_with_prepare_sketchfab_zip"; }
-  GLTF_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.gltf"), zip_url(zip_url), homepage(homepage), load(load), model(model) { firsttime=true;
+  GLTF_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model, void (*fptr)(void*), void *data) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.gltf"), zip_url(zip_url), homepage(homepage), load(load), model(model), fptr(fptr), data(data) { firsttime=true;
 
 #ifdef EMSCRIPTEN
     async_pending_count++;
@@ -14839,6 +14910,9 @@ public:
 #endif
     }
     UncompressZip();
+  }
+  void Zip_ready_cb()
+  {
   }
   void Prepare() {
     if (firsttime) {
@@ -14964,6 +15038,7 @@ public:
       }
 
     zip_mutex_destroy();
+#if NOT_ASYNC_JOIN
     int s = zip_result_urls.size();
     for(int i=0;i<s;i++)
       {
@@ -15002,8 +15077,10 @@ public:
 	
       }
     // SOMETHING WRONG WITH THIS?
-    //zip_result_urls.clear();
-
+    zip_result_urls.clear();
+#else
+    fptr(data);
+#endif
 
 
   }
@@ -15053,7 +15130,9 @@ public:
   bool async = false;
   mz_zip_archive_file_stat file_stat;
   //bool uncompress_done=false;
-};
+  void (*fptr)(void*);
+  void *data;
+  };
 void Zip_callback(void* ptr)
   {
     GLTF_Model_with_prepare_sketchfab_zip *p = (GLTF_Model_with_prepare_sketchfab_zip*)ptr;
@@ -15774,12 +15853,19 @@ GameApi::ML GameApi::MainLoopApi::load_zip(EveryApi &ev, std::string zip_url)
 }
 
 
+void (*g_sketchfab_f2)(void*);
+void *g_sketchfab_data;
+
+void sketchfab_zip_cb(void (*f2)(void*), void*data) {
+  g_sketchfab_f2 = f2;
+  g_sketchfab_data = data;
+}
 
 GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip)
 {
   bool is_binary=false;
-  LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary);
-  GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model);
+  LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary, &sketchfab_zip_cb);
+  GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model, g_sketchfab_f2,g_sketchfab_data);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
   GameApi::TF tf = add_gltf(e,i);
   g_tf_instances.push_back(tf);
