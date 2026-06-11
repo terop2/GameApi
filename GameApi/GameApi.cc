@@ -294,6 +294,158 @@ public:
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
 };
 
+std::vector<MainLoopItem*> g_reload_instances;
+std::vector<std::string> g_reload_names;
+std::vector<int> g_reload_phase;
+
+class ReloadMainLoop : public MainLoopItem
+{
+public:
+  ReloadMainLoop(GameApi::Env &env, Material *next, GameApi::P p, std::string name, int phase, GameApi::P default_p) : env(env), next(next), p(p), name(name), phase(phase), default_p(default_p)
+  {
+    g_reload_instances.push_back(this);
+    g_reload_names.push_back(name);
+    g_reload_phase.push_back(phase);
+  }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    MainLoopItem *item = find_main_loop(env,use_ml);
+    item->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    reload_internal(default_p);
+  }
+  virtual void Prepare()
+  {
+    MainLoopItem *item = find_main_loop(env,use_ml);
+    item->Prepare();    
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopItem *item = find_main_loop(env,use_ml);
+    item->execute(e);        
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    MainLoopItem *item = find_main_loop(env,use_ml);
+    item->handle_event(e);            
+  }
+  virtual std::vector<int> shader_id() {
+    MainLoopItem *item = find_main_loop(env,use_ml);
+    return item->shader_id();            
+  }
+
+  GameApi::ML reload_fetch(GameApi::P p) const
+  {
+    switch(phase) {
+    case 0: // mat2
+      break;
+    case 1: // mat2_inst
+      break;
+    case 2: // mat2_inst_va_prepare
+      break;
+    case 3: // mat2_inst_va
+      break;
+    case 4: // mat2_inst_matrix
+      break;
+    case 5: // mat2_inst2
+      break;
+    case 6: // mat_inst_fade
+    }
+  }
+
+  void reload()
+  {
+    reload_internal(p);
+  }
+private:
+  void reload_internal(GameApi::P p0)
+  {
+    use_ml = reload_fetch(p0);
+    has_ml=true;
+    MainLoopItem *item = find_main_loop(e,use_ml);
+    item->Prepare();
+  }
+  
+private:
+  GameApi::Env &env;
+  Material *next;
+  GameApi::P p;
+  GameApi::P default_p;
+  std::string name;
+  int phase;
+  bool has_ml = false;
+  mutable GameApi::ML use_ml;
+  
+};
+GameApi::ML GameApi::MainLoopApi::reload_ml(Material *next, P p, std::string name, int phase, GameApi::P default_p)
+{
+  return add_main_loop(e,new ReloadMainLoop(e,next,p,name,phase,default_p));
+}
+
+
+class ReloadMaterial : public MaterialForward
+{
+public:
+  ReloadMaterial(Material *next, Material *default_p_material, std::string name, GameApi::P default_p) : next(next),name(name), default_p_material(default_p_material), default_p(default_p) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    return reload_ml(next,p,name,0,default_p,default_p_material);
+    //GameApi::ML ml;
+    //ml.id = next->mat(p.id);
+    //return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    return reload_ml(next,p,name,1,default_p,default_p_material);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst(p.id, pts.id);
+    //return ml;
+  }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    return reload_ml(next,p,name,2,default_p,default_p_material);
+    //return ev.polygon_api.create_vertex_array(p);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    return reload_ml(next,p,name,3,default_p,default_p_material);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst_va(va.id, pts.id);
+    //return ml;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    return reload_ml(next,p,name,0,default_p,default_p_material);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst_matrix(p.id, ms.id);
+    //return ml;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    return reload_ml(next,p,name,0,default_p,default_p_material);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst2(p.id, pta.id);
+    //return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    return reload_ml(next,p,name,0,default_p,default_p_material);
+    //GameApi::ML ml;
+    //ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    //return ml;
+  }
+private:
+  Material *next;
+  Material *default_p_material;
+  std::string name;
+  GameApi::P default_p;
+  
+};
+
 
 class EmptyMaterial : public MaterialForward
 {
