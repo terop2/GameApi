@@ -548,6 +548,7 @@ struct ThreadInfo_gltf_bitmap
 GameApi::Env *g_e = 0;
 
 extern bool g_concurrent_download;
+extern bool g_no_concurrent_download;
 
 class LoadGltf;
 struct LoadGltf2_data
@@ -676,12 +677,16 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    std::cout << "LoadGltf::Collect" << std::endl;
     if (m_interface) m_interface->Collect(vis);
     vis.register_obj(this);
+    std::cout << "LoadGltf::Collect end" << std::endl;
   }
   void HeavyPrepare()
   {
+    std::cout << "LoadGltf::HeavyPrepare" << std::endl;
     if (prepare_done) return;
+    std::cout << "LoadGltf::HeavyPrepare -> executing" << std::endl;
     //std::cout << "Prepare" << std::endl;
     unasync();
 #ifndef EMSCRIPTEN
@@ -757,7 +762,7 @@ public:
       //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
       int sz = str.size();
 
-      if (g_concurrent_download) {
+      if (g_concurrent_download|| !g_no_concurrent_download) {
 #ifdef EMSCRIPTEN
     int s = g_urls.size();
     bool has_space = true;
@@ -776,7 +781,7 @@ public:
     } else {
       int sz = vec->size();
       //std::cout << "File size: " << url  << "::" << sz << std::endl;
-      if (g_concurrent_download) {
+      if (g_concurrent_download|| !g_no_concurrent_download) {
 #ifdef EMSCRIPTEN
     int s = g_urls.size();
     bool has_space = true;
@@ -802,9 +807,11 @@ public:
     delete vec;
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
     //Prepare();
+    std::cout << "LoadGltf::HeavyPrepare done" << std::endl;
   }
   void PrePrePrepare(int i, FETCHID id)
   {
+    std::cout << "LoadGltf::PrePrePrepare" << std::endl;
     if (!decoder) return;
     //std::cout << "PrePrePrepare" << i << std::endl;
     if (url.substr(url.size()-3,3)!="glb") {
@@ -839,9 +846,11 @@ public:
      
      decoder->start_decode_process(i,id,iid,256,256);
     }
+    std::cout << "LoadGltf::PrePrePrepare done" << std::endl;
   }
   void PrePrepare() {
     //std::cout << "PREPREPARE CALLED WITH async=" << async << std::endl;
+    std::cout << "LoadGltf::PrePrepare" << std::endl;
 #ifdef EMSCRIPTEN
     if (async) {
       async_pending_count--;
@@ -919,15 +928,20 @@ public:
       }
 #endif
     }
+    std::cout << "LoadGltf::PrePrepare done" << std::endl;
   }
   void Prepare() {
+    std::cout << "LoadGltf::Prepare" << std::endl;
     if (m_interface) m_interface->Prepare();
     HeavyPrepare();
+    std::cout << "LoadGltf::Prepare done" << std::endl;
   }
   void set_urls(std::string burl, std::string url2) { base_url=burl; url=url2; }
   void execute()
   {
+    std::cout << "LoadGltf::execute" << std::endl;
     if (!prepare_done) Prepare();
+    std::cout << "LoadGltf::execute done" << std::endl;
   }
 public:
   GameApi::Env &e;
@@ -9692,6 +9706,7 @@ public:
 
   virtual void Collect(CollectVisitor &vis) {
     std::cout << "gltfmeshall::collect" << std::endl;
+    DoHeavy(&vis,false);
     interface->Collect(vis);
     vis.register_obj(this);
   }
@@ -9699,7 +9714,7 @@ public:
     std::cout << "gltfmeshall::readytoprepare" << std::endl;
     return interface->ReadyToPrepare(); }
 
-  void DoHeavy()
+  void DoHeavy(CollectVisitor *vis, bool is_prepare)
   {
     std::cout << "gltfmeshall::DoHeavy 1" << std::endl;
     std::string url = interface->Url();
@@ -9738,8 +9753,12 @@ public:
     
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
-      if (item)
+      //if (item)
+      //	item->Prepare();
+      if (is_prepare)
 	item->Prepare();
+      else
+	item->Collect(*vis);
     }
     std::cout << "gltfmeshall::DoHeavy 7" << std::endl;
 
@@ -9747,7 +9766,7 @@ public:
 
   virtual void HeavyPrepare() {
     std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
-    //DoHeavy();
+    DoHeavy(NULL,true);
   }
   virtual void Prepare() {
     std::cout << "gltfmeshall::Prepare 1" << std::endl;
@@ -9770,7 +9789,7 @@ public:
     }
     std::cout << "gltfmeshall::execute" << std::endl;
     if (zip_decode_done && firsttime) {
-      DoHeavy();
+      //DoHeavy();  // TODO, IS THIS NEEDED?
       firsttime=false;
     }
 
@@ -14964,7 +14983,6 @@ public:
     //std::cout << "VECTOR SIZE=" << size << std::endl;
 
     
-    mz_zip_archive pZip;
     std::memset(&pZip,0,sizeof(mz_zip_archive));
 
     mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
@@ -15018,6 +15036,26 @@ public:
 #endif
 
 
+
+
+  }
+  void ZipDone()
+  {
+    uncompress_done=true;
+  }
+  bool ReadyToFetch() const
+  {
+    std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
+    return uncompress_done3;
+  }
+  void execute()
+  {
+    std::cout << "ZipDecode::execute" << std::endl;
+    if (uncompress_done && firsttime2)
+      {
+    std::cout << "ZipDecode::uncompress_done && firsttime2" << std::endl;
+	firsttime2=false;
+
     mz_zip_reader_end(&pZip);
 
     if (mainfilename!="")
@@ -15038,6 +15076,16 @@ public:
       }
 
     zip_mutex_destroy();
+
+	
+    uncompress_done2 = true;
+    std::cout << "Uncompress_done2=true" << std::endl;
+      }
+
+    if (firsttime3 && uncompress_done2)
+      {
+    std::cout << "firsttime3 && Uncompress_done2=true" << std::endl;
+
 #if NOT_ASYNC_JOIN
     int s = zip_result_urls.size();
     for(int i=0;i<s;i++)
@@ -15079,36 +15127,13 @@ public:
     // SOMETHING WRONG WITH THIS?
     zip_result_urls.clear();
 #else
+    std::cout << "Sending event from ZipDecode to LoadGltf" << std::endl;
     fptr(data);
+    std::cout << "Sending event from ZipDecode to LoadGltf (end)" << std::endl;
 #endif
 
 
-  }
-  void ZipDone()
-  {
-    uncompress_done=true;
-  }
-  bool ReadyToFetch() const
-  {
-    std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
-    return uncompress_done3;
-  }
-  void execute()
-  {
-    std::cout << "ZipDecode::execute" << std::endl;
-    if (uncompress_done && firsttime2)
-      {
-    std::cout << "ZipDecode::uncompress_done && firsttime2" << std::endl;
-	firsttime2=false;
-    
-    uncompress_done2 = true;
-    std::cout << "Uncompress_done2=true" << std::endl;
-      }
-
-    if (firsttime3 && uncompress_done2)
-      {
-    std::cout << "firsttime3 && Uncompress_done2=true" << std::endl;
-	firsttime3 = false;
+    firsttime3 = false;
 	uncompress_done3 = true;
 	std::cout << "uncompressdone3=true" << std::endl;
       }
@@ -15128,7 +15153,8 @@ public:
   bool uncompress_done2=false;
   bool uncompress_done3=false;
   bool async = false;
-  mz_zip_archive_file_stat file_stat;
+  mz_zip_archive pZip;
+  //mz_zip_archive_file_stat file_stat;
   //bool uncompress_done=false;
   void (*fptr)(void*);
   void *data;
