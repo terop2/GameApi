@@ -9716,14 +9716,26 @@ public:
 
 
   virtual void Collect(CollectVisitor &vis) {
+    std::cout << "FLAGJOINIMPL:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
     std::cout << "gltfmeshall::collect" << std::endl;
     //DoHeavy(&vis,false);
     interface->Collect(vis);
     vis.register_obj(this);
+    } else {
+      interface->Collect(vis);
+      vis.register_obj(this);
+    }
   }
   virtual bool ReadyToPrepare() const {
+    std::cout << "FLAGJOINIMPL2:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
     std::cout << "gltfmeshall::readytoprepare" << std::endl;
-    return interface->ReadyToPrepare(); }
+    return interface->ReadyToPrepare();
+    } else {
+      return interface->ReadyToPrepare();
+    }
+    }
 
   void DoHeavy(CollectVisitor *vis, bool is_prepare)
   {
@@ -9776,24 +9788,71 @@ public:
   }
 
   virtual void HeavyPrepare() {
-    std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
-    DoHeavy(NULL,true);
-    if (res.id!=-1) {
-      MainLoopItem *item = find_main_loop(env,res);
-      item->Prepare();
+    std::cout << "FLAGJOINIMPL3:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
+      DoHeavy(NULL,true);
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	item->Prepare();
+      }
+    } else {
+      
+      std::string url = interface->Url();
+      bool is_binary=false;
+      if (int(url.size())>3) {
+	std::string sub = url.substr(url.size()-3);
+	if (sub=="glb") is_binary=true;
+      }
+      // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+      //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+      int scene_id = interface->get_default_scene();
+      GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
+      
+      
+      GameApi::TRR resize_transfer_id;
+      resize_transfer_id.id = transfer_id.id;
+      
+      GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, transfer_id, emissive ); // 0 = take numtimeindexes from first animation
+      bool is_animated_g = is_animated(env,interface,mesh);
+#ifdef GLTF_ANIM_RESIZE_TEST
+      if (is_animated(env,interface,mesh))
+	{
+	  res = ml;
+	} else
+	{
+	  res= scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);    
+	}
+#else
+      res = scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);
+#endif
+      
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->Prepare();
+      }
+      
     }
   }
   virtual void Prepare() {
-    std::cout << "gltfmeshall::Prepare 1" << std::endl;
-    interface->Prepare();
-    std::cout << "gltfmeshall::Prepare 2" << std::endl;
+    std::cout << "FLAGJOINIMPL4:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      std::cout << "gltfmeshall::Prepare 1" << std::endl;
+      interface->Prepare();
+      std::cout << "gltfmeshall::Prepare 2" << std::endl;
 
-    HeavyPrepare();
-    if (res.id!=-1) {
-      MainLoopItem *item = find_main_loop(env,res);
-      item->Prepare();
+      HeavyPrepare();
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	item->Prepare();
+      }
+      std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
+    } else {
+      interface->Prepare();
+      
+      HeavyPrepare();
     }
-    std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
   }
   void ZipDecodeDone()
   {
@@ -9801,43 +9860,73 @@ public:
     zip_decode_done = true;
   }
   virtual void execute(MainLoopEnv &e) {
-    std::cout << "ml_gltf_all_execute" << std::endl;
-    interface->execute();
-    if (interface->ReadyToFetch()) { // TODO, async join needs this?
-      ZipDecodeDone();
+    std::cout << "FLAGJOINIMPL5:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      std::cout << "ml_gltf_all_execute" << std::endl;
+      interface->execute();
+      if (interface->ReadyToFetch()) { // TODO, async join needs this?
+	ZipDecodeDone();
       }
-    std::cout << "gltfmeshall::execute" << std::endl;
-    if (zip_decode_done && firsttime) {
-      DoHeavy(NULL,false);  // TODO, IS THIS NEEDED?
-      firsttime=false;
-    }
+      std::cout << "gltfmeshall::execute" << std::endl;
+      if (zip_decode_done && firsttime) {
+	DoHeavy(NULL,false);  // TODO, IS THIS NEEDED?
+	firsttime=false;
+      }
 
-    if (res.id!=-1) {
-    MainLoopItem *item = find_main_loop(env,res);
-    if (item) {
-      std::cout << "gltfmeshall::ITEM EXECUTE DONE!" << std::endl;
-      item->execute(e);
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item) {
+	  std::cout << "gltfmeshall::ITEM EXECUTE DONE!" << std::endl;
+	  item->execute(e);
+	}
+      }
+      std::cout << "gltfmeshall::execute 2" << std::endl;
+    } else {
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->execute(e);
+      }
     }
-    }
-    std::cout << "gltfmeshall::execute 2" << std::endl;
   }
   virtual void handle_event(MainLoopEvent &e) {
-    std::cout << "gltfmeshall::handle_event" << std::endl;
+    std::cout << "FLAGJOINIMPL6:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      std::cout << "gltfmeshall::handle_event" << std::endl;
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->handle_event(e);
+      }
+      std::cout << "gltfmeshall::handleevenrt2" << std::endl;
+    } else {
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->handle_event(e);
+      }
+
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    std::cout << "FLAGJOINIMPL7:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      std::cout << "gltfmeshall::shader_id" << std::endl;
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  return item->shader_id();
+	else return std::vector<int>();
+      } else return std::vector<int>();
+    } else {
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
       if (item)
-	item->handle_event(e);
-    }
-    std::cout << "gltfmeshall::handleevenrt2" << std::endl;
-  }
-  virtual std::vector<int> shader_id() {
-    std::cout << "gltfmeshall::shader_id" << std::endl;
-    if (res.id!=-1) {
-    MainLoopItem *item = find_main_loop(env,res);
-    if (item)
-      return item->shader_id();
-    else return std::vector<int>();
+	return item->shader_id();
+      else return std::vector<int>();
     } else return std::vector<int>();
+    
+    }
   }
 
 private:
