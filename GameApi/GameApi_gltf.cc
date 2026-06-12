@@ -14992,7 +14992,6 @@ public:
 #endif
     GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
     if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
-    std::vector<unsigned char> vec2;
     
      vec2 = std::vector<unsigned char>(vec->begin(), vec->end());
     mz_ulong size = vec2.end()-vec2.begin();
@@ -15203,6 +15202,7 @@ public:
   void (*fptr)(void*);
   void *data;
   bool uncompress_started=false;
+    std::vector<unsigned char> vec2;
   };
 void Zip_callback(void* ptr)
   {
