@@ -12,8 +12,11 @@ int hhhh_gggg=1;
 #include "Tasks.hh"
 #include <unordered_set>
 
-
-//#define ASYNC_JOIN 1
+#ifdef EMSCRIPTEN
+#define ASYNC_JOIN 1
+#else
+#undef ASYNC_JOIN
+#endif
 
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
