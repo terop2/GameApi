@@ -14984,7 +14984,9 @@ public:
   }
   void UncompressZip()
   {
+    if (uncompress_started) return;
     if (uncompress_done) return;
+    uncompress_started=true;
 #ifndef EMSCRIPTEN
     e.async_load_url(zip_url, homepage);
 #endif
@@ -15010,15 +15012,15 @@ public:
     //std::cout << "ZIP URL=" << zip_url << std::endl;
     //std::cout << "VECTOR SIZE=" << size << std::endl;
 
-    
+    // memset clearly fixes something.
     std::memset(&pZip,0,sizeof(mz_zip_archive));
 
     mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
 
-    //std::cout << "ZIP STATUS:" << b2 << std::endl;
+    std::cout << "ZIP STATUS:" << b2 << std::endl;
     
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
-    //std::cout << "ZIp num=" << num << std::endl;
+    std::cout << "ZIp num=" << num << std::endl;
 
     zip_mutex_create();
 
@@ -15200,6 +15202,7 @@ public:
   //bool uncompress_done=false;
   void (*fptr)(void*);
   void *data;
+  bool uncompress_started=false;
   };
 void Zip_callback(void* ptr)
   {
@@ -15215,7 +15218,7 @@ void Zip_done(void *ptr)
 
 std::vector<std::string> zip_result_urls;
 #ifdef THREADS
-pthread_mutex_t *zip_mutex;
+pthread_mutex_t *zip_mutex=0;
 #endif
 void zip_mutex_create()
 {
