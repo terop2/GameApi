@@ -10116,28 +10116,55 @@ public:
     vis.register_obj(this);
   }
   virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
+
+  void DoHeavy(CollectVisitor *vis, bool is_prepare)
+  {
+    if (!DoHeavyDone) {
+      std::string url = interface->Url();
+      bool is_binary=false;
+      if (int(url.size())>3) {
+	std::string sub = url.substr(url.size()-3);
+	if (sub=="glb") is_binary=true;
+      }
+      int scene_id2 = resize_obj->get_default_scene();
+      GameApi::P mesh = gltf_scene2_p(env, ev, resize_obj /*interface*/,scene_id2,"");
+      
+      int scene_id = interface->get_default_scene();
+      GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, emissive ); // 0 = take numtimeindexes from first animation
+      
+      res = ml;
+      
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	//if (item)
+	//  item->Prepare();
+      }
+      
+      DoHeavyDone=true;
+    }
+  }
+
   virtual void HeavyPrepare() {
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      DoHeavy(NULL,true);
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	item->Prepare();
+      }
+    } else {
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
       std::string sub = url.substr(url.size()-3);
       if (sub=="glb") is_binary=true;
     }
-    // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
-    //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
     int scene_id2 = resize_obj->get_default_scene();
     GameApi::P mesh = gltf_scene2_p(env, ev, resize_obj /*interface*/,scene_id2,"");
-
-    //GameApi::MS ms2 = scale_to_gltf_size_inv(ev,mesh,ms);
-    //GameApi::P mesh2 = ev.polygon_api.cube(-300.0,300.0,-300.0,300.0,-300.0,300.0);
-    //GameApi::MS ms2 = scale_to_gltf_size_ms(ev,mesh2,ms);
     
     int scene_id = interface->get_default_scene();
     GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, emissive ); // 0 = take numtimeindexes from first animation
 
     res = ml;
-    //GameApi::P mesh2 = ev.polygon_api.cube(-300.0,300.0,-300.0,300.0,-300.0,300.0);
-    //res = scale_to_gltf_size(env,ev,mesh,ml); // this is done inside scene2.
 
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
@@ -10145,21 +10172,55 @@ public:
 	item->Prepare();
     }
 
-
+    }
   }
   virtual void Prepare() {
-    interface->Prepare();
-    resize_obj->Prepare();
-    MatrixArray *ms0 = find_matrix_array(env,ms);
-    ms0->Prepare();
-    HeavyPrepare();
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->Prepare();
+      resize_obj->Prepare();
+      MatrixArray *ms0 = find_matrix_array(env,ms);
+      ms0->Prepare();
+      HeavyPrepare();
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	item->Prepare();
+      }
+    } else {
+      interface->Prepare();
+      resize_obj->Prepare();
+      MatrixArray *ms0 = find_matrix_array(env,ms);
+      ms0->Prepare();
+      HeavyPrepare();
+    }
+  }
+  void ZipDecodeDone()
+  {
+    zip_decode_done=true;
   }
   virtual void execute(MainLoopEnv &e) {
-    interface->execute();
-    if (res.id!=-1) {
-    MainLoopItem *item = find_main_loop(env,res);
-    if (item)
-      item->execute(e);
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->execute();
+      if (interface->ReadyToFetch())
+	{
+	  ZipDecodeDone();
+	}
+      if (zip_decode_done && firsttime) {
+	DoHeavy(NULL,false);
+	firsttime=false;
+      }
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item) {
+	  item->execute(e);
+	}
+      }
+    } else {
+      interface->execute();
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->execute(e);
+      }
     }
   }
   virtual void handle_event(MainLoopEvent &e) {
@@ -10197,6 +10258,9 @@ private:
   bool transparent;
   bool acesfilm;
   bool emissive;
+  bool firsttime=true;
+  bool zip_decode_done=false;
+  bool DoHeavyDone=false;
 };
 
 
