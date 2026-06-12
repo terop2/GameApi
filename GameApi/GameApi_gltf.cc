@@ -18,6 +18,8 @@ int hhhh_gggg=1;
 #undef ASYNC_JOIN
 #endif
 
+#define TINYGLTF_ASYNC_JOIN 1
+
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
 //#define GLTF_ANIM_RESIZE_TEST 1
@@ -602,6 +604,7 @@ void LoadGltf2_cb(void*);
 void LoadGltf_cb(void *);
 void LoadGltf_cb_from_string(void *);
 void LoadGltf2_cb_from_string(void*);
+void tinygltf_async_join_cb(void *data);
 
 int find_str(std::string val, std::string repl);
 
@@ -833,7 +836,11 @@ public:
       processData->base_url = base_url;
       processData->ptr3 = 0;
       tasks_add(7777,&tinygltf_process,(void*)processData);
+#ifndef TINYGLTF_ASYNC_JOIN
       tasks_join(7777);
+#else
+      tasks_async_join(7777, &tinygltf_async_join_cb, (void*)this);
+#endif
       //tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
@@ -866,7 +873,11 @@ public:
       processData->base_url = base_url;
       processData->ptr3 = ptr3;
       tasks_add(7778,&tinygltf_process,(void*)processData);
+#ifndef TINYGLTF_ASYNC_JOIN
       tasks_join(7778);
+#else
+      tasks_async_join(7778, &tinygltf_async_join_cb, (void*)this);
+#endif
 
       //tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
     }
@@ -880,6 +891,9 @@ public:
       } else {
       Prepare();
     }
+  }
+  void async_join_cb()
+  {
   }
   void PrePrePrepare(int i, FETCHID id)
   {
@@ -1170,6 +1184,12 @@ public:
   std::vector<bool> async_vec;
   std::vector<char> *m_vec2=0;
 };
+
+void tinygltf_async_join_cb(void *data)
+{
+  LoadGltf *load = (LoadGltf*)data;
+  load->async_join_cb();
+}
 
 void LoadGltf_cb(void *ptr)
 {
