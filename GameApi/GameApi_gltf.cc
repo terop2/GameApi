@@ -685,13 +685,24 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
-    std::cout << "LoadGltf::Collect" << std::endl;
-    if (m_interface) m_interface->Collect(vis);
-    vis.register_obj(this);
-    std::cout << "LoadGltf::Collect end" << std::endl;
+    //if (m_interface)
+    //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
+      {
+	std::cout << "LoadGltf::Collect" << std::endl;
+	if (m_interface) m_interface->Collect(vis);
+	vis.register_obj(this);
+	std::cout << "LoadGltf::Collect end" << std::endl;
+      } else {
+      vis.register_obj(this);
+    }
   }
   void HeavyPrepare()
   {
+    // if (m_interface)
+    //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
+      {
     std::cout << "LoadGltf::HeavyPrepare" << std::endl;
     if (prepare_done) return;
     std::cout << "LoadGltf::HeavyPrepare -> executing" << std::endl;
@@ -816,6 +827,9 @@ public:
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
     //Prepare();
     std::cout << "LoadGltf::HeavyPrepare done" << std::endl;
+      } else {
+      Prepare();
+    }
   }
   void PrePrePrepare(int i, FETCHID id)
   {
@@ -939,20 +953,154 @@ public:
     std::cout << "LoadGltf::PrePrepare done" << std::endl;
   }
   void Prepare() {
+    // if (m_interface)
+    //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
+      {
     std::cout << "LoadGltf::Prepare" << std::endl;
     if (m_interface) m_interface->Prepare();
     HeavyPrepare();
     std::cout << "LoadGltf::Prepare done" << std::endl;
+      } else {
+
+    if (prepare_done) return;
+    //std::cout << "Prepare" << std::endl;
+    unasync();
+#ifndef EMSCRIPTEN
+    PrePrepare();
+#endif
+    if (!preprepare_done)
+      {
+	PrePrepare();
+      }
+    //std::cout << "LoadGLTF: baseurl=" << base_url << std::endl;
+
+
+ #ifdef THREADS
+ #ifdef EMSCRIPTEN
+    // wait for all threads to finish
+    /*
+    int ss = current_gltf_threads.size();
+    for(int i=0;i<ss;i++)
+      {
+	void *res;
+	pthread_join(current_gltf_threads[i]->thread_id,&res);
+      }
+    */
+    tasks_join(3008);
+    current_gltf_threads.clear();
+ #endif
+ #endif
+
+    if (!prepreprepare_done) {
+    std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
+    int ig = 0;
+    for(;it!=decoder->filenames.end();it++)
+      {
+	std::pair<FETCHID,std::string> p = *it;
+	PrePrePrepare(ig,p.first);
+	ig++;
+      }
+    }
+  
+
+    
+    
+    //try {
+      //std::cout << "LoadGLTF: url=" << url << std::endl;
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; stackTrace(); return; }
+    int ssz = vec->end()-vec->begin();
+    if (ssz<1) {
+      std::cout << "LoadGLTF: ssz=" << ssz << " at " << url << std::endl;
+      return;
+    }
+    std::vector<char> *vec2 = new std::vector<char>(vec->begin(), vec->end());
+    m_vec2 = vec2;
+    std::string str(vec->begin(),vec->end());
+
+
+    bool is_animated = false;
+    {
+    int val = find_str(str,"\"animations\"");
+    if (val!=-1)
+      {
+	is_animated=true;
+	g_glb_animated=true;
+      }
+    }
+
+
+    //std::cout << str << std::endl;
+    //bool b = false;
+    std::string err;
+    std::string warn;
+    if (!is_binary) {
+      //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
+      int sz = str.size();
+
+      if (g_concurrent_download || !g_no_concurrent_download) {
+#ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space) {
+      sz--;
+    }
+    if (sz<0) sz=0;
+#endif
+      }
+    //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
+      tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
+    } else {
+      int sz = vec->size();
+      //std::cout << "File size: " << url  << "::" << sz << std::endl;
+      if (g_concurrent_download || !g_no_concurrent_download) {
+#ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space)
+      {
+      sz--;
+      }
+    if (sz<0) sz=0;
+#endif
+      }
+    char *ptr2 = &vec2->operator[](0);
+    unsigned char *ptr3 = (unsigned char*)ptr2;
+    //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
+      tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
+    }
+    if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
+    if (!err.empty()) { std::cout << "ERROR: " << err << std::endl; }
+    prepare_done = true;
+    delete vec;
+    //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
+      
+    }
   }
   void set_urls(std::string burl, std::string url2) {
     base_url=burl; url=url2;
   }
   void execute()
   {
-    std::cout << "LoadGltf::execute" << std::endl;
-    if (!prepare_done) Prepare();
-    if (m_interface) m_interface->execute();
-    std::cout << "LoadGltf::execute done" << std::endl;
+    // if (m_interface)
+    //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation()) {
+      std::cout << "LoadGltf::execute" << std::endl;
+      if (!prepare_done) Prepare();
+      if (m_interface) m_interface->execute();
+      std::cout << "LoadGltf::execute done" << std::endl;
+    } else {
+      if (!prepare_done) Prepare();
+    }
   }
 public:
   GameApi::Env &e;
@@ -9716,7 +9864,7 @@ public:
 
 
   virtual void Collect(CollectVisitor &vis) {
-    std::cout << "FLAGJOINIMPL:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    //std::cout << "FLAGJOINIMPL:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
     std::cout << "gltfmeshall::collect" << std::endl;
     //DoHeavy(&vis,false);
@@ -9728,7 +9876,7 @@ public:
     }
   }
   virtual bool ReadyToPrepare() const {
-    std::cout << "FLAGJOINIMPL2:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    //std::cout << "FLAGJOINIMPL2:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
     std::cout << "gltfmeshall::readytoprepare" << std::endl;
     return interface->ReadyToPrepare();
@@ -9788,7 +9936,7 @@ public:
   }
 
   virtual void HeavyPrepare() {
-    std::cout << "FLAGJOINIMPL3:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    //std::cout << "FLAGJOINIMPL3:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
       std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
       DoHeavy(NULL,true);
@@ -9836,7 +9984,7 @@ public:
     }
   }
   virtual void Prepare() {
-    std::cout << "FLAGJOINIMPL4:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    //std::cout << "FLAGJOINIMPL4:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
       std::cout << "gltfmeshall::Prepare 1" << std::endl;
       interface->Prepare();
@@ -9860,7 +10008,7 @@ public:
     zip_decode_done = true;
   }
   virtual void execute(MainLoopEnv &e) {
-    std::cout << "FLAGJOINIMPL5:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    //std::cout << "FLAGJOINIMPL5:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
       std::cout << "ml_gltf_all_execute" << std::endl;
       interface->execute();
@@ -9890,7 +10038,7 @@ public:
     }
   }
   virtual void handle_event(MainLoopEvent &e) {
-    std::cout << "FLAGJOINIMPL6:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    //std::cout << "FLAGJOINIMPL6:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
       std::cout << "gltfmeshall::handle_event" << std::endl;
       if (res.id!=-1) {
@@ -9909,7 +10057,7 @@ public:
     }
   }
   virtual std::vector<int> shader_id() {
-    std::cout << "FLAGJOINIMPL7:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    //std::cout << "FLAGJOINIMPL7:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
       std::cout << "gltfmeshall::shader_id" << std::endl;
       if (res.id!=-1) {
