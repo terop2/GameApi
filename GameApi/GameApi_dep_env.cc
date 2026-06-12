@@ -15,6 +15,7 @@
 #include <chrono>
 
 #include "Tasks.hh"
+#include "GameApi_low.hh"
 
 #define idb_disabled 1
 //#define idb_disabled 0
@@ -543,7 +544,8 @@ void *async_join_process(void *data)
     }
    pthread_mutex_unlock(g_queue_mutex);
 #ifdef EMSCRIPTEN
-    emscripten_sleep(3);
+  g_low->sdl->SDL_Delay(3);
+   //emscripten_sleep(3);
 #endif
 #ifdef LINUX
     std::this_thread::sleep_for(std::chrono::milliseconds(3));

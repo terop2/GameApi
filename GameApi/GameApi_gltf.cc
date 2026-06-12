@@ -636,6 +636,7 @@ public:
     //std::cout << "LoadGltf_cb using url: " << url << std::endl;
     //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     fptr2(&LoadGltf_cb,(void*)this);
+    e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
   }
@@ -9710,7 +9711,7 @@ public:
 
   virtual void Collect(CollectVisitor &vis) {
     std::cout << "gltfmeshall::collect" << std::endl;
-    DoHeavy(&vis,false);
+    //DoHeavy(&vis,false);
     interface->Collect(vis);
     vis.register_obj(this);
   }
@@ -9758,13 +9759,10 @@ public:
     
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
-      //if (item)
-      //	item->Prepare();
-      if (is_prepare)
-	item->Prepare();
-      else
-	item->Prepare();
-      //item->Collect(*vis);
+      //if (!is_prepare) {
+      //	if (item)
+      //	  item->Collect(*vis);
+      // }
     }
     std::cout << "gltfmeshall::DoHeavy 7" << std::endl;
     DoHeavyDone = true;
@@ -9774,6 +9772,10 @@ public:
   virtual void HeavyPrepare() {
     std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
     DoHeavy(NULL,true);
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->Prepare();
+    }
   }
   virtual void Prepare() {
     std::cout << "gltfmeshall::Prepare 1" << std::endl;
@@ -9781,6 +9783,10 @@ public:
     std::cout << "gltfmeshall::Prepare 2" << std::endl;
 
     HeavyPrepare();
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->Prepare();
+    }
     std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
   }
   void ZipDecodeDone()
@@ -9790,20 +9796,22 @@ public:
   }
   virtual void execute(MainLoopEnv &e) {
     std::cout << "ml_gltf_all_execute" << std::endl;
-    //if (interface->ReadyToFetch()) { // TODO, async join needs this?
+    if (interface->ReadyToFetch()) { // TODO, async join needs this?
       ZipDecodeDone();
       interface->execute();
-      //}
+      }
     std::cout << "gltfmeshall::execute" << std::endl;
     if (zip_decode_done && firsttime) {
-      //DoHeavy();  // TODO, IS THIS NEEDED?
+      DoHeavy(NULL,false);  // TODO, IS THIS NEEDED?
       firsttime=false;
     }
 
     if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
-    if (item)
+    if (item) {
+      std::cout << "gltfmeshall::ITEM EXECUTE DONE!" << std::endl;
       item->execute(e);
+    }
     }
     std::cout << "gltfmeshall::execute 2" << std::endl;
   }
@@ -14953,16 +14961,23 @@ public:
     firsttime=false;
     }
   }
-  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
-  void HeavyPrepare() {
+  void Collect(CollectVisitor &vis) {
     if (firsttime) {
+      load->Collect(vis);
+      vis.register_obj(this);
+      firsttime=false;
+    }
+      //}
+    }
+  void HeavyPrepare() {
+    //if (firsttime) {
     UncompressZip();
     //load->Prepare(); // should not call prepare in HeavyPrepare().
     model=&load->model;
     self=model;
     
     firsttime=false;
-    }
+    //}
   }
   void UncompressZip()
   {
@@ -15066,7 +15081,7 @@ public:
   }
   void execute()
   {
-    std::cout << "ZipDecode::execute" << std::endl;
+    //std::cout << "ZipDecode::execute" << std::endl;
     if (uncompress_done && firsttime2)
       {
     std::cout << "ZipDecode::uncompress_done && firsttime2" << std::endl;
@@ -15169,6 +15184,7 @@ public:
   bool firsttime=true;
   bool firsttime2=true;
   bool firsttime3=true;
+  bool firsttime4=true;
   std::string mainfilename;
   bool uncompress_done=false;
   bool uncompress_done2=false;
