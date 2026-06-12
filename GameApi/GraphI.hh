@@ -3154,6 +3154,7 @@ public:
   virtual void HeavyPrepare()=0;
   virtual bool ReadyToPrepare() const { return true; }
   virtual bool ReadyToFetch() const { return true; } // tasks_async_join
+  virtual bool IsSketchFabZipASyncJoinImplementation() const { return false; }
   virtual void execute() { }
   
   virtual std::string name() const=0;
@@ -3216,6 +3217,9 @@ public:
   virtual std::string Url() const { return next->Url(); }
 
   virtual bool ReadyToFetch() const { return next->ReadyToFetch(); }
+  virtual bool IsSketchFabZipASyncJoinImplementation() const {
+    return next->IsSketchFabZipASyncJoinImplementation();
+  }
   
   virtual void execute() { next->execute(); }
   

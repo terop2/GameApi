@@ -15088,6 +15088,8 @@ public:
     std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
     return uncompress_done3;
   }
+  virtual bool IsSketchFabZipASyncJoinImplementation() const { return true; }
+  
   void execute()
   {
     //std::cout << "ZipDecode::execute" << std::endl;
