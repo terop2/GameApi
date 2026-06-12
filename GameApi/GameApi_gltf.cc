@@ -12,6 +12,9 @@ int hhhh_gggg=1;
 #include "Tasks.hh"
 #include <unordered_set>
 
+
+//#define ASYNC_JOIN 1
+
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
 //#define GLTF_ANIM_RESIZE_TEST 1
@@ -15045,13 +15048,15 @@ public:
 #endif
       }
 #ifdef THREADS
-    //tasks_async_join(3009, &Zip_done,(void*)this);
-    std::cout << "JOINING" << std::endl;
+#ifdef ASYNC_JOIN
+    tasks_async_join(3009, &Zip_done,(void*)this);
+#else
     tasks_join(3009); // normal join onlt
     ZipDone(); // normal join only
     execute(); // normal join only
     execute(); // normal join only
-    std::cout << "ZIPDONE ok" << std::endl;
+#endif
+    //std::cout << "ZIPDONE ok" << std::endl;2
     /*
     for(int i2=0;i2<num;i2++)
       {
