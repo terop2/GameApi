@@ -556,6 +556,34 @@ GameApi::Env *g_e = 0;
 extern bool g_concurrent_download;
 extern bool g_no_concurrent_download;
 
+struct TinyGltfProcessData
+{
+  bool is_ascii;
+  tinygltf::Model *model_p;
+  tinygltf::TinyGLTF *tiny_p;
+  std::vector<char> *vec2_p;
+  int sz;
+  std::string base_url;
+  unsigned char *ptr3;
+};
+
+void *tinygltf_process(void *data)
+{
+  std::string err;
+  std::string warn;
+  TinyGltfProcessData *dt = (TinyGltfProcessData*)data;
+  if (dt->is_ascii)
+    {
+      dt->tiny_p->LoadASCIIFromString(dt->model_p, &err, &warn, &dt->vec2_p->operator[](0), dt->sz, dt->base_url, tinygltf::REQUIRE_ALL);
+
+    } else {
+    // binary
+    dt->tiny_p->LoadBinaryFromMemory(dt->model_p, &err, &warn, dt->ptr3, dt->sz, dt->base_url, tinygltf::REQUIRE_ALL); 
+
+  }
+  return 0;
+}
+
 class LoadGltf;
 struct LoadGltf2_data
 {
@@ -796,7 +824,17 @@ public:
 #endif
       }
     //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
-      tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
+      TinyGltfProcessData *processData = new TinyGltfProcessData;
+      processData->is_ascii = true;
+      processData->model_p = &model;
+      processData->tiny_p = &tiny;
+      processData->vec2_p = vec2;
+      processData->sz = sz;
+      processData->base_url = base_url;
+      processData->ptr3 = 0;
+      tasks_add(7777,&tinygltf_process,(void*)processData);
+      tasks_join(7777);
+      //tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
       //std::cout << "File size: " << url  << "::" << sz << std::endl;
@@ -818,7 +856,19 @@ public:
     char *ptr2 = &vec2->operator[](0);
     unsigned char *ptr3 = (unsigned char*)ptr2;
     //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
-      tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
+
+      TinyGltfProcessData *processData = new TinyGltfProcessData;
+      processData->is_ascii = false;
+      processData->model_p = &model;
+      processData->tiny_p = &tiny;
+      processData->vec2_p = vec2;
+      processData->sz = sz;
+      processData->base_url = base_url;
+      processData->ptr3 = ptr3;
+      tasks_add(7778,&tinygltf_process,(void*)processData);
+      tasks_join(7778);
+
+      //tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
     }
     if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
     if (!err.empty()) { std::cout << "ERROR: " << err << std::endl; }
