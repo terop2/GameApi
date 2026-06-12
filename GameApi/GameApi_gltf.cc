@@ -14969,10 +14969,10 @@ public:
   }
   void Collect(CollectVisitor &vis) {
     if (firsttime) {
+      UncompressZip();
       load->Collect(vis);
       vis.register_obj(this);
       firsttime=false;
-      UncompressZip();
     }
       //}
     }
