@@ -14972,12 +14972,12 @@ public:
       load->Collect(vis);
       vis.register_obj(this);
       firsttime=false;
+      UncompressZip();
     }
       //}
     }
   void HeavyPrepare() {
     //if (firsttime) {
-    UncompressZip();
     //load->Prepare(); // should not call prepare in HeavyPrepare().
     model=&load->model;
     self=model;
