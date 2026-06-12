@@ -9799,9 +9799,9 @@ public:
   }
   virtual void execute(MainLoopEnv &e) {
     std::cout << "ml_gltf_all_execute" << std::endl;
+    interface->execute();
     if (interface->ReadyToFetch()) { // TODO, async join needs this?
       ZipDecodeDone();
-      interface->execute();
       }
     std::cout << "gltfmeshall::execute" << std::endl;
     if (zip_decode_done && firsttime) {
