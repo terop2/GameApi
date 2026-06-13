@@ -2,6 +2,7 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 #include "GameApi_cmd.hh"
+#include "Tasks.hh"
 
 
 
@@ -1713,6 +1714,9 @@ public:
 
 extern int g_time_id;
 
+
+
+
 class MLGuiWidget : public GuiWidgetForward
 {
 public:
@@ -1837,6 +1841,7 @@ public:
   }  
   void render()
   {
+    call_all_mlguiwidget_cbs();
     OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {

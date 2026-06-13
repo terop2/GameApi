@@ -497,8 +497,20 @@ IMPORT void tasks_join(int id)
 #endif
 }
 
+void print_queue(std::string label, std::vector<task_data> *q)
+{
+  std::cout << "PRINT QUEUE:" << label << std::endl;
+  int s = q->size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << q->operator[](i).id << " " << q->operator[](i).num << std::endl;
+    }
+  std::cout << "QUEUE END" << std::endl;
+}
+
 
 pthread_mutex_t *g_queue_mutex;
+std::vector<task_data> *g_queue=0;
 std::vector<task_data> *g_queue_tasks_done=0;
 std::vector<task_data> *g_tasks_in_execute=0;
 struct ASyncJoinProcessData
@@ -533,6 +545,14 @@ void *async_join_process(void *data)
       }
     if (found && !found_stilltodo) {
       //pthread_mutex_lock(g_queue_mutex);
+
+      // PRINT QUEUES
+      print_queue("QUEUE",g_queue);
+      print_queue("TASKS_IN_EXECUTE",g_tasks_in_execute);
+      print_queue("TASKS_DONE",g_queue_tasks_done);
+      // PRINT QUEUES
+
+      
       int s5 = g_queue_tasks_done->size();
       for(int i=0;i<s5;i++)
 	{
@@ -540,8 +560,16 @@ void *async_join_process(void *data)
 	}
       pthread_mutex_unlock(g_queue_mutex);
       dt->fptr(dt->data);
+
+      
+      
       break;
-    }
+    } /*else if (!found && !found_stilltodo)
+	     {
+	       pthread_mutex_unlock(g_queue_mutex);
+	       dt->fptr(dt->data);
+	       break;
+	       }*/
    pthread_mutex_unlock(g_queue_mutex);
 #ifdef EMSCRIPTEN
   g_low->sdl->SDL_Delay(3);
@@ -699,6 +727,7 @@ public:
   {
     g_queue_tasks_done = &queue_tasks_done;
     g_tasks_in_execute = &tasks_in_execute;
+    g_queue = &queue;
   }
   virtual void spawn_thread()
   {

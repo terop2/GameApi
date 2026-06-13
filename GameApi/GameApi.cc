@@ -15,6 +15,7 @@
 
 #include "GameApi_h.hh"
 #include "FreeType2.hh"
+#include "Tasks.hh"
 
 #include <cstring>
 #include <iomanip>
@@ -18216,6 +18217,110 @@ extern int g_async_pending_count_failures;
 
 extern double g_dpr;
 
+struct MLGuiWidget_cb
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+std::vector<MLGuiWidget_cb> g_mlguiwidget_logo;
+
+int mlguiwidget_cb_count() { return g_mlguiwidget_logo.size(); }
+
+
+void call_mlguiwidget_cb(int i) {
+  g_mlguiwidget_logo[i].fptr(g_mlguiwidget_logo[i].data);
+}
+
+void call_all_mlguiwidget_cbs()
+{
+  int s = mlguiwidget_cb_count();
+  for(int i=0;i<s;i++)
+    {
+      call_mlguiwidget_cb(i);
+    }
+}
+
+
+int add_mlguiwidget_logo_callback(void (*fptr)(void*), void *data)
+{
+  static int id = 555;
+  id++;
+  MLGuiWidget_cb cb;
+  cb.id = id;
+  cb.fptr = fptr;
+  cb.data = data;
+  g_mlguiwidget_logo.push_back(cb);
+  return id;
+}
+void remove_mlguiwidget_logo_callback(int id)
+{
+  int s = g_mlguiwidget_logo.size();
+  for(int i=0;i<s;i++)
+    {
+      MLGuiWidget_cb &ref = g_mlguiwidget_logo[i];
+      if (ref.id == id)
+	{
+	  g_mlguiwidget_logo.erase(g_mlguiwidget_logo.begin()+i);
+	  s--;
+	  i--;
+	}
+    }
+}
+
+
+struct Splitter_cb
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+std::vector<Splitter_cb> g_splitter_logo;
+
+int splitter_cb_count() { return g_splitter_logo.size(); }
+
+
+void call_splitter_cb(int i) {
+  g_splitter_logo[i].fptr(g_splitter_logo[i].data);
+}
+
+void call_all_splitter_cbs()
+{
+  int s = splitter_cb_count();
+  for(int i=0;i<s;i++)
+    {
+      call_splitter_cb(i);
+    }
+}
+
+
+int add_splitter_logo_callback(void (*fptr)(void*), void *data)
+{
+  static int id = 555;
+  id++;
+  Splitter_cb cb;
+  cb.id = id;
+  cb.fptr = fptr;
+  cb.data = data;
+  g_splitter_logo.push_back(cb);
+  return id;
+}
+void remove_splitter_logo_callback(int id)
+{
+  int s = g_splitter_logo.size();
+  for(int i=0;i<s;i++)
+    {
+      Splitter_cb &ref = g_splitter_logo[i];
+      if (ref.id == id)
+	{
+	  g_splitter_logo.erase(g_splitter_logo.begin()+i);
+	  s--;
+	  i--;
+	}
+    }
+}
+
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -18348,7 +18453,7 @@ public:
 	old_g_pthread_count = g_pthread_count;
       }
 
-    
+    // std::cout << "ASyncPendingCount:" << async_pending_count << std::endl;
     
     static int old_count = 0;
     if (async_pending_count!=old_count) {
@@ -18431,9 +18536,11 @@ public:
 
 	if (gameapi_seamless_url=="") {
 	  logo_frame_count++;
+	  call_all_splitter_cbs();
 	  b = env->ev->mainloop_api.logo_iter();
 	  if (debug_enabled) status += "LOGO_ITER ";
 	} else {
+	  call_all_splitter_cbs();
 	  if (debug_enabled) status += "LOGO_SEAMLESS ";
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
@@ -18452,12 +18559,17 @@ public:
 	  bool pass_through=false;
 	  static int async_old = -1;
 	  static int count=600;
+	  static float drift_timer=0.0;
 	  if (async_pending_count!=async_old) {
 	    async_old=async_pending_count;
 	    count=600;
+	    drift_timer = env->ev->mainloop_api.get_time();
 	  } else {
 	    //std::cout << "TICK " << count << std::endl;
-	    count--; if (count<0) { 
+	    // count--; if (count<0) {
+	    float time_since_pending = env->ev->mainloop_api.get_time()-drift_timer;
+	    std::cout << "DriftTimer: " << time_since_pending << std::endl;
+	    if (time_since_pending/10.0 > 300.0) {
 	      std::cout << "ASyncPendingCountDrift:" << async_pending_count << std::endl;
 	      int s = async_labels.size();
 	      for(int i=0;i<s;i++)
@@ -18714,6 +18826,7 @@ public:
 
 
 	
+	  call_all_splitter_cbs();
 	
 	if (!g_disable_draws) env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
 
@@ -30093,6 +30206,13 @@ public:
 #endif
     //std::cout << "STABLE DIFF tasks_add" << std::endl;
   }
+  LoadGltf *get_load() const {
+    if (done) {
+      GLTFModelInterface *i = find_gltf(env,ref);
+      return i->get_load();
+    }
+    return 0;
+  }
   std::string get_filename() const
   {
     int s = filename.size();
@@ -30744,6 +30864,16 @@ public:
 
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
 
+  LoadGltf *get_load() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_load();
+      }
+    return 0;
+  }
+  
   void Prepare2()
   {
     //std::cout << "Prepare2" << success << std::endl;
