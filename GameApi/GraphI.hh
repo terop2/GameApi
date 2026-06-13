@@ -3226,6 +3226,8 @@ public:
   }
   
   virtual void execute() { next->execute(); }
+
+  virtual LoadGltf *get_load() const { return next->get_load(); }
   
   virtual int get_default_scene() const { return next->get_default_scene(); }
   
