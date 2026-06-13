@@ -29929,7 +29929,9 @@ public:
   void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
-    vis.register_obj(this);
+    if (!next->IsSketchFabZipASyncJoinImplementation()) {
+      vis.register_obj(this);
+    }
   }
 
   void do_one(int i, int j) const
@@ -30174,37 +30176,43 @@ public:
   void Prepare()
   {
     next->Prepare();
-    HeavyPrepare();
+    if (!next->IsSketchFabZipASyncJoinImplementation()) {
+      HeavyPrepare();
+    }
   }
 
-  virtual int accessors_size() const { if (firsttime) return 0; return next->accessors_size()+new_accessors.size(); }
+  virtual int accessors_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->accessors_size()+new_accessors.size(); }
   virtual const tinygltf::Accessor &get_accessor(int i) const
   {
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
     if (i>=0 && i<next->accessors_size())
       return next->get_accessor(i);
     //std::cout << "get new acc:" << i << " " << start_accessors << " " << new_accessors.size() << std::endl;
     return new_accessors[i-start_accessors];
   }
-  virtual int bufferviews_size() const { if (firsttime) return 0; return next->bufferviews_size() + new_bufviews.size(); }
+  virtual int bufferviews_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->bufferviews_size() + new_bufviews.size(); }
   virtual const tinygltf::BufferView &get_bufferview(int i) const
   {
-    if (i>=0 && i<next->bufferviews_size())
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
+ if (i>=0 && i<next->bufferviews_size())
       return next->get_bufferview(i);
     return new_bufviews[i-start_bufview];
   }
 
 
-  virtual int buffers_size() const { if (firsttime) return 0; return next->buffers_size() + new_buffer.size(); }
+  virtual int buffers_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->buffers_size() + new_buffer.size(); }
   virtual const tinygltf::Buffer &get_buffer(int i) const
   {
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
     if (i>=0 && i<next->buffers_size())
       return next->get_buffer(i);
     return new_buffer[i-start_buffer];
   }
 
-  virtual int meshes_size() const { if (firsttime) return 0; return next->meshes_size(); }
+  virtual int meshes_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->meshes_size(); }
   virtual const tinygltf::Mesh &get_mesh(int i) const
   {
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
     if (m_enabled.size()<=i)
       {
 	m_enabled.resize(i+1);
