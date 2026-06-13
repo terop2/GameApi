@@ -3145,6 +3145,8 @@ public:
 };
 #endif
 
+class LoadGltf;
+
 class GLTFModelInterface : public CollectInterface
 {
 public:
@@ -3162,6 +3164,8 @@ public:
   virtual std::string BaseUrl() const=0;
   virtual std::string Url() const=0;
 
+  virtual LoadGltf *get_load() const=0;
+  
   virtual int get_default_scene() const=0;
   
   virtual int accessors_size() const=0;

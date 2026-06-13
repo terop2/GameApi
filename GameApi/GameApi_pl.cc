@@ -29919,6 +29919,12 @@ public:
   DecimateTF(GLTFModelInterface *next, float val) : ForwardGLTF(next), next(next), val(val),b(false) { firsttime = true; }
   DecimateTF(GLTFModelInterface *next) : ForwardGLTF(next), next(next), b(true) { firsttime=true; }
   std::string name() const { return "DecimateTF"; }
+
+  LoadGltf *get_load() const
+  {
+    if (next) return next->get_load();
+    return 0;
+  }
   
   void Collect(CollectVisitor &vis)
   {

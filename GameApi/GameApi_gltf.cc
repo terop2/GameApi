@@ -18,7 +18,10 @@ int hhhh_gggg=1;
 #undef ASYNC_JOIN
 #endif
 
-#define TINYGLTF_ASYNC_JOIN 1
+// this currently doesn't work
+//#define TINYGLTF_ASYNC_JOIN 1
+// this is current working.
+//#define BITMAP_THREAD_ASYNC_JOIN 1
 
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
@@ -605,6 +608,8 @@ void LoadGltf_cb(void *);
 void LoadGltf_cb_from_string(void *);
 void LoadGltf2_cb_from_string(void*);
 void tinygltf_async_join_cb(void *data);
+void g_bitmap_thread_async_join_cb(void *data);
+void loadgltf_splitter_cb(void *data);
 
 int find_str(std::string val, std::string repl);
 
@@ -638,6 +643,8 @@ public:
     //std::cout << "LoadGltf_cb using url: " << url << std::endl;
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
+    splitter_logo_id=add_splitter_logo_callback(&loadgltf_splitter_cb,(void*)this);
+    mlguiwidget_logo_id=add_mlguiwidget_logo_callback(&loadgltf_splitter_cb,(void*)this);
   }
 
 
@@ -676,12 +683,17 @@ public:
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
+    splitter_logo_id=add_splitter_logo_callback(&loadgltf_splitter_cb,(void*)this);
+    mlguiwidget_logo_id=add_mlguiwidget_logo_callback(&loadgltf_splitter_cb,(void*)this);
   }
 
 
   void set_model(GLTFModelInterface *interface) { m_interface = interface; }
   ~LoadGltf()
   {
+    remove_splitter_logo_callback(splitter_logo_id);
+    remove_mlguiwidget_logo_callback(mlguiwidget_logo_id);
+    
     unasync();
     g_deleted_urls.push_back(url);
     delete decoder;
@@ -760,10 +772,34 @@ public:
 	pthread_join(current_gltf_threads[i]->thread_id,&res);
       }
     */
+#ifdef BITMAP_THREAD_ASYNC_JOIN
+    std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
+    tasks_async_join(3008,&g_bitmap_thread_async_join_cb,(void*)this);
+
+    //bitmap_thread_async_join_cb();
+    //bitmap_thread_async_continuation();
+
+#else
+    std::cout << "BLOCKING JOIN CALLED2! (3008)" << std::endl;
     tasks_join(3008);
-    current_gltf_threads.clear();
- #endif
- #endif
+    //bitmap_thread_async_join_cb();
+    //bitmap_thread_async_continuation();
+#endif
+    //current_gltf_threads.clear();
+#endif
+#endif
+    bool b = false;
+#ifndef THREADS
+    //bitmap_thread_async_join_cb();
+    //bitmap_thread_async_continuation();
+    b=true;
+#endif
+#ifndef EMSCRIPTEN
+    if (!b) {
+      //bitmap_thread_async_join_cb();
+      //bitmap_thread_async_continuation();
+    }
+#endif
 
     if (!prepreprepare_done) {
     std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
@@ -894,6 +930,10 @@ public:
   }
   void async_join_cb()
   {
+  }
+  void bitmap_thread_async_join_cb()
+  {
+    bitmap_async_done = true;
   }
   void PrePrePrepare(int i, FETCHID id)
   {
@@ -1040,8 +1080,8 @@ public:
     //std::cout << "LoadGLTF: baseurl=" << base_url << std::endl;
 
 
- #ifdef THREADS
- #ifdef EMSCRIPTEN
+#ifdef THREADS
+#ifdef EMSCRIPTEN
     // wait for all threads to finish
     /*
     int ss = current_gltf_threads.size();
@@ -1051,11 +1091,19 @@ public:
 	pthread_join(current_gltf_threads[i]->thread_id,&res);
       }
     */
+    
+#ifdef BITMAP_THREAD_ASYNC_JOIN
+    std::cout << "ASYNC JOIN CALLED! (3008)" << std::endl;
+    tasks_async_join(3008,&g_bitmap_thread_async_join_cb,(void*)this);
+    //bitmap_thread_async_join_cb();
+    //bitmap_thread_async_continuation();
+#else
+    std::cout << "BLOCKING JOIN CALLED! (3008)" << std::endl;
     tasks_join(3008);
     current_gltf_threads.clear();
  #endif
  #endif
-
+#endif
     if (!prepreprepare_done) {
     std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
     int ig = 0;
@@ -1153,16 +1201,28 @@ public:
   void set_urls(std::string burl, std::string url2) {
     base_url=burl; url=url2;
   }
+  void splitter_cb()
+  {
+    is_in_splitter_cb=true;
+    //std::cout << "Splitter_cb" << std::endl;
+    execute();
+    is_in_splitter_cb=false;
+  }
   void execute()
   {
     // if (m_interface)
     //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation()) {
-      std::cout << "LoadGltf::execute" << std::endl;
-      if (!prepare_done) Prepare();
+      if (tinygltf_ready_flag && zip_done_firsttime) {
+	zip_done_firsttime = false;
+	if (!prepare_done && loadgltf_firsttime) {
+	  Prepare();
+	  loadgltf_firsttime=false;
+	    }
+      }
       if (m_interface) m_interface->execute();
-      std::cout << "LoadGltf::execute done" << std::endl;
     } else {
+      if (!is_in_splitter_cb)
       if (!prepare_done) Prepare();
     }
   }
@@ -1183,8 +1243,29 @@ public:
   bool async=false;
   std::vector<bool> async_vec;
   std::vector<char> *m_vec2=0;
+  bool tinygltf_ready_flag=false;
+  bool bitmap_async_done=false;
+  bool bitmap_async_firsttime=true;
+  bool loadgltf_firsttime=true;
+  bool loadgltf_firsttime2=true;
+  bool zip_done_firsttime=true;
+  int m_3008_id;
+  int splitter_logo_id;
+  int mlguiwidget_logo_id;
+  bool is_in_splitter_cb=false;
 };
-
+void loadgltf_splitter_cb(void *data)
+{
+ LoadGltf *load = (LoadGltf*)data;
+ load->splitter_cb();
+}
+void g_bitmap_thread_async_join_cb(void *data)
+  {
+    // TMP
+    LoadGltf *load = (LoadGltf*)data;
+    load->bitmap_thread_async_join_cb();
+  }
+  
 void tinygltf_async_join_cb(void *data)
 {
   LoadGltf *load = (LoadGltf*)data;
@@ -1546,6 +1627,7 @@ public:
   virtual void Collect(CollectVisitor &vis) { load->Collect(vis); vis.register_obj(this); }
   virtual void HeavyPrepare() { if (firsttime&&load) { self=&load->model; model=&load->model; firsttime=false; } }
   virtual void execute() { load->execute(); }
+  LoadGltf *get_load() const { return load; }
 public:
   LoadGltf *load=0;
   tinygltf::Model *model=0;
@@ -1562,6 +1644,7 @@ public:
   virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
   virtual void HeavyPrepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
   virtual void execute() { load->execute(); }
+  LoadGltf *get_load() const { return 0; }
 public:
   LoadGltf_from_string *load=0;
   tinygltf::Model *model=0;
@@ -9938,7 +10021,8 @@ public:
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
     std::cout << "gltfmeshall::collect" << std::endl;
     //DoHeavy(&vis,false);
-    interface->Collect(vis);
+    //interface->Collect(vis);
+    interface->get_load()->Collect(vis);
     vis.register_obj(this);
     } else {
       interface->Collect(vis);
@@ -10057,7 +10141,7 @@ public:
     //std::cout << "FLAGJOINIMPL4:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
       std::cout << "gltfmeshall::Prepare 1" << std::endl;
-      interface->Prepare();
+      interface->get_load()->Prepare();
       std::cout << "gltfmeshall::Prepare 2" << std::endl;
 
       HeavyPrepare();
@@ -10091,6 +10175,8 @@ public:
 	firsttime=false;
       }
 
+      interface->get_load()->execute();
+      
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
 	if (item) {
@@ -10100,6 +10186,7 @@ public:
       }
       std::cout << "gltfmeshall::execute 2" << std::endl;
     } else {
+      interface->get_load()->execute();
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
 	if (item)
@@ -15265,6 +15352,7 @@ struct ZipThreadData
   int i;
   mz_zip_archive *pZip;
   float mult;
+  int m_zip_mutex_id=-1;
   // mz_zip_archive_file_stat *file_stat;
 };
 
@@ -15273,8 +15361,8 @@ void *thread_sketchfab_zip(void *data);
 void Zip_callback(void* ptr);
 
 
-void zip_mutex_create();
-void zip_mutex_destroy();
+void zip_mutex_create(int id);
+void zip_mutex_destroy(int id);
 extern std::vector<std::string> zip_result_urls;
 extern std::string gameapi_homepageurl;
 struct ASyncCallback { void (*fptr)(void*); void *data; };
@@ -15331,7 +15419,7 @@ public:
     //HeavyPrepare();
     if (firsttime) {
     UncompressZip();
-    load->Prepare();
+    //TMP load->Prepare();
     model=&load->model;
     self=model;
     
@@ -15341,7 +15429,9 @@ public:
   void Collect(CollectVisitor &vis) {
     if (firsttime) {
       UncompressZip();
-      load->Collect(vis);
+      // This causes infinite loop
+      // correct order is MODEL <-- LoadGltf <--- GltfMeshAll.
+      //load->Collect(vis); 
       vis.register_obj(this);
       firsttime=false;
     }
@@ -15395,7 +15485,10 @@ public:
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
     std::cout << "ZIp num=" << num << std::endl;
 
-    zip_mutex_create();
+    static int zip_mutex_id = 0;
+    zip_mutex_id++;
+    m_zip_mutex_id = zip_mutex_id;
+    zip_mutex_create(m_zip_mutex_id);
 
     //std::vector<ZipThreadData*> thread_data;
 
@@ -15409,6 +15502,7 @@ public:
 	info->pZip = &pZip;
 	//info->file_stat = &file_stat;
 	info->mult = mult;
+	info->m_zip_mutex_id = m_zip_mutex_id;
 #ifdef THREADS
 	//pthread_attr_t attr;
 	//pthread_attr_init(&attr);
@@ -15488,7 +15582,7 @@ public:
 	load->set_urls(base_url,url);
       }
 
-    zip_mutex_destroy();
+    zip_mutex_destroy(m_zip_mutex_id);
 
 	
     uncompress_done2 = true;
@@ -15557,6 +15651,7 @@ public:
       }
 
   }
+  LoadGltf *get_load() const { return load; }
 public:
   GameApi::Env &e;
   std::string zip_url;
@@ -15579,7 +15674,8 @@ public:
   void *data;
   bool uncompress_started=false;
     std::vector<unsigned char> vec2;
-  };
+  int m_zip_mutex_id=-1;
+};
 void Zip_callback(void* ptr)
   {
     GLTF_Model_with_prepare_sketchfab_zip *p = (GLTF_Model_with_prepare_sketchfab_zip*)ptr;
@@ -15594,29 +15690,32 @@ void Zip_done(void *ptr)
 
 std::vector<std::string> zip_result_urls;
 #ifdef THREADS
-pthread_mutex_t *zip_mutex=0;
+std::map<int,pthread_mutex_t*> zip_mutex;
+//pthread_mutex_t *zip_mutex=0;
 #endif
-void zip_mutex_create()
+void zip_mutex_create(int id)
 {
 #ifdef THREADS
-  zip_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  zip_mutex[id] = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
 #endif
 }
-void zip_push(std::string url)
+void zip_push(int id, std::string url)
 {
 #ifdef THREADS
-  pthread_mutex_lock(zip_mutex);
+  pthread_mutex_lock(zip_mutex[id]);
 #endif
   zip_result_urls.push_back(url);
 #ifdef THREADS
-  pthread_mutex_unlock(zip_mutex);
+  pthread_mutex_unlock(zip_mutex[id]);
 #endif
 }
-void zip_mutex_destroy()
+void zip_mutex_destroy(int id)
 {
 #ifdef THREADS
-  pthread_mutex_destroy(zip_mutex);
-  delete zip_mutex;
+  if (zip_mutex[id])
+    pthread_mutex_destroy(zip_mutex[id]);
+  delete zip_mutex[id];
+  zip_mutex[id]=0;
 #endif
 }
 
@@ -15710,7 +15809,7 @@ void *thread_sketchfab_zip(void *data)
 	    
 	    g_del_map.push_async_url(url,get_fetcher(data) );
 
-	    zip_push(url_plain);
+	    zip_push(dt->m_zip_mutex_id,url_plain);
 	    
 	    //g_del_map.load_url_buffers_async[url] = data;
 
@@ -16313,6 +16412,7 @@ GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip
   bool is_binary=false;
   LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary, &sketchfab_zip_cb);
   GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model, g_sketchfab_f2,g_sketchfab_data);
+  load->set_model(model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
   GameApi::TF tf = add_gltf(e,i);
   g_tf_instances.push_back(tf);
