@@ -613,6 +613,23 @@ void loadgltf_splitter_cb(void *data);
 
 int find_str(std::string val, std::string repl);
 
+int find_str_vector(std::vector<char> *vec, std::string repl, int max_chars)
+{
+  int s = vec->size();
+  int s2 = repl.size();
+  int s3 = std::min(s-s2,max_chars);
+  for(int i=0;i<s3;i++)
+    {
+      bool found = true;
+      for(int j=0;j<s2;j++)
+	{
+	  if (vec->operator[](i+j)!=repl[j]) { found=false; break; }
+	}
+      if (found) return i;
+    }
+  return -1;
+}
+
 int g_loadgltf_uni_id = 0;
 
 class LoadGltf : public CollectInterface
@@ -746,10 +763,10 @@ public:
     //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
       {
-	std::cout << "LoadGltf::Collect" << std::endl;
+	//std::cout << "LoadGltf::Collect" << std::endl;
 	if (m_interface) m_interface->Collect(vis);
 	vis.register_obj(this);
-	std::cout << "LoadGltf::Collect end" << std::endl;
+	//std::cout << "LoadGltf::Collect end" << std::endl;
       } else {
       vis.register_obj(this);
     }
@@ -760,10 +777,10 @@ public:
     //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
       {
-    std::cout << "LoadGltf::HeavyPrepare" << std::endl;
+	//std::cout << "LoadGltf::HeavyPrepare" << std::endl;
     if (prepare_done) return;
     prepare_done=true;
-    std::cout << "LoadGltf::HeavyPrepare -> executing" << std::endl;
+    //std::cout << "LoadGltf::HeavyPrepare -> executing" << std::endl;
     //std::cout << "Prepare" << std::endl;
     unasync();
 #ifndef EMSCRIPTEN
@@ -841,12 +858,12 @@ public:
     }
     std::vector<char> *vec2 = new std::vector<char>(vec->begin(), vec->end());
     m_vec2 = vec2;
-    std::string str(vec->begin(),vec->end());
+    // std::string str(vec->begin(),vec->end());
 
 
     bool is_animated = false;
     {
-    int val = find_str(str,"\"animations\"");
+      int val = find_str_vector(vec2,"\"animations\"", 20000);
     if (val!=-1)
       {
 	is_animated=true;
@@ -861,7 +878,7 @@ public:
     std::string warn;
     if (!is_binary) {
       //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
-      int sz = str.size();
+      int sz = vec2->size();
 
       if (g_concurrent_download|| !g_no_concurrent_download) {
 #ifdef EMSCRIPTEN
@@ -1004,7 +1021,7 @@ public:
 #endif
     //unasync();
     if (!decoder) { std::cout << "NoDecoder" << std::endl; return; }
-    if (preprepare_done) { std::cout << "PrePrepare already done" << std::endl; return; }
+    if (preprepare_done) { /*std::cout << "PrePrepare already done" << std::endl;*/ return; }
     //std::cout << "PrePrepare" << url << std::endl;
     preprepare_done = true;
     if (url.substr(url.size()-3,3)!="glb") {
@@ -10285,11 +10302,19 @@ public:
 
 
   virtual void Collect(CollectVisitor &vis) {
-    interface->Collect(vis);
-    resize_obj->Collect(vis);
-    MatrixArray *ms0 = find_matrix_array(env,ms);
-    ms0->Collect(vis);
-    vis.register_obj(this);
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->get_load()->Collect(vis);
+      resize_obj->Collect(vis);
+      MatrixArray *ms0 = find_matrix_array(env,ms);
+      ms0->Collect(vis);
+      vis.register_obj(this);
+    } else {
+      interface->Collect(vis);
+      resize_obj->Collect(vis);
+      MatrixArray *ms0 = find_matrix_array(env,ms);
+      ms0->Collect(vis);
+      vis.register_obj(this);
+    }
   }
   virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
 
@@ -10352,7 +10377,7 @@ public:
   }
   virtual void Prepare() {
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
-      interface->Prepare();
+      interface->get_load()->Prepare();
       resize_obj->Prepare();
       MatrixArray *ms0 = find_matrix_array(env,ms);
       ms0->Prepare();
@@ -10384,6 +10409,9 @@ public:
 	DoHeavy(NULL,false);
 	firsttime=false;
       }
+
+      interface->get_load()->execute();
+      
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
 	if (item) {
@@ -10391,7 +10419,7 @@ public:
 	}
       }
     } else {
-      interface->execute();
+      interface->get_load()->execute();
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
 	if (item)
@@ -15671,7 +15699,7 @@ public:
 
     firsttime3 = false;
 	uncompress_done3 = true;
-	std::cout << "uncompressdone3=true" << std::endl;
+	//std::cout << "uncompressdone3=true" << std::endl;
       }
 
   }
@@ -15747,7 +15775,7 @@ size_t writer_cb(void *pOpaque, mz_uint64 offset, const void *pBuf, size_t n)
 {
   //std::cout << "CB:" << offset << " " << n << std::endl;
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = (std::vector<unsigned char,GameApiAllocator<unsigned char> > *)pOpaque;
-  std::cout << "VECTOR SIZE:" << vec->size() << std::endl;
+  //std::cout << "VECTOR SIZE:" << vec->size() << std::endl;
   std::copy((const unsigned char*)pBuf,((const unsigned char*)pBuf)+n,vec->begin()+offset);
   return n;
 }
@@ -15797,7 +15825,7 @@ void *thread_sketchfab_zip(void *data)
 	    if (mz_zip_reader_file_stat(pZip, i, &file_stat))
 	      {
 		size_t uncompressed_size = (size_t)file_stat.m_uncomp_size;
-		std::cout << "RESIZE:" << uncompressed_size << std::endl;
+		//std::cout << "RESIZE:" << uncompressed_size << std::endl;
 		data->resize(uncompressed_size);
 	      }
 	    else

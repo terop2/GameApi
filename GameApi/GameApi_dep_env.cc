@@ -120,7 +120,7 @@ struct del_map : public del_map_interface
 #endif
   void del_async_url(std::string url)
   { 
-    std::cout << "del_async_url" << url << std::endl;
+    //std::cout << "del_async_url" << url << std::endl;
    //std::cout << "del_async_url: 1"<< std::endl;
     pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
@@ -147,7 +147,7 @@ struct del_map : public del_map_interface
       }
     //std::cout << "del_async_url: 11"<< std::endl;
     pthread_mutex_unlock(&lock);
-    std::cout << "del_async_url (end)" << url << std::endl;
+    //std::cout << "del_async_url (end)" << url << std::endl;
   }
 #ifdef EMSCRIPTEN
   void push_fetch_url(std::string url, FetchInBlocks *blk)
@@ -855,7 +855,7 @@ void check_for_progressbar(pthread_mutex_t *mutex_or_null)
   if (pthread_equal(curr, g_main_thread_id)) {
 
     if (g_progress_bar_show_logo) {
-	      std::cout << "ProgressDraw (emscripten)" << std::endl;
+      //std::cout << "ProgressDraw (emscripten)" << std::endl;
       g_progress_bar_logo_cb(g_progress_bar_logo_cb_data);
       //g_everyapi->mainloop_api.logo_iter();
     }
@@ -879,7 +879,7 @@ void check_for_progressbar(pthread_mutex_t *mutex_or_null)
 	    if (!repeat_prevent) {
 	      repeat_prevent=true;
 #ifndef EMSCRIPTEN
-	      std::cout << "ProgressDraw" << std::endl;
+	      //std::cout << "ProgressDraw" << std::endl;
 	      //std::cout << stream.str() << l << stream3.str() << std::flush;
 	if (g_everyapi2)
 	  {
@@ -3688,7 +3688,7 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
 	    if (!repeat_prevent) {
 	      repeat_prevent=true;
 #ifndef EMSCRIPTEN
-	      std::cout << "ProgressDraw" << std::endl;
+	      //    std::cout << "ProgressDraw" << std::endl;
 	      //std::cout << stream.str() << l << stream3.str() << std::flush;
 	if (g_everyapi2)
 	  {
@@ -5175,8 +5175,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 	timeout_getevent();
 
   g_last_loaded_script=progress_script_num;
-  std::cout << "get_current_size=" << get_current_size() << std::endl;
-  std::cout << "get_total_size=" << get_total_size() << std::endl;
+  //std::cout << "get_current_size=" << get_current_size() << std::endl;
+  //std::cout << "get_total_size=" << get_total_size() << std::endl;
   ProgressBar(445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 
   check_for_progressbar(NULL);
@@ -5213,8 +5213,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #if 1
 	//if (progress_script_num==-1)
   g_last_loaded_script=progress_script_num;
-  std::cout << "get_current_size=" << get_current_size() << std::endl;
-  std::cout << "get_total_size=" << get_total_size() << std::endl;
+  //std::cout << "get_current_size=" << get_current_size() << std::endl;
+  //std::cout << "get_total_size=" << get_total_size() << std::endl;
   ProgressBar(445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 
   check_for_progressbar(NULL);
@@ -5252,8 +5252,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #if 1
 	//if (progress_script_num==-1)
   g_last_loaded_script=progress_script_num;
-  std::cout << "get_current_size=" << get_current_size() << std::endl;
-  std::cout << "get_total_size=" << get_total_size() << std::endl;
+  //std::cout << "get_current_size=" << get_current_size() << std::endl;
+  //std::cout << "get_total_size=" << get_total_size() << std::endl;
 	ProgressBar(445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 
 	check_for_progressbar(NULL);
@@ -5310,8 +5310,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #if 1
 	//if (progress_script_num==-1)
   g_last_loaded_script=progress_script_num;
-  std::cout << "get_current_size=" << get_current_size() << std::endl;
-  std::cout << "get_total_size=" << get_total_size() << std::endl;
+  //std::cout << "get_current_size=" << get_current_size() << std::endl;
+  //std::cout << "get_total_size=" << get_total_size() << std::endl;
 	  ProgressBar( 445 /*sum*/,get_current_size()*1500/get_total_size(),1500,url);
 
 #ifndef EMSCRIPTEN
