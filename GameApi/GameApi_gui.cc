@@ -4252,6 +4252,7 @@ IMPORT void update_progress_dialog_cb_impl(volatile GameApi::W &w, int x,int y, 
   g_everyapi_gui->update_progress_dialog(w,x,y,f,b,v,val,max,process);
 }
 
+extern float g_progress_bar_mult_builder;
 void GameApi::GuiApi::update_progress_dialog(volatile W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max,int process)
 {
   //std::cout << "PROGRESS:" << val << " " << max << std::endl;
@@ -4263,7 +4264,7 @@ void GameApi::GuiApi::update_progress_dialog(volatile W &w, int sx, int sy, FtA 
   set_current_block(g_id);
 
 
-    GameApi::W ww = progress_dialog(sx,sy,atlas,atlas_bm, vec, val, max);
+    GameApi::W ww = progress_dialog(sx,sy,atlas,atlas_bm, vec, g_progress_bar_mult_builder*val, max);
     w = ww;
   set_current_block(old);
 }

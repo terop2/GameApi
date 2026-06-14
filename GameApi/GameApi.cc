@@ -1696,11 +1696,14 @@ long long FindProgressMax();
 extern int g_val2;
 extern int g_max2;
 
+extern float g_progress_bar_mult_ems0;
+extern float g_progress_bar_mult_ems1;
+extern float g_progress_bar_mult_ems2;
 
 class ScaleProgress : public Movement
 {
 public:
-  ScaleProgress(Movement *next, bool is_x, bool is_y, bool is_z) : next(next), is_x(is_x), is_y(is_y), is_z(is_z) { 
+  ScaleProgress(Movement *next, bool is_x, bool is_y, bool is_z, int state) : next(next), is_x(is_x), is_y(is_y), is_z(is_z), state(state) { 
     max_async_pending = 0;
   }
   virtual void event(MainLoopEvent &e) { next->event(e); }
@@ -1726,19 +1729,13 @@ public:
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
 
-    long long val = g_val2; //FindProgressVal();
-    long long max = g_max2; //FindProgressMax();
-
-    static long long old_g_val2 =0;
-    static long long old_g_max2 =0;
-    if (val != old_g_val2 || max!=old_g_max2)
-      {
-	std::cout << "ShowProgress (emscripten)" << std::endl;
-	old_g_val2 = val;
-	old_g_max2 = max;
-      }
-
-
+    float mult = 1.0;
+    if (state==0) mult=g_progress_bar_mult_ems0;
+    if (state==1) mult=g_progress_bar_mult_ems1;
+    if (state==2) mult=g_progress_bar_mult_ems2;
+    
+    long long val = mult*FindProgressVal();
+    long long max = FindProgressMax();
     //std::cout << "PROGRESSBAR:" << val << "/" << max << std::endl;
     val*=(long long)256;
     float val2 = max!=0?float(val/max):0.0;
@@ -1767,12 +1764,13 @@ private:
   mutable int max_async_pending;
   bool is_x, is_y, is_z;
   mutable float val2_cache=0;
+  int state=0;
 };
 
 class ScaleProgressMax : public Movement
 {
 public:
-  ScaleProgressMax(Movement *next, bool is_x, bool is_y, bool is_z) : next(next), is_x(is_x), is_y(is_y), is_z(is_z) { 
+  ScaleProgressMax(Movement *next, bool is_x, bool is_y, bool is_z, int state) : next(next), is_x(is_x), is_y(is_y), is_z(is_z), state(state) { 
     max_async_pending = 0;
   }
   virtual void event(MainLoopEvent &e) { next->event(e); }
@@ -1798,19 +1796,16 @@ public:
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
     
-    long long v1 = g_val2; //FindProgressVal();
-    long long v2 = g_max2; //FindProgressMax();
+    //TMP long long v1 = g_val2; //FindProgressVal();
+    //TMP long long v2 = g_max2; //FindProgressMax();
 
-    static long long old_g_val2 =0;
-    static long long old_g_max2 =0;
-    if (v1 != old_g_val2 || v2!=old_g_max2)
-      {
-	std::cout << "ShowProgress (emscripten)" << std::endl;
-	old_g_val2 = v1;
-	old_g_max2 = v2;
-      }
+    float mult = 1.0;
+    if (state==0) mult=g_progress_bar_mult_ems0;
+    if (state==1) mult=g_progress_bar_mult_ems1;
+    if (state==2) mult=g_progress_bar_mult_ems2;    
     
-
+    long long v1 = mult*FindProgressVal();
+    long long v2 = FindProgressMax();
     v1*=(long long)256;
     float val3 = v2<1?0.0:float(v1/v2);
     val3/=256.0;
@@ -1840,18 +1835,19 @@ private:
   mutable int max_async_pending;
   bool is_x, is_y, is_z;
   mutable float val2_cache=0;
+  int state=0;
 };
 
 
-GameApi::MN GameApi::MovementNode::scale_progress(MN next, bool is_x, bool is_y, bool is_z)
+GameApi::MN GameApi::MovementNode::scale_progress(MN next, bool is_x, bool is_y, bool is_z, int state)
 {
   Movement *nxt = find_move(e, next);
-  return add_move(e, new ScaleProgress(nxt,is_x,is_y,is_z));
+  return add_move(e, new ScaleProgress(nxt,is_x,is_y,is_z, state));
 }
-GameApi::MN GameApi::MovementNode::scale_progress_max(MN next, bool is_x, bool is_y, bool is_z)
+GameApi::MN GameApi::MovementNode::scale_progress_max(MN next, bool is_x, bool is_y, bool is_z, int state)
 {
   Movement *nxt = find_move(e, next);
-  return add_move(e, new ScaleProgressMax(nxt,is_x,is_y,is_z));
+  return add_move(e, new ScaleProgressMax(nxt,is_x,is_y,is_z,state));
 }
 class MN_Fetcher : public Movement
 {
@@ -40024,6 +40020,11 @@ extern Matrix g_last_resize;
 #include <emscripten/val.h>
 
 //bool g_execute_block = true;
+extern int g_progress_bar_config;
+extern float g_progress_bar_mult_ems0;
+extern float g_progress_bar_mult_ems1;
+extern float g_progress_bar_mult_ems2;
+extern float g_progress_bar_mult_builder;
 
 std::string get_new_script_to_end(std::string val, int pos,
 				  std::string allowed_chars)
@@ -40065,7 +40066,11 @@ KP extern "C" void set_new_script(const char *script2_)
   
   
   //std::cout << "set_new_script::" << script2 << std::endl;
-  // PROGRESS BAR
+  g_progress_bar_config = 0;
+  g_progress_bar_mult_builder=1.0;
+  g_progress_bar_mult_ems0=1.0;
+  g_progress_bar_mult_ems1=1.0;
+  g_progress_bar_mult_ems2=1.0;
   ClearProgress();
   g_async_progress_counter=0;
 
@@ -45435,3 +45440,28 @@ private:
     }
   };
 };
+
+int g_progress_bar_config = 0;
+float g_progress_bar_mult_ems0 = 1.0;
+float g_progress_bar_mult_ems1 = 1.0;
+float g_progress_bar_mult_ems2 = 1.0;
+float g_progress_bar_mult_builder = 1.0;
+
+GameApi::ML GameApi::MainLoopApi::progress_bar_config(GameApi::ML ml,
+						      bool progress_impl,
+						      bool max_impl,
+						      bool install_impl,
+						      float ems_mult0,
+						      float ems_mult1,
+						      float ems_mult2,
+						      float builder_mult)
+{
+  if (progress_impl) g_progress_bar_config=0;
+  else if (max_impl) g_progress_bar_config=1;
+  else if (install_impl) g_progress_bar_config=2;
+  g_progress_bar_mult_ems0 = ems_mult0;
+  g_progress_bar_mult_ems1 = ems_mult1;
+  g_progress_bar_mult_ems2 = ems_mult2;
+  g_progress_bar_mult_builder = builder_mult;
+  return ml;
+}

@@ -99,9 +99,9 @@ std::vector<GameApiItem*> moveapi_functions()
 #if (ALL==1)||(SCALE_PROGRESS==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale_progress,
 			 "mn_scale_progress",
-			 { "next", "is_x", "is_y", "is_z" },
-			 { "MN", "bool", "bool", "bool" },
-			 { "", "true", "false", "false" },
+			 { "next", "is_x", "is_y", "is_z", "state" },
+			 { "MN", "bool", "bool", "bool", "int" },
+			 { "", "true", "false", "false", "0" },
 			 "MN", "move_api", "scale_progress"));
 #endif
 #if (ALL==1)||(MN_FETCHER==1)
