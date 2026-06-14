@@ -18564,7 +18564,7 @@ public:
 	    //std::cout << "TICK " << count << std::endl;
 	    // count--; if (count<0) {
 	    float time_since_pending = env->ev->mainloop_api.get_time()-drift_timer;
-	    std::cout << "DriftTimer: " << time_since_pending << std::endl;
+	    //std::cout << "DriftTimer: " << time_since_pending << std::endl;
 	    if (time_since_pending/10.0 > 300.0) {
 	      std::cout << "ASyncPendingCountDrift:" << async_pending_count << std::endl;
 	      int s = async_labels.size();
@@ -40089,7 +40089,7 @@ KP extern "C" void set_new_script(const char *script2_)
 	{
 	  counter++;
 	  std::string u = get_new_script_to_end(script,i,"abcdefghijklmnopqrstuvwxyz./\\ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:_");
-	  std::cout << "UU:" << u << std::endl;
+	  //std::cout << "UU:" << u << std::endl;
 	  urls.push_back(u);
 	}
       if (script[i]=='f'&&
@@ -40099,7 +40099,7 @@ KP extern "C" void set_new_script(const char *script2_)
 	{
 	  counter++;
 	  std::string u = get_new_script_to_end(script,i,"abcdefghijklmnopqrstuvwxyz./\\ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:_");
-	  std::cout << "UU:" << u << std::endl;
+	  //std::cout << "UU:" << u << std::endl;
 	  urls.push_back(u);
 	}
     }
@@ -43925,13 +43925,13 @@ IMPORT std::vector<std::string> async_infos;
 
 void async_pending_plus(std::string label, std::string info)
 {
-  std::cout << "PLUS:" << label << " " << info << std::endl;
+  //std::cout << "PLUS:" << label << " " << info << std::endl;
   async_labels.push_back(label);
   async_infos.push_back(info);
 }
 void async_pending_minus(std::string label, std::string info)
 {
-  std::cout << "MINUS:" << label << " " << info << std::endl;
+  // std::cout << "MINUS:" << label << " " << info << std::endl;
   if (async_pending_count<0)
     {
       std::cout << "async_pending_minus detected negative async_pending_count" << std::endl;

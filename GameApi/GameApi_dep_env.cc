@@ -162,7 +162,7 @@ struct del_map : public del_map_interface
 #endif
   void push_async_url(std::string url, const GameApi::ASyncVec *ptr)
   {
-    std::cout << "push_async_url" << url << std::endl;
+    //std::cout << "push_async_url" << url << std::endl;
     // std::cout << "Push async url: " << url << " " << std::hex << (long)ptr << std::dec << std::endl;
     pthread_mutex_lock(&lock);
     VECENTRY e;
@@ -171,7 +171,7 @@ struct del_map : public del_map_interface
     load_url_buffers_async.push_back(e);
     //std::cout << "Map Push() -> " << load_url_buffers_async.size() << " " << std::hex << (long)ptr << std::dec << std::endl;
     pthread_mutex_unlock(&lock);
-    std::cout << "push_async_url (end)" << url << std::endl;
+    //std::cout << "push_async_url (end)" << url << std::endl;
   }
   //~del_map() {
 
@@ -218,7 +218,7 @@ struct del_map : public del_map_interface
 #ifdef EMSCRIPTEN
   bool fetch_find(std::string url)
   {
-    std::cout << "fetch_find " << url << std::endl;
+    //std::cout << "fetch_find " << url << std::endl;
     pthread_mutex_lock(&lock);
     int s = fetches.size();
     for(int i=0;i<s;i++)
@@ -231,7 +231,7 @@ struct del_map : public del_map_interface
 	  }
       }
     pthread_mutex_unlock(&lock);
-    std::cout << "fetch_find (end)" << url << std::endl;
+    //std::cout << "fetch_find (end)" << url << std::endl;
     return false;
   }
 #endif
@@ -3792,11 +3792,11 @@ int find_str(std::string s, std::string s2);
 
 
 IMPORT void ClearProgress() {
-  std::cout << "ClearProgress" << std::endl;
+  //std::cout << "ClearProgress" << std::endl;
   progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
 IMPORT void InstallProgress(int num, std::string label, int max=15)
 {
-  std::cout << "InstallProgress: " << num << " " << max << " " << label << std::endl;
+  //std::cout << "InstallProgress: " << num << " " << max << " " << label << std::endl;
   if (find_str(label,"script")!=-1) return;
   //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
@@ -3909,7 +3909,7 @@ IMPORT long long FindProgressVal()
   long long sum = 0;
   for(int i=0;i<s;i++)
     {
-      std::cout << "Progval:" << i << "=" << progress_val[i].value << "/" << progress_max[i].value << "::" << progress_val[i].num << " " << progress_max[i].num << " " << progress_label[i] << std::endl;
+      //std::cout << "Progval:" << i << "=" << progress_val[i].value << "/" << progress_max[i].value << "::" << progress_val[i].num << " " << progress_max[i].num << " " << progress_label[i] << std::endl;
       float mult = 1.0;
       /*
       int m = progress_max[i].value;
@@ -4063,7 +4063,7 @@ void ProgressBar(int num, int val, int max, std::string label)
 	  }
 
   
-  std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
+	// std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
   
   
   if (find_str(label,"script")!=-1) return;
@@ -4082,7 +4082,7 @@ void ProgressBar(int num, int val, int max, std::string label)
       {
 	int num2 = progress_val[i].num;
 	if (num2==num) {
-	  std::cout << "Setting progress val to " << val << std::endl;
+	  //std::cout << "Setting progress val to " << val << std::endl;
 	  progress_val[i].value = val;
 	  val_index=i;
 	  done = true;
@@ -4192,7 +4192,7 @@ void ProgressBar(int num, int val, int max, std::string label)
 	    << " " << label ;
   std::string l = stream2.str();
 
-  std::cout << "ProgLabel:" << l << std::endl;
+  //std::cout << "ProgLabel:" << l << std::endl;
   
     std::stringstream sk;
     sk << val2 << "/" << max2;

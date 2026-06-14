@@ -700,7 +700,7 @@ public:
 
   void set_model(GLTFModelInterface *interface) {
     m_interface = interface;
-    std::cout << "SETMODEL setting unique id to m_loadgltf_unique_id" << std::endl;
+    //std::cout << "SETMODEL setting unique id to m_loadgltf_unique_id" << std::endl;
     interface->set_loadgltf_unique_id(m_loadgltf_unique_id);
   }
   ~LoadGltf()
@@ -788,14 +788,14 @@ public:
       }
     */
 #ifdef BITMAP_THREAD_ASYNC_JOIN
-    std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
+    //std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
     tasks_async_join_m(3008,&g_bitmap_thread_async_join_cb,(void*)this);
 
     //bitmap_thread_async_join_cb();
     //bitmap_thread_async_continuation();
 
 #else
-    std::cout << "BLOCKING JOIN CALLED2! (3008)" << std::endl;
+    //std::cout << "BLOCKING JOIN CALLED2! (3008)" << std::endl;
     tasks_join(3008);
     //bitmap_thread_async_join_cb();
     //bitmap_thread_async_continuation();
@@ -938,7 +938,7 @@ public:
     delete vec;
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
     //Prepare();
-    std::cout << "LoadGltf::HeavyPrepare done" << std::endl;
+    //std::cout << "LoadGltf::HeavyPrepare done" << std::endl;
       } else {
       
       //if (prepare_done) return;
@@ -955,7 +955,7 @@ public:
   }
   void PrePrePrepare(int i, FETCHID id)
   {
-    std::cout << "LoadGltf::PrePrePrepare" << std::endl;
+    //std::cout << "LoadGltf::PrePrePrepare" << std::endl;
     if (!decoder) return;
     //std::cout << "PrePrePrepare" << i << std::endl;
     if (url.substr(url.size()-3,3)!="glb") {
@@ -990,11 +990,11 @@ public:
      
      decoder->start_decode_process(i,id,iid,256,256);
     }
-    std::cout << "LoadGltf::PrePrePrepare done" << std::endl;
+    //std::cout << "LoadGltf::PrePrePrepare done" << std::endl;
   }
   void PrePrepare() {
     //std::cout << "PREPREPARE CALLED WITH async=" << async << std::endl;
-    std::cout << "LoadGltf::PrePrepare" << std::endl;
+    //std::cout << "LoadGltf::PrePrepare" << std::endl;
 #ifdef EMSCRIPTEN
     if (async) {
       async_pending_count--;
@@ -1072,17 +1072,17 @@ public:
       }
 #endif
     }
-    std::cout << "LoadGltf::PrePrepare done" << std::endl;
+    //std::cout << "LoadGltf::PrePrepare done" << std::endl;
   }
   void Prepare() {
     // if (m_interface)
     //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
       {
-    std::cout << "LoadGltf::Prepare" << std::endl;
+	//std::cout << "LoadGltf::Prepare" << std::endl;
     if (m_interface) m_interface->Prepare();
     HeavyPrepare();
-    std::cout << "LoadGltf::Prepare done" << std::endl;
+    //std::cout << "LoadGltf::Prepare done" << std::endl;
       } else {
 
     if (prepare_done) return;
@@ -1111,12 +1111,12 @@ public:
     */
     
 #ifdef BITMAP_THREAD_ASYNC_JOIN
-    std::cout << "ASYNC JOIN CALLED! (3008)" << std::endl;
+    //std::cout << "ASYNC JOIN CALLED! (3008)" << std::endl;
     tasks_async_join_m(3008,&g_bitmap_thread_async_join_cb,(void*)this);
     //bitmap_thread_async_join_cb();
     //bitmap_thread_async_continuation();
 #else
-    std::cout << "BLOCKING JOIN CALLED! (3008)" << std::endl;
+    //std::cout << "BLOCKING JOIN CALLED! (3008)" << std::endl;
     tasks_join(3008);
     current_gltf_threads.clear();
  #endif
@@ -15504,10 +15504,10 @@ public:
 
     mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
 
-    std::cout << "ZIP STATUS:" << b2 << std::endl;
+    //std::cout << "ZIP STATUS:" << b2 << std::endl;
     
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
-    std::cout << "ZIp num=" << num << std::endl;
+    //std::cout << "ZIp num=" << num << std::endl;
 
     static int zip_mutex_id = 0;
     zip_mutex_id++;
@@ -15568,9 +15568,9 @@ public:
   }
   void ZipDone()
   {
-    std::cout << "ZIPDONE FLAG SET" << std::endl;
+    //std::cout << "ZIPDONE FLAG SET" << std::endl;
     uncompress_done=true;
-    std::cout << "ZIPDONE FLAG OK" << std::endl;
+    //std::cout << "ZIPDONE FLAG OK" << std::endl;
   }
   bool ReadyToFetch() const
   {
@@ -15584,7 +15584,7 @@ public:
     //std::cout << "ZipDecode::execute" << std::endl;
     if (uncompress_done && firsttime2)
       {
-    std::cout << "ZipDecode::uncompress_done && firsttime2" << std::endl;
+	//std::cout << "ZipDecode::uncompress_done && firsttime2" << std::endl;
 	firsttime2=false;
 
     mz_zip_reader_end(&pZip);
@@ -15610,23 +15610,23 @@ public:
 
 	
     uncompress_done2 = true;
-    std::cout << "Uncompress_done2=true" << std::endl;
+    //std::cout << "Uncompress_done2=true" << std::endl;
       }
 
     if (firsttime3 && uncompress_done2)
       {
-    std::cout << "firsttime3 && Uncompress_done2=true" << std::endl;
+	//std::cout << "firsttime3 && Uncompress_done2=true" << std::endl;
 
-    std::cout << "Sending event from ZipDecode to LoadGltf" << std::endl;
+	//std::cout << "Sending event from ZipDecode to LoadGltf" << std::endl;
     fptr(data);
-    std::cout << "Sending event from ZipDecode to LoadGltf (end)" << std::endl;
+    //std::cout << "Sending event from ZipDecode to LoadGltf (end)" << std::endl;
 
     
     //#if NOT_ASYNC_JOIN
     int s = zip_result_urls.size();
     for(int i=0;i<s;i++)
       {
-	std::cout << "Sending callback of file: " << zip_result_urls[i] << std::endl;
+	//std::cout << "Sending callback of file: " << zip_result_urls[i] << std::endl;
 	//if (zip_result_urls[i]==url) continue; // small fix
 	std::string url_plain = remove_dirs(zip_result_urls[i]);
 
@@ -15660,7 +15660,7 @@ public:
 	//std::cout << "Load cb!4" << url_only << std::endl;
 	(*cb4->fptr)(cb4->data);
       }
-	std::cout << "Sending callback of file(end): " << zip_result_urls[i] << std::endl;
+      //std::cout << "Sending callback of file(end): " << zip_result_urls[i] << std::endl;
 	
       }
     // SOMETHING WRONG WITH THIS?
@@ -16851,7 +16851,7 @@ public:
   virtual LoadGltf *get_load() const { return next->get_load(); }
 
   void set_loadgltf_unique_id(int id) {
-    std::cout << "GLTF_join received id " << id << std::endl;
+    //std::cout << "GLTF_join received id " << id << std::endl;
     m_id = id;
     next->set_loadgltf_unique_id(id);
   }
