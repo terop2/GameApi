@@ -774,7 +774,7 @@ public:
     */
 #ifdef BITMAP_THREAD_ASYNC_JOIN
     std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
-    tasks_async_join(3008,&g_bitmap_thread_async_join_cb,(void*)this);
+    tasks_async_join_m(3008,&g_bitmap_thread_async_join_cb,(void*)this);
 
     //bitmap_thread_async_join_cb();
     //bitmap_thread_async_continuation();
@@ -875,7 +875,7 @@ public:
 #ifndef TINYGLTF_ASYNC_JOIN
       tasks_join(7777);
 #else
-      tasks_async_join(7777, &tinygltf_async_join_cb, (void*)this);
+      tasks_async_join_m(7777, &tinygltf_async_join_cb, (void*)this);
 #endif
       //tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
@@ -912,7 +912,7 @@ public:
 #ifndef TINYGLTF_ASYNC_JOIN
       tasks_join(7778);
 #else
-      tasks_async_join(7778, &tinygltf_async_join_cb, (void*)this);
+      tasks_async_join_m(7778, &tinygltf_async_join_cb, (void*)this);
 #endif
 
       //tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
@@ -1094,7 +1094,7 @@ public:
     
 #ifdef BITMAP_THREAD_ASYNC_JOIN
     std::cout << "ASYNC JOIN CALLED! (3008)" << std::endl;
-    tasks_async_join(3008,&g_bitmap_thread_async_join_cb,(void*)this);
+    tasks_async_join_m(3008,&g_bitmap_thread_async_join_cb,(void*)this);
     //bitmap_thread_async_join_cb();
     //bitmap_thread_async_continuation();
 #else
@@ -15518,7 +15518,7 @@ public:
       }
 #ifdef THREADS
 #ifdef ASYNC_JOIN
-    tasks_async_join(3009, &Zip_done,(void*)this);
+    tasks_async_join_m(3009, &Zip_done,(void*)this);
 #else
     tasks_join(3009); // normal join onlt
     ZipDone(); // normal join only

@@ -497,16 +497,168 @@ IMPORT void tasks_join(int id)
 #endif
 }
 
-
 pthread_mutex_t *g_queue_mutex;
 std::vector<task_data> *g_queue_tasks_done=0;
 std::vector<task_data> *g_tasks_in_execute=0;
+
+std::vector<int> g_async_join_m_ids;
+class ASyncJoinProcessData2;
+std::vector<ASyncJoinProcessData2*> g_async_join_m_data;
+
+
+pthread_mutex_t *g_m_mutex = 0;
+
+void create_m_mutex()
+{
+  if (!g_m_mutex)
+    g_m_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+}
+void destroy_m_mutex()
+{
+  if (g_m_mutex) {
+    pthread_mutex_destroy(g_m_mutex);
+    g_m_mutex=0;
+  }
+}
+void m_mutex_lock()
+{
+  pthread_mutex_lock(g_m_mutex);
+}
+void m_mutex_unlock()
+{
+  pthread_mutex_unlock(g_m_mutex);
+}
+
+struct ASyncJoinProcessData2
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+
+bool g_stop_multiple=false;
+bool g_m_process_active=false;
+
+bool check_multiple_empty()
+{
+  return g_async_join_m_ids.size()==0 && g_async_join_m_data.size()==0;
+}
+
+void stop_multiple_async_joins()
+{
+  g_stop_multiple=true;
+}
+bool async_join_internal(ASyncJoinProcessData2 *dt, int id);
+
+void *multiple_async_joins(void *data)
+{
+  g_m_process_active=true;
+  while(1) {
+    if (g_stop_multiple ||check_multiple_empty())
+      {
+	g_stop_multiple=false;
+	break;
+      }
+
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(3);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+    
+    m_mutex_lock();
+    int s = g_async_join_m_ids.size();
+    for(int i=0;i<s;i++)
+      {
+	int id = g_async_join_m_ids[i];
+	ASyncJoinProcessData2 *dt2 = g_async_join_m_data[i];
+	//ASyncJoinProcessData dt;
+	//dt->id = dt2->id;
+	//dt->fptr = dt2->fptr;
+	//dt->data = dt2->data;
+	bool exit = async_join_internal(dt2,id);
+	if (exit)
+	  {
+	    int s = g_async_join_m_ids.size();
+	    for(int j=0;j<s;j++)
+	      {
+		if (g_async_join_m_ids[i]==id)
+		  {
+		    g_async_join_m_ids.erase(g_async_join_m_ids.begin()+i);
+		    g_async_join_m_data.erase(g_async_join_m_data.begin()+i);
+		    s--;
+		    i--;
+		  }
+	      }
+	  }
+      }
+    m_mutex_unlock();
+
+  }
+  g_m_process_active=false;
+  return 0;
+}
+
+
+
+bool async_join_internal(ASyncJoinProcessData2 *dt, int id)
+{
+    pthread_mutex_lock(g_queue_mutex);
+
+    bool found_stilltodo=false;
+    int s4 = g_tasks_in_execute->size();
+    for(int i=0;i<s4;i++)
+      {
+	if (g_tasks_in_execute->operator[](i).id==dt->id) { found_stilltodo=true; }
+      }
+
+    
+    bool found = false;
+    int s5 = g_queue_tasks_done->size();
+    for(int i=0;i<s5;i++)
+      {
+	if (dt->id==g_queue_tasks_done->operator[](i).id)
+	  {
+	    found=true;
+	  }
+      }
+    if (found && !found_stilltodo) {
+      //pthread_mutex_lock(g_queue_mutex);
+      int s5 = g_queue_tasks_done->size();
+      for(int i=0;i<s5;i++)
+	{
+	  if (g_queue_tasks_done->operator[](i).id==dt->id) { g_queue_tasks_done->erase(g_queue_tasks_done->begin()+i); i--; s5--; }
+	}
+      pthread_mutex_unlock(g_queue_mutex);
+      dt->fptr(dt->data);
+      return true;
+    }
+   pthread_mutex_unlock(g_queue_mutex);
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(3);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+    return false;
+}
+
 struct ASyncJoinProcessData
 {
   int id;
   void (*fptr)(void*);
   void *data;
 };
+
 void *async_join_process(void *data)
 {
   if (!g_queue_tasks_done) return 0;
@@ -555,6 +707,24 @@ void *async_join_process(void *data)
 #endif
   }
   return 0;
+}
+
+IMPORT void tasks_async_join_m(int id, void (*fptr)(void*), void *data)
+{
+
+  ASyncJoinProcessData2 *dt = new ASyncJoinProcessData2;
+  dt->id = id;
+  dt->fptr = fptr;
+  dt->data = data;
+  create_m_mutex();
+  m_mutex_lock();
+  g_async_join_m_ids.push_back(id);
+  g_async_join_m_data.push_back(dt);
+  m_mutex_unlock();
+  
+  if (!g_m_process_active) {
+    tasks_add(41972, &multiple_async_joins, (void*)0);
+  }
 }
 
 
