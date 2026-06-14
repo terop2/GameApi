@@ -19,9 +19,9 @@ int hhhh_gggg=1;
 #endif
 
 // this currently doesn't work
-//#define TINYGLTF_ASYNC_JOIN 1
+#define TINYGLTF_ASYNC_JOIN 1
 // this is current working.
-//#define BITMAP_THREAD_ASYNC_JOIN 1
+#define BITMAP_THREAD_ASYNC_JOIN 1
 
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
@@ -613,11 +613,17 @@ void loadgltf_splitter_cb(void *data);
 
 int find_str(std::string val, std::string repl);
 
+int g_loadgltf_uni_id = 0;
+
 class LoadGltf : public CollectInterface
 {
 public:
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
     //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
+
+    g_loadgltf_uni_id++;
+    m_loadgltf_unique_id = g_loadgltf_uni_id + 600000;
+
     g_e = &e;
     decoder = new GLTFImageDecoder(base_url,this);
     tinygltf::FsCallbacks fs = {
@@ -655,6 +661,10 @@ public:
   // in sketchfab zips.
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary, void (*fptr2)(void (*f)(void*), void* d)) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
     //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
+
+    g_loadgltf_uni_id++;
+    m_loadgltf_unique_id = g_loadgltf_uni_id + 600000;
+
     g_e = &e;
     decoder = new GLTFImageDecoder(base_url,this);
     tinygltf::FsCallbacks fs = {
@@ -688,7 +698,11 @@ public:
   }
 
 
-  void set_model(GLTFModelInterface *interface) { m_interface = interface; }
+  void set_model(GLTFModelInterface *interface) {
+    m_interface = interface;
+    std::cout << "SETMODEL setting unique id to m_loadgltf_unique_id" << std::endl;
+    interface->set_loadgltf_unique_id(m_loadgltf_unique_id);
+  }
   ~LoadGltf()
   {
     remove_splitter_logo_callback(splitter_logo_id);
@@ -748,6 +762,7 @@ public:
       {
     std::cout << "LoadGltf::HeavyPrepare" << std::endl;
     if (prepare_done) return;
+    prepare_done=true;
     std::cout << "LoadGltf::HeavyPrepare -> executing" << std::endl;
     //std::cout << "Prepare" << std::endl;
     unasync();
@@ -762,7 +777,7 @@ public:
 
 
  #ifdef THREADS
- #ifdef EMSCRIPTEN
+    // #ifdef EMSCRIPTEN
     // wait for all threads to finish
     /*
     int ss = current_gltf_threads.size();
@@ -786,7 +801,7 @@ public:
     //bitmap_thread_async_continuation();
 #endif
     //current_gltf_threads.clear();
-#endif
+    //#endif
 #endif
     bool b = false;
 #ifndef THREADS
@@ -871,11 +886,11 @@ public:
       processData->sz = sz;
       processData->base_url = base_url;
       processData->ptr3 = 0;
-      tasks_add(7777,&tinygltf_process,(void*)processData);
+      tasks_add(m_loadgltf_unique_id,&tinygltf_process,(void*)processData);
 #ifndef TINYGLTF_ASYNC_JOIN
-      tasks_join(7777);
+      tasks_join(m_loadgltf_unique_id);
 #else
-      tasks_async_join_m(7777, &tinygltf_async_join_cb, (void*)this);
+      tasks_async_join_m(m_loadgltf_unique_id, &tinygltf_async_join_cb, (void*)this);
 #endif
       //tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
@@ -925,6 +940,9 @@ public:
     //Prepare();
     std::cout << "LoadGltf::HeavyPrepare done" << std::endl;
       } else {
+      
+      //if (prepare_done) return;
+      //prepare_done=true;
       Prepare();
     }
   }
@@ -1081,7 +1099,7 @@ public:
 
 
 #ifdef THREADS
-#ifdef EMSCRIPTEN
+    //#ifdef EMSCRIPTEN
     // wait for all threads to finish
     /*
     int ss = current_gltf_threads.size();
@@ -1102,7 +1120,7 @@ public:
     tasks_join(3008);
     current_gltf_threads.clear();
  #endif
- #endif
+    // #endif
 #endif
     if (!prepreprepare_done) {
     std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
@@ -1223,7 +1241,7 @@ public:
       if (m_interface) m_interface->execute();
     } else {
       if (!is_in_splitter_cb)
-      if (!prepare_done) Prepare();
+	if (!prepare_done) { Prepare(); prepare_done=true; }
     }
   }
 public:
@@ -1253,6 +1271,7 @@ public:
   int splitter_logo_id;
   int mlguiwidget_logo_id;
   bool is_in_splitter_cb=false;
+  int m_loadgltf_unique_id = -1;
 };
 void loadgltf_splitter_cb(void *data)
 {
@@ -10019,7 +10038,7 @@ public:
   virtual void Collect(CollectVisitor &vis) {
     //std::cout << "FLAGJOINIMPL:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
-    std::cout << "gltfmeshall::collect" << std::endl;
+      //std::cout << "gltfmeshall::collect" << std::endl;
     //DoHeavy(&vis,false);
     //interface->Collect(vis);
     interface->get_load()->Collect(vis);
@@ -10032,7 +10051,7 @@ public:
   virtual bool ReadyToPrepare() const {
     //std::cout << "FLAGJOINIMPL2:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
-    std::cout << "gltfmeshall::readytoprepare" << std::endl;
+      //std::cout << "gltfmeshall::readytoprepare" << std::endl;
     return interface->ReadyToPrepare();
     } else {
       return interface->ReadyToPrepare();
@@ -10042,7 +10061,7 @@ public:
   void DoHeavy(CollectVisitor *vis, bool is_prepare)
   {
     if (!DoHeavyDone) {
-    std::cout << "gltfmeshall::DoHeavy 1" << std::endl;
+      //std::cout << "gltfmeshall::DoHeavy 1" << std::endl;
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
@@ -10051,18 +10070,18 @@ public:
     }
     // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-    std::cout << "gltfmeshall::DoHeavy 2" << std::endl;
+    //std::cout << "gltfmeshall::DoHeavy 2" << std::endl;
     int scene_id = interface->get_default_scene();
     GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
-    std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
+    //std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
 
 
     GameApi::TRR resize_transfer_id;
     resize_transfer_id.id = transfer_id.id;
-    std::cout << "gltfmeshall::DoHeavy 4" << std::endl;
+    //std::cout << "gltfmeshall::DoHeavy 4" << std::endl;
     
     GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, transfer_id, emissive ); // 0 = take numtimeindexes from first animation
-    std::cout << "gltfmeshall::DoHeavy 5" << std::endl;
+    //std::cout << "gltfmeshall::DoHeavy 5" << std::endl;
     bool is_animated_g = is_animated(env,interface,mesh);
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(env,interface,mesh))
@@ -10075,7 +10094,7 @@ public:
 #else
   res = scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);
 #endif
-    std::cout << "gltfmeshall::DoHeavy 6" << std::endl;
+  //std::cout << "gltfmeshall::DoHeavy 6" << std::endl;
     
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
@@ -10084,7 +10103,7 @@ public:
       //	  item->Collect(*vis);
       // }
     }
-    std::cout << "gltfmeshall::DoHeavy 7" << std::endl;
+    //std::cout << "gltfmeshall::DoHeavy 7" << std::endl;
     DoHeavyDone = true;
     }
   }
@@ -10092,7 +10111,7 @@ public:
   virtual void HeavyPrepare() {
     //std::cout << "FLAGJOINIMPL3:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
-      std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
+      //std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
       DoHeavy(NULL,true);
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
@@ -10140,16 +10159,16 @@ public:
   virtual void Prepare() {
     //std::cout << "FLAGJOINIMPL4:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
-      std::cout << "gltfmeshall::Prepare 1" << std::endl;
+      //std::cout << "gltfmeshall::Prepare 1" << std::endl;
       interface->get_load()->Prepare();
-      std::cout << "gltfmeshall::Prepare 2" << std::endl;
+      //std::cout << "gltfmeshall::Prepare 2" << std::endl;
 
       HeavyPrepare();
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
 	item->Prepare();
       }
-      std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
+      //std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
     } else {
       interface->Prepare();
       
@@ -10158,18 +10177,18 @@ public:
   }
   void ZipDecodeDone()
   {
-    std::cout << "gltfmeshall::ZipDecodeDone" << std::endl;
+    //std::cout << "gltfmeshall::ZipDecodeDone" << std::endl;
     zip_decode_done = true;
   }
   virtual void execute(MainLoopEnv &e) {
     //std::cout << "FLAGJOINIMPL5:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
-      std::cout << "ml_gltf_all_execute" << std::endl;
+      //std::cout << "ml_gltf_all_execute" << std::endl;
       interface->execute();
       if (interface->ReadyToFetch()) { // TODO, async join needs this?
 	ZipDecodeDone();
       }
-      std::cout << "gltfmeshall::execute" << std::endl;
+      //std::cout << "gltfmeshall::execute" << std::endl;
       if (zip_decode_done && firsttime) {
 	DoHeavy(NULL,false);  // TODO, IS THIS NEEDED?
 	firsttime=false;
@@ -10180,11 +10199,11 @@ public:
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
 	if (item) {
-	  std::cout << "gltfmeshall::ITEM EXECUTE DONE!" << std::endl;
+	  //std::cout << "gltfmeshall::ITEM EXECUTE DONE!" << std::endl;
 	  item->execute(e);
 	}
       }
-      std::cout << "gltfmeshall::execute 2" << std::endl;
+      //std::cout << "gltfmeshall::execute 2" << std::endl;
     } else {
       interface->get_load()->execute();
       if (res.id!=-1) {
@@ -10197,13 +10216,13 @@ public:
   virtual void handle_event(MainLoopEvent &e) {
     //std::cout << "FLAGJOINIMPL6:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
-      std::cout << "gltfmeshall::handle_event" << std::endl;
+      //std::cout << "gltfmeshall::handle_event" << std::endl;
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
 	if (item)
 	  item->handle_event(e);
       }
-      std::cout << "gltfmeshall::handleevenrt2" << std::endl;
+      //std::cout << "gltfmeshall::handleevenrt2" << std::endl;
     } else {
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
@@ -10216,7 +10235,7 @@ public:
   virtual std::vector<int> shader_id() {
     //std::cout << "FLAGJOINIMPL7:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
-      std::cout << "gltfmeshall::shader_id" << std::endl;
+      //std::cout << "gltfmeshall::shader_id" << std::endl;
       if (res.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,res);
 	if (item)
@@ -15210,6 +15229,8 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK2(std::string url)
   return gltf_loadKK("",url);
 }
 
+IMPORT extern GameApi::EveryApi *g_everyapi;
+
 GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string url)
 {
   if (g_deploy_phase) base_url="./";
@@ -15234,7 +15255,6 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
   
   LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
-  load->set_model(model);
   g_model_del_items.push_back(model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
       int c = get_current_block();
@@ -15242,6 +15262,10 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
   GameApi::TF tf = add_gltf(e,i);
   set_current_block(c);
   g_tf_instances.push_back(tf);
+  GameApi::EveryApi &ev = *g_everyapi;
+  tf = tf_join(ev,tf);
+  GLTFModelInterface *ii = find_gltf(e,tf);
+  load->set_model(ii);
   return tf;
 }
 
@@ -15550,7 +15574,7 @@ public:
   }
   bool ReadyToFetch() const
   {
-    std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
+    //std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
     return uncompress_done3;
   }
   virtual bool IsSketchFabZipASyncJoinImplementation() const { return true; }
@@ -16412,10 +16436,13 @@ GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip
   bool is_binary=false;
   LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary, &sketchfab_zip_cb);
   GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model, g_sketchfab_f2,g_sketchfab_data);
-  load->set_model(model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
   GameApi::TF tf = add_gltf(e,i);
   g_tf_instances.push_back(tf);
+  GameApi::EveryApi &ev = *g_everyapi;
+  tf = tf_join(ev,tf);
+  GLTFModelInterface *ii = find_gltf(e,tf);
+  load->set_model(ii);
   return tf;
 }
 /*
@@ -16796,4 +16823,179 @@ private:
 GameApi::ML GameApi::MainLoopApi::glb_to_download_bar(TF tf, std::string filename)
 {
   return add_main_loop(e, new GlbToDownloadBar(e,tf,filename));
+}
+
+bool tf_join_property(void *t);
+
+class GLTFJoin : public GLTFModelInterface
+{
+public:
+  GLTFJoin(GameApi::EveryApi &ev, GLTFModelInterface *next) : ev(ev), next(next) { }
+  virtual std::string name() const { return "GLTFJoin"; }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  void Prepare() { next->Prepare(); }
+  
+  virtual std::string BaseUrl() const { return next->BaseUrl(); }
+  virtual std::string Url() const { return next->Url(); }
+
+  virtual bool ReadyToFetch() const { return next->ReadyToFetch(); }
+  virtual bool IsSketchFabZipASyncJoinImplementation() const {
+    return next->IsSketchFabZipASyncJoinImplementation();
+  }  
+  virtual void execute() { next->execute(); }
+
+  virtual LoadGltf *get_load() const { return next->get_load(); }
+
+  void set_loadgltf_unique_id(int id) {
+    std::cout << "GLTF_join received id " << id << std::endl;
+    m_id = id;
+    next->set_loadgltf_unique_id(id);
+  }
+  
+  bool property()
+  {
+    unsigned int time = g_low->sdl->SDL_GetTicks();
+    unsigned int delta_ms = time - start_time;
+    if (delta_ms > 30) return false;
+    if (tasks_m_check_async_ongoing(m_id)) return true; 
+    //if (tasks_m_check_async_ongoing(7778)) return true; 
+    //if (tasks_m_check_async_ongoing(3008)) return true; 
+    //if (tasks_m_check_async_ongoing(3009)) return true; 
+    //int mesh_count = next->meshes_size();
+    //if (mesh_count>0) return false;
+    return false;
+  }
+  void check() const
+  {
+    //start_time = g_low->sdl->SDL_GetTicks();
+    tasks_join(m_id);
+    //std::cout << "check id=" << m_id << std::endl;
+    //tasks_join_property(&tf_join_property, (void*)this);
+  }
+  
+  
+  virtual int get_default_scene() const
+  {
+    check();
+    return next->get_default_scene(); }
+  
+  virtual int accessors_size() const { check(); return next->accessors_size(); }
+  virtual const tinygltf::Accessor &get_accessor(int i) const
+  {
+    check();
+    return next->get_accessor(i);
+  }
+
+  virtual int animations_size() const { check(); return next->animations_size(); }
+  virtual const tinygltf::Animation &get_animation(int i) const
+  {
+    check();
+    return next->get_animation(i);
+  }
+
+  virtual int buffers_size() const { check(); return next->buffers_size(); }
+  virtual const tinygltf::Buffer &get_buffer(int i) const
+  {
+    check();
+    return next->get_buffer(i);
+  }
+
+  virtual int bufferviews_size() const { check(); return next->bufferviews_size(); }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const
+  {
+    check();
+    return next->get_bufferview(i);
+  }
+
+  virtual int materials_size() const { check(); return next->materials_size(); }
+  virtual const tinygltf::Material &get_material(int i) const
+  {
+    check();
+    return next->get_material(i);
+  }
+
+  virtual int meshes_size() const { check(); return next->meshes_size(); }
+  virtual const tinygltf::Mesh &get_mesh(int i) const
+  {
+    check();
+    return next->get_mesh(i);
+  }
+
+  virtual int nodes_size() const { check(); return next->nodes_size(); }
+  virtual const tinygltf::Node &get_node(int i) const
+  {
+    check();
+    return next->get_node(i);
+  }
+
+  virtual int textures_size() const { check(); return next->textures_size(); }
+  virtual const tinygltf::Texture &get_texture(int i) const
+  {
+    check();
+    return next->get_texture(i);
+  }
+
+  virtual int images_size() const { check(); return next->images_size(); }
+  virtual const tinygltf::Image &get_image(int i) const
+  {
+    check();
+    return next->get_image(i);
+  }
+
+  virtual int skins_size() const { check(); return next->skins_size(); }
+  virtual const tinygltf::Skin &get_skin(int i) const
+  {
+    check();
+    return next->get_skin(i);
+  }
+
+  virtual int samplers_size() const { check(); return next->samplers_size(); }
+  virtual const tinygltf::Sampler &get_sampler(int i) const
+  {
+    check();
+    return next->get_sampler(i);
+  }
+
+  virtual int cameras_size() const { check(); return next->cameras_size(); }
+  virtual const tinygltf::Camera &get_camera(int i) const
+  {
+    check();
+    return next->get_camera(i);
+  }
+
+  virtual int scenes_size() const { check(); return next->scenes_size(); }
+  virtual const tinygltf::Scene &get_scene(int i) const
+  {
+    check();
+    return next->get_scene(i);
+  }
+
+  virtual int lights_size() const { check(); return next->lights_size(); }
+  virtual const tinygltf::Light &get_light(int i) const
+  {
+    check();
+    return next->get_light(i);
+  }
+private:
+  GameApi::EveryApi &ev;
+  GLTFModelInterface *next;
+  mutable unsigned int start_time;
+  int m_id;
+};
+
+bool tf_join_property(void *t)
+{
+  GLTFJoin *j = (GLTFJoin*)t;
+  return j->property();
+}
+
+  
+GameApi::TF GameApi::MainLoopApi::tf_join(GameApi::EveryApi &ev, TF tf)
+{
+  GLTFModelInterface *i = find_gltf(e,tf);
+  return add_gltf(e, new GLTFJoin(ev,i));
 }

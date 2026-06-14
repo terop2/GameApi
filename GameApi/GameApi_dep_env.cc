@@ -489,6 +489,28 @@ IMPORT void tasks_add(int id, void *(*fptr)(void*), void *data)
   fptr(data);
 #endif
 }
+
+IMPORT void tasks_join_property(bool (*fptr)(void*), void *data)
+{
+  while(1) {
+    bool b = fptr(data);
+    if (!b) break;
+
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(3);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+
+    
+  }
+}
+
 IMPORT void tasks_join(int id)
 {
 #ifdef THREADS
@@ -517,17 +539,36 @@ void destroy_m_mutex()
 {
   if (g_m_mutex) {
     pthread_mutex_destroy(g_m_mutex);
+    delete g_m_mutex;
     g_m_mutex=0;
   }
 }
 void m_mutex_lock()
 {
-  pthread_mutex_lock(g_m_mutex);
+  if (g_m_mutex)
+    pthread_mutex_lock(g_m_mutex);
 }
 void m_mutex_unlock()
 {
-  pthread_mutex_unlock(g_m_mutex);
+  if (g_m_mutex)
+    pthread_mutex_unlock(g_m_mutex);
 }
+
+bool tasks_m_check_async_ongoing(int id)
+{
+  m_mutex_lock();
+  int s = g_async_join_m_ids.size();
+  for(int i=0;i<s;i++)
+    {
+      if (g_async_join_m_ids[i]==id) {
+	m_mutex_unlock();
+	return true;
+      }
+    }
+  m_mutex_unlock();
+  return false;
+}
+
 
 struct ASyncJoinProcessData2
 {
@@ -590,6 +631,7 @@ void *multiple_async_joins(void *data)
 		if (g_async_join_m_ids[i]==id)
 		  {
 		    g_async_join_m_ids.erase(g_async_join_m_ids.begin()+i);
+		    delete g_async_join_m_data[i];
 		    g_async_join_m_data.erase(g_async_join_m_data.begin()+i);
 		    s--;
 		    i--;

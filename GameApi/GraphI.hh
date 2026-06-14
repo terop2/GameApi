@@ -3158,6 +3158,7 @@ public:
   virtual bool ReadyToFetch() const { return true; } // tasks_async_join
   virtual bool IsSketchFabZipASyncJoinImplementation() const { return false; }
   virtual void execute() { }
+  virtual void set_loadgltf_unique_id(int id) { }
   
   virtual std::string name() const=0;
   
@@ -3226,6 +3227,7 @@ public:
   }
   
   virtual void execute() { next->execute(); }
+  virtual void set_loadgltf_unique_id(int id) { next->set_loadgltf_unique_id(id); }
 
   virtual LoadGltf *get_load() const { return next->get_load(); }
   
