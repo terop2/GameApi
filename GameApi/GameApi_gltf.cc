@@ -686,12 +686,14 @@ public:
   }
   void HeavyPrepare()
   {
+    //std::cout << "LoadGLTF::HeavyPrepare()" << std::endl;
     // if (m_interface)
     //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
       {
 	//std::cout << "LoadGltf::HeavyPrepare" << std::endl;
     if (prepare_done) return;
+    if (m_interface) m_interface->Prepare();
     prepare_done=true;
     //std::cout << "LoadGltf::HeavyPrepare -> executing" << std::endl;
     //std::cout << "Prepare" << std::endl;
@@ -822,6 +824,9 @@ public:
 #else
       tasks_async_join_m(m_loadgltf_unique_id, &tinygltf_async_join_cb, (void*)this);
 #endif
+
+      //print_task_m_ids();
+      
       //tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
@@ -853,12 +858,13 @@ public:
       processData->sz = sz;
       processData->base_url = base_url;
       processData->ptr3 = ptr3;
-      tasks_add(7778,&tinygltf_process,(void*)processData);
+      tasks_add(m_loadgltf_unique_id,&tinygltf_process,(void*)processData);
 #ifndef TINYGLTF_ASYNC_JOIN
-      tasks_join(7778);
+      tasks_join(m_loadgltf_unique_id);
 #else
-      tasks_async_join_m(7778, &tinygltf_async_join_cb, (void*)this);
+      tasks_async_join_m(m_loadgltf_unique_id, &tinygltf_async_join_cb, (void*)this);
 #endif
+      //print_task_m_ids();
 
       //tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
     }
@@ -873,6 +879,7 @@ public:
       
       //if (prepare_done) return;
       //prepare_done=true;
+    if (m_interface) m_interface->Prepare();
       Prepare();
     }
   }
@@ -1010,7 +1017,6 @@ public:
     if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
       {
 	//std::cout << "LoadGltf::Prepare" << std::endl;
-    if (m_interface) m_interface->Prepare();
     HeavyPrepare();
     //std::cout << "LoadGltf::Prepare done" << std::endl;
       } else {

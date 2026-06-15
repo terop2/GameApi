@@ -554,6 +554,19 @@ void m_mutex_unlock()
     pthread_mutex_unlock(g_m_mutex);
 }
 
+void print_task_m_ids()
+{
+  std::cout << "Task_m_ids:";
+  m_mutex_lock();
+  int s = g_async_join_m_ids.size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << g_async_join_m_ids[i] << ",";
+    }
+  m_mutex_unlock();
+  std::cout << std::endl;
+}
+
 bool tasks_m_check_async_ongoing(int id)
 {
   m_mutex_lock();

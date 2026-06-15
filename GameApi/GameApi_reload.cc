@@ -34,17 +34,18 @@ public:
     MainLoopItem *item = find_main_loop(env,use_ml_def);
     if (item)
       item->Collect(vis);
-
+    /*
    find_ml_real();
     MainLoopItem *item2 = find_main_loop(env,use_ml_real);
     if (item2)
       item2->Collect(vis);
+    */
     // FaceCollection *item2 = find_facecoll(env,p);
     //item2->Collect(vis);
     
     vis.register_obj(this);
     
-    firsttime = false;
+    //firsttime = false;
   }
   virtual void HeavyPrepare()
   {
@@ -85,6 +86,27 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
+    
+          exe_counter++;
+	  find_ml_real();
+	  if (use_ml_real.id==-1)
+	    {
+	      exe_counter--;
+	    } else
+	    {
+	  
+	      if (exe_counter==1)
+		{
+		  MainLoopItem *item = find_main_loop(env,use_ml_real);
+		  collectdata = collect(item);
+		}
+	      if (exe_counter>1)
+		{
+		  collect_repeat(collectdata);
+		}
+	    }
+
+    
     FaceCollection *coll = find_facecoll(env,p);
     bool is_ready = coll->Ready();
     bool is_ready_orig = is_ready;
@@ -111,7 +133,7 @@ public:
     }
 
 
-    if (is_ready) {
+    //if (is_ready) {
     if (firsttime2==false) {
       find_ml_real();
       MainLoopItem *item4 = find_main_loop(env,use_ml_real);
@@ -120,7 +142,7 @@ public:
 	  item4->execute(e);
 	}
     }
-    }
+    //}
     
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -247,6 +269,8 @@ private:
   int def_counter=0;
   bool firsttime = true;
   bool firsttime2 = true;
+  int exe_counter=0;
+  CollectData collectdata;
 };
 void reload_exe_cb(void *data)
 {
