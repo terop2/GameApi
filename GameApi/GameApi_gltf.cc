@@ -11,6 +11,7 @@ int hhhh_gggg=1;
 #include "tiny_gltf.h"
 #include "Tasks.hh"
 #include <unordered_set>
+#include "MaterialI.hh"
 
 #ifdef EMSCRIPTEN
 #define ASYNC_JOIN 1
@@ -22,6 +23,8 @@ int hhhh_gggg=1;
 #define TINYGLTF_ASYNC_JOIN 1
 // this is current working.
 #define BITMAP_THREAD_ASYNC_JOIN 1
+
+//#define RELOAD_TEST 1
 
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
@@ -39,6 +42,9 @@ extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
 extern int g_pthread_count;
+
+
+
 
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
 
@@ -375,99 +381,6 @@ private:
 };
 
 
-class MaterialForward : public Material
-{
-public:
-  GameApi::ML call(GameApi::P p) const
-  {
-    GameApi::ML ml;
-    ml.id = mat(p.id);
-    return ml;
-  }
-  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst(p.id,pts.id);
-    return ml;
-  }
-  GameApi::ML call_inst_matrix(GameApi::P p, GameApi::MS ms)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst_matrix(p.id,ms.id);
-    return ml;
-  }
-
-  int mat(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::ML ml = mat2(p2);
-    return ml.id;
-  }
-  int mat_inst(int p, int pts) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst(p2,p3);
-    return ml.id;
-  }
-    int mat_inst_va_prepare(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::VA va = mat2_inst_va_prepare(p2);
-    return va.id;
-  }
-  int mat_inst_va(int va, int pts) const
-  {
-    GameApi::VA p2;
-    p2.id = va;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst_va(p2,p3);
-    return ml.id;
-  }
-
-  int mat_inst_matrix(int p, int ms) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::MS p3;
-    p3.id = ms;
-    GameApi::ML ml = mat2_inst_matrix(p2,p3);
-    return ml.id;
-  }
-
-  int mat_inst2(int p, int pta) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTA p3;
-    p3.id = pta;
-    GameApi::ML ml = mat2_inst2(p2,p3);
-    return ml.id;
-
-  }
-  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
-    return ml.id;
-
-  }
-  virtual GameApi::ML mat2(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
-  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const=0;
-  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const=0;
-  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
-  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
-};
 
 
 int bitmap_find_data(std::string data);
@@ -4582,6 +4495,7 @@ public:
   GLTFFaceCollection( GLTFModelInterface *interface, int mesh_index, int prim_index) : interface(interface), mesh_index(mesh_index), prim_index(prim_index) {
   }
   virtual std::string name() const { return "GLTFFaceCollection"; }
+  virtual bool Ready() const { if (interface) return interface->Ready(); }
   ~GLTFFaceCollection()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
@@ -9294,7 +9208,15 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       if (acesfilm)
        	mat_res = ev.materials_api.acesfilm_material(ev,mat_res);
       mat_res = ev.materials_api.discard_material(ev,mat_res);
-  return mat_res.id;
+
+#ifdef RELOAD_TEST
+      GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+      GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
+       mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start);
+#endif
+
+      return mat_res.id;
 }
 
 GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, float self_mult, float rest_mult, bool transparent, bool acesfilm, bool emissive), float mix, float self_mult, float rest_mult, Vector light_dir, bool transparent, bool acesfilm, bool emissive)
@@ -9397,7 +9319,14 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       if (acesfilm)
       	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
        mat_res = ev.materials_api.discard_material(ev,mat_res);
-      
+
+#ifdef RELOAD_TEST
+       GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+       GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
+       mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start); 
+#endif
+       
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind(p,mat_res);
 
@@ -9491,6 +9420,13 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
       mat_res = ev.materials_api.discard_material(ev,mat_res);
 
+#ifdef RELOAD_TEST 
+      GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+      GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
+       mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start); 
+#endif
+       
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat_res);
 
@@ -9614,6 +9550,13 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
 	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
       mat4 = ev.materials_api.discard_material(ev,mat4);
 
+#ifdef RELOAD_TEST
+       GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+      GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
+       mat4 = ev.materials_api.reload_material(ev,mat4,"foobar",def_p,def_start); 
+#endif
+      
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
@@ -9696,6 +9639,13 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
       	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
       mat4 = ev.materials_api.discard_material(ev,mat4);
 
+#ifdef RELOAD_TEST
+       GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+      GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
+       mat4 = ev.materials_api.reload_material(ev,mat4,"foobar",def_p,def_start); 
+#endif
+      
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat4);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
@@ -16896,6 +16846,10 @@ public:
     //int mesh_count = next->meshes_size();
     //if (mesh_count>0) return false;
     return false;
+  }
+  bool Ready() const
+  {
+    return !(tasks_m_check_async_ongoing(m_id));
   }
   void check() const
   {

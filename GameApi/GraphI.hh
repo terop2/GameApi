@@ -1797,6 +1797,9 @@ public:
   virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const=0;
 };
 
+
+
+
 class ScreenSpaceMaterial
 {
 public:
@@ -3159,6 +3162,9 @@ public:
   virtual bool IsSketchFabZipASyncJoinImplementation() const { return false; }
   virtual void execute() { }
   virtual void set_loadgltf_unique_id(int id) { }
+
+  virtual bool Ready() const { return true; }
+  
   
   virtual std::string name() const=0;
   

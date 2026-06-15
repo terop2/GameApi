@@ -392,12 +392,15 @@ private:
 };
 
 #ifdef F_MAINLOOP_API
+
+
 class MainLoopApi
 {
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  IMPORT ML progress_bar_config(GameApi::ML ml, bool progress_impl, bool max_impl, bool install_impl, float mult_ems0, float mult_ems1, float mult_ems2, float mult_builder);
+  IMPORT ML reload_ml(void *next, P p, std::string name, int phase, P default_p, void *default_p_material, PTS pts, MS ms);
+  IMPORT ML progress_bar_config(ML ml, bool progress_impl, bool max_impl, bool install_impl, float mult_ems0, float mult_ems1, float mult_ems2, float mult_builder);
   IMPORT TF tf_join(EveryApi &ev, TF tf);
   IMPORT ML ogl_set_frame_rate(ML ml, int fps);
   IMPORT float get_frame_time() const;
@@ -1779,6 +1782,7 @@ class MaterialsApi
 {
 public:
   IMPORT MaterialsApi(Env &e);
+  IMPORT MT reload_material(EveryApi &ev, MT next, std::string name, P default_p, MT default_mat);
   IMPORT MT acesfilm_material(EveryApi &ev, MT next);
   IMPORT MT discard_material(EveryApi &ev, MT next);
   IMPORT MT hires(EveryApi &ev, MT mat, int size, int numsampled, float blur_radius);
