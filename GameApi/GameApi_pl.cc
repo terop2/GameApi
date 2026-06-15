@@ -4171,6 +4171,16 @@ public:
   ColorElem2(FaceCollection *coll, unsigned int col) : ForwardFaceCollection(*coll), col(col),coll(coll) { }
   virtual std::string name() const { return "ColorElem2"; }
 
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  void Prepare()
+  {
+    coll->Prepare();
+  }
+  
   ~ColorElem2()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)

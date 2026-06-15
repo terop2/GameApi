@@ -179,6 +179,13 @@
 			 { "ev" },
 			 "MT", "materials_api", "m_def"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::reload_material,
+			 "reload",
+			 { "ev", "next", "name", "default_p", "default_mat" },
+			 { "EveryApi&", "MT", "std::string", "P", "MT" },
+			 { "ev", "", "test", "", "" },
+			 "MT", "materials_api", "reload_material"));
+
 #if (ALL==1)||(HIRES==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::hires,
 			 "m_hires",

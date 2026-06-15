@@ -18178,6 +18178,54 @@ void remove_mlguiwidget_logo_callback(int id)
 }
 
 
+
+CollectData collect(CollectInterface *i)
+{
+  CollectData d;
+  d.vis = new CollectInterfaceImpl;
+  d.vis_counter=0;
+  d.vis_counter_before=0;
+  d.has_vis=true;
+  i->Collect(*d.vis);
+  return d;
+}
+void collect_repeat(CollectData &d)
+{
+
+  if (d.has_vis)
+    {
+	int counter = 0;
+	int s = d.vis->vec.size();
+	for(int i=0;i<s;i++) counter+=d.vis->count(i);
+	
+      int num2 = (counter/30)+1;
+      if (num2<1) num2=1;
+      for(int i=0;i<num2;i++) {
+	d.vis->execute(d.vis_counter);
+	d.vis_counter_before++;
+	//real_counter++;
+	if (d.vis_counter_before>=d.vis->count(d.vis_counter)) {
+	  d.vis_counter_before=0;
+	  d.vis_counter++;
+	}
+      }
+
+      if (d.vis_counter>=d.vis->vec.size())
+	{
+	  d.has_vis = false;
+	}
+
+    } else {
+    if (d.vis) {
+      delete d.vis;
+      d.vis=0;
+    }
+  }      
+}
+
+
+
+
 struct Splitter_cb
 {
   int id;

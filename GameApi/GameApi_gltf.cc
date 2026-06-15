@@ -4495,7 +4495,9 @@ public:
   GLTFFaceCollection( GLTFModelInterface *interface, int mesh_index, int prim_index) : interface(interface), mesh_index(mesh_index), prim_index(prim_index) {
   }
   virtual std::string name() const { return "GLTFFaceCollection"; }
-  virtual bool Ready() const { if (interface) return interface->Ready(); }
+  virtual bool Ready() const { if (interface) return interface->Ready();
+    return false;
+  }
   ~GLTFFaceCollection()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
@@ -4507,7 +4509,7 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
-    interface->Collect(vis);
+    interface->get_load()->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -4766,7 +4768,7 @@ public:
   
   virtual void Prepare() { 
     //std::cout << "GLTFFaceCollection::Prepare()" << std::endl;
-    interface->Prepare();
+    interface->get_load()->Prepare();
     HeavyPrepare();
   }
   virtual int NumFaces() const 
@@ -9210,9 +9212,8 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       mat_res = ev.materials_api.discard_material(ev,mat_res);
 
 #ifdef RELOAD_TEST
-      GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+      GameApi::P def_p = ev.polygon_api.p_empty();
        GameApi::MT def_start = ev.materials_api.m_def(ev);
-      GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
        mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start);
 #endif
 
@@ -9321,9 +9322,8 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
        mat_res = ev.materials_api.discard_material(ev,mat_res);
 
 #ifdef RELOAD_TEST
-       GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+      GameApi::P def_p = ev.polygon_api.p_empty();
        GameApi::MT def_start = ev.materials_api.m_def(ev);
-       GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
        mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start); 
 #endif
        
@@ -9421,9 +9421,8 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       mat_res = ev.materials_api.discard_material(ev,mat_res);
 
 #ifdef RELOAD_TEST 
-      GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+      GameApi::P def_p = ev.polygon_api.p_empty();
        GameApi::MT def_start = ev.materials_api.m_def(ev);
-      GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
        mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start); 
 #endif
        
@@ -9551,9 +9550,8 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       mat4 = ev.materials_api.discard_material(ev,mat4);
 
 #ifdef RELOAD_TEST
-       GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+      GameApi::P def_p = ev.polygon_api.p_empty();
        GameApi::MT def_start = ev.materials_api.m_def(ev);
-      GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
        mat4 = ev.materials_api.reload_material(ev,mat4,"foobar",def_p,def_start); 
 #endif
       
@@ -9640,9 +9638,8 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
       mat4 = ev.materials_api.discard_material(ev,mat4);
 
 #ifdef RELOAD_TEST
-       GameApi::P def_p = ev.polygon_api.cube(-300.0, 300.0, -300.0, 300.0, -300.0, 300.0);
+      GameApi::P def_p = ev.polygon_api.p_empty();
        GameApi::MT def_start = ev.materials_api.m_def(ev);
-      GameApi::MT def_phong = ev.materials_api.phong(ev,def_start,1.0,1.0,1.0,0xff0000ff,0xffff0000,0xffffffff,10.0);
        mat4 = ev.materials_api.reload_material(ev,mat4,"foobar",def_p,def_start); 
 #endif
       
@@ -10008,7 +10005,11 @@ public:
       //std::cout << "gltfmeshall::collect" << std::endl;
     //DoHeavy(&vis,false);
     //interface->Collect(vis);
-    interface->get_load()->Collect(vis);
+      //if (res.id!=-1) {
+      //	MainLoopItem *item = find_main_loop(env,res);
+      //	item->Collect(vis);
+      //}
+      interface->get_load()->Collect(vis);
     vis.register_obj(this);
     } else {
       interface->Collect(vis);
@@ -10079,11 +10080,13 @@ public:
     //std::cout << "FLAGJOINIMPL3:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
       //std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
-      DoHeavy(NULL,true);
-      if (res.id!=-1) {
-	MainLoopItem *item = find_main_loop(env,res);
-	item->Prepare();
-      }
+      // DoHeavy() cannot be for some reason moved to Collect()
+      // even though we wanted that.
+      DoHeavy(NULL,true); 
+      //if (res.id!=-1) {
+      //	 MainLoopItem *item = find_main_loop(env,res);
+      //	 item->Prepare();
+      //}
     } else {
       
       std::string url = interface->Url();
@@ -10127,6 +10130,11 @@ public:
     //std::cout << "FLAGJOINIMPL4:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
       //std::cout << "gltfmeshall::Prepare 1" << std::endl;
+      //if (res.id!=-1) {
+      //	MainLoopItem *item = find_main_loop(env,res);
+      //	item->Prepare();
+      //}
+
       interface->get_load()->Prepare();
       //std::cout << "gltfmeshall::Prepare 2" << std::endl;
 
@@ -10150,6 +10158,19 @@ public:
   virtual void execute(MainLoopEnv &e) {
     //std::cout << "FLAGJOINIMPL5:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
     if (interface->IsSketchFabZipASyncJoinImplementation()) {
+
+      exe_counter++;
+      
+      if (exe_counter==1)
+	{
+	  MainLoopItem *item = find_main_loop(env,res);
+	  collectdata = collect(item);
+	}
+      if (exe_counter>1)
+	{
+	  collect_repeat(collectdata);
+	}
+
       //std::cout << "ml_gltf_all_execute" << std::endl;
       interface->execute();
       if (interface->ReadyToFetch()) { // TODO, async join needs this?
@@ -10241,6 +10262,8 @@ private:
   bool firsttime=true;
   bool zip_decode_done=false;
   bool DoHeavyDone = false;
+  int exe_counter=0;
+  CollectData collectdata;
 };
 
 
@@ -16849,7 +16872,12 @@ public:
   }
   bool Ready() const
   {
-    return !(tasks_m_check_async_ongoing(m_id));
+    bool b = !(tasks_m_check_async_ongoing(m_id));
+    //static int counter=0;
+    // counter++;
+    //if (counter<20)
+    //  std::cout << "JOIN ready=" << m_id << " " << b << std::endl;
+    return b;
   }
   void check() const
   {
