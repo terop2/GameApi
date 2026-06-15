@@ -1678,13 +1678,16 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::ga
 			  { "ev", "" },
 			  "RUN", "blocker_api", "webgpu_window"));
 #endif
-#if (ALL==1)||(EMSCRIPTEN_FRAME2==1)   
+
+#if 1
+#if (ALL==1)||(EMSCRIPTEN_FRAME2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2, 
 			 "html_run",      
 		  	 { "ev", "r", "homepage", "is_in_envparams_arr" },
 		    	 { "EveryApi&", "RUN", "std::string","bool" },
 			 { "ev", "", "https://meshpage.org/assets/","false" },
 			 "HML", "mainloop_api", "emscripten_frame2"));
+#endif
 #endif
 #if (ALL==1)||(EMSCRIPTEN_FRAME2_ML==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_ML,
@@ -1916,13 +1919,27 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "", "output.glb" },
 			 "ML", "mainloop_api", "glb_to_download_bar"));
   
+#if 1
 #if (ALL==1)||(SAVE_DEPLOY==1)
-vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_deploy,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_deploy,
 			   "save_deploy",
 			   { "h", "filename" },
 			   { "HML", "std::string" },
 			   { "", "gameapi_deploy.zip" },
 			   "ZIP", "mainloop_api", "save_deploy"));
 #endif    
+#endif
+#if 0
+#if (ALL==1)||(SAVE_DEPLOY2==1)
+  // we couldn't get this working. Would be nice to get rid of http server,
+  // but didn't seem to work.
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_deploy2,
+		       "save_deploy2",
+		       { "ev", "run", "homepage", "is_in_arr", "filename" },
+		       { "EveryApi&", "RUN", "std::string", "bool", "std::string" },
+		       { "ev", "", "https://meshpage.org/assets/", "false", "gameapi_deploy.zip" },
+		       "ZIP", "mainloop_api", "save_deploy2"));
+#endif
+#endif
   return vec;
 }

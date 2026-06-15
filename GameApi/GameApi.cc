@@ -28481,6 +28481,14 @@ GameApi::ML GameApi::MainLoopApi::save_deploy(HML h, std::string filename)
   return add_main_loop(e, new SaveDeploy(e,h2,filename));
 }
 
+GameApi::ML GameApi::MainLoopApi::save_deploy2(EveryApi &ev, RUN r, std::string homepage, bool is_in_envparams_arr, std::string filename)
+{
+  // This doesnt work for some reason. deploy doesnt work with this
+  HML hml = emscripten_frame2(ev,r,homepage,is_in_envparams_arr);
+  ML ml = save_deploy(hml,filename);
+  return ml;
+}
+
 std::string fix_script(std::string code, std::string rettype)
 {
   int res_line = 0;
@@ -45465,3 +45473,114 @@ GameApi::ML GameApi::MainLoopApi::progress_bar_config(GameApi::ML ml,
   g_progress_bar_mult_builder = builder_mult;
   return ml;
 }
+
+#if 0
+
+HeavyWorkThread::HeavyWorkThread(HeavyWork *work, bool get_execute_from_eventloop, int id) : work(work), slot(0), ogl(0), eloop(get_execute_from_eventloop),id(id)
+{
+  create_mutex();
+}
+HeavyWorkThread::HeavyWorkThread(HeavyWork *work, HeavyWorkSlot *slot, bool get_execute_from_eventloop, int id) : work(work), slot(slot), ogl(0), eloop(get_execute_from_eventloop),id(id)
+{
+  create_mutex();
+}
+HeavyWorkThread::HeavyWorkThread(HeavyWork *work, HeavyWorkSlot *slot, HeavyWorkOpenGL *ogl, bool get_execute_from_eventloop, int id) : work(work), slot(slot), ogl(ogl), eloop(get_execute_from_eventloop), id(id) {
+
+  create_mutex();
+}
+HeavyWorkThread::~HeavyWorkThread()
+{
+  destroy_mutex();
+}
+
+void heavy_work_thread_cb(void *thr)
+{
+  HeavyWorkThread *thread = (HeavyWorkThread*)thr;
+  thread->cb();
+}
+void heavy_work_thread_task(void *hw)
+{
+  HeavyWorkData *dt = (HeavyWorkData*)hw;
+  HeavyWorkThread *thread = dt->thread;
+  thread->heavy(dt->num);
+}
+
+void HeavyWorkThread::heavy(int num)
+{
+  work->heavy(thread_data[num]);
+  int s = work->num_slots();
+  for(int i=0;i<s;i++)
+    {
+      void *data = work->get_data_for_slots(i);
+      slot->heavy(i,thread_data[num],data);
+    }
+}
+void HeavyWorkThread::run()
+{
+  join();
+}
+void HeavyWorkThread::join()
+{
+  tasks_async_join_m(id, &heavy_work_thread_cb, (void*)this);
+}
+struct SlotCB
+{
+  int idx;
+  HeavyWorkThread *m_this;
+};
+void heavy_work_thread_cb2(void *cb)
+{
+  SlotCB *slotcb = (SlotCB*)cb;
+  slotcb->m_this->slot_cb(slotcb->idx);
+}
+void HeavyWorkThread::slot_cb(int slot_idx)
+{
+  assert(slot_idx==slot_num);
+  slot_num++;
+}
+void HeavyWorkThread::join_slot(int slot_idx)
+{
+  SlotCB *cb = new SlotCB;
+  cb->idx = slot_idx;
+  cb->m_this = this;
+  tasks_async_join_m(id, &heavy_work_thread_cb2, (void*)cb);
+}
+struct HeavyWorkData
+{
+  HeavyWorkThread *thread;
+  int num;
+};
+
+
+void HeavyWorkThread::add_thread(void *thread_data)
+{
+  HeavyWorkData *dt = new HeavyWorkData;
+  dt->thread = this;
+  dt->num = thread_data.size()-1;
+  lock_mutex();
+  thread_data.push_back(thread_data);
+  data.push_back(dt);
+  unlock_mutex();
+  tasks_add(id,&heavy_work_thread_task,(void*)dt);
+}
+void HeavyWorkThread::cb()
+{
+  flipped = true;
+}
+void HeavyWorkThread::execute()
+{  
+  if (ogl && work) {
+    if (!flipped)
+      {
+	void *p = work->get_data_initial();
+	ogl->set_data(true,p);
+      }
+    if (flipped)
+      {
+	void *p = work->get_data_from_heavy_op();
+	ogl->set_data(false,p);
+      }
+    ogl->Render();
+  }
+}
+#endif

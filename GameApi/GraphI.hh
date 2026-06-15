@@ -4262,8 +4262,69 @@ public:
 
 
 
+#if 0
+class HeavyWork
+{
+public:
+  virtual void heavy(void *thread_data)=0;
+  virtual void *get_data_initial() const=0;
+  virtual bool heavy_op_done() const=0;
+  virtual void *get_data_from_heavy_op() const=0;
+  virtual int num_slots() const =0;
+  virtual void *get_data_for_slots(int slot_idx) const=0;
+};
+class HeavyWorkSlot
+{
+public:
+  virtual void heavy(int idx, void *thread_data, void *slotdata)=0;
+};
 
+class HeavyWorkOpenGL
+{
+public:
+  // initial will first be true, but over time it'll change to false.
+  // will be called every frame. data changes on the true->false transition.
+  virtual void set_data(bool is_initial, void *data)=0;
+  virtual void set_data_for_slot(void *slotdata, int slot_idx)=0;
+  virtual void render()=0;
+};
 
+class HeavyWorkThread
+{
+  // This class must be instantiated in your object's DATA MEMBER.
+  
+  // You're not allowed to pass data between work and ogl without going through
+  // the get_data() and set_data(), which is called automatically.
+public:
+  HeavyWorkThread(HeavyWork *work, bool get_execute_from_eventloop, int id);
+  HeavyWorkThread(HeavyWork *work, HeavyWorkOpenGL *ogl, bool get_execute_from_eventloop, int id);
+  ~HeavyWorkThread();
+  void add_thread(void *thread_data);
+  void run();
+  void execute();
+  //void join(void (*fptr)(void*), void *data);
+  //void async_join(void (*fptr)(void*), void *data);
+private:
+  void heavy(int num);
+  void create_mutex();
+  void lock_mutex();
+  void unlock_mutex();
+  void destroy_mutex();
+  void join();
+  void join_slot(int slot_idx);
+  void cb();
+  HeavyWork *work;
+  HeavyWorkOpenGL *ogl;
+  HeavyWorkSlot *slot;
+  int id;
+  std::vector<void*> thread_data;
+  std::vector<HeavyWorkData*> data;
+  pthread_mutex_t mutex;
+  bool flipped=false;
+  bool firsttime=true;
+  int slot_num=-1;
+};
+#endif
 
 #endif
 

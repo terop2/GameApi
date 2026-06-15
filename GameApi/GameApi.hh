@@ -554,6 +554,7 @@ public:
   IMPORT SHP timed_shp_p3d(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);
   IMPORT SHP timed_shp_uvw(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);  
   IMPORT ML save_deploy(HML h, std::string filename);
+  IMPORT ML save_deploy2(EveryApi &ev, RUN run, std::string homepage, bool is_in_arr, std::string filename);
   IMPORT ML save_script(HML h, std::string filename);
   IMPORT HML html_url(std::string url);
   IMPORT SHI empty_shaderI();
