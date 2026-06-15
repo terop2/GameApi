@@ -1,0 +1,32 @@
+test
+
+
+(200,200)gltf_sketchfab_zip uid3334 0 0 6 url_to_zip:*https?//meshpage.org/assets/tactical_portable_suitcase_security_information.zip:false:-1:0:*:*
+(400,200)ml_gltf_all uid3335 0 0 1 ev:*ev:false:-1:0:*:* tf:*uid3334:false:-1:0:*:* mix:*1.0:false:-1:0:*:* self_mult:*3.0:false:-1:0:*:* rest_mult:*0.0:false:-1:0:*:* mode:*0:false:-1:0:*:* light_dir_x:*400.0:false:-1:0:*:* light_dir_y:*-400.0:false:-1:0:*:* light_dir_z:*300.0:false:-1:0:*:* border_width:*0.0:false:-1:0:*:* border_color:*ff000000:false:-1:0:*:* transparent:*true:false:-1:0:*:* acesfilm:*true:false:-1:0:*:* emissive:*true:false:-1:0:*:*
+(600,200)mn_empty uid3336 0 0 1
+(800,200)mn_translate uid3337 0 0 1 next:*uid3336:false:-1:0:*:* dx:*-150:false:-1:0:*:* dy:*0:false:-1:0:*:* dz:*0:false:-1:0:*:*
+(1000,200)move_ml uid3338 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3335:false:-1:0:*:* mn:*uid3337:false:-1:0:*:* clone_count:*1:false:-1:0:*:* time_delta:*10.0:false:-1:0:*:*
+(1200,200)gltf_sketchfab_zip uid3339 0 0 1 url_to_zip:*https?//meshpage.org/assets/wooden_sofa.zip:false:-1:0:*:*
+(200,400)ml_gltf_all uid3340 0 0 1 ev:*ev:false:-1:0:*:* tf:*uid3339:false:-1:0:*:* mix:*1.0:false:-1:0:*:* self_mult:*3.0:false:-1:0:*:* rest_mult:*0.0:false:-1:0:*:* mode:*0:false:-1:0:*:* light_dir_x:*400.0:false:-1:0:*:* light_dir_y:*-400.0:false:-1:0:*:* light_dir_z:*300.0:false:-1:0:*:* border_width:*0.0:false:-1:0:*:* border_color:*ff000000:false:-1:0:*:* transparent:*true:false:-1:0:*:* acesfilm:*true:false:-1:0:*:* emissive:*true:false:-1:0:*:*
+(400,400)mn_translate uid3341 0 0 1 next:*uid3336:false:-1:0:*:* dx:*150:false:-1:0:*:* dy:*0:false:-1:0:*:* dz:*0:false:-1:0:*:*
+(600,400)move_ml uid3342 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3340:false:-1:0:*:* mn:*uid3341:false:-1:0:*:* clone_count:*1:false:-1:0:*:* time_delta:*10.0:false:-1:0:*:*
+(800,400)gltf_sketchfab_zip uid3343 0 0 1 url_to_zip:*https?//meshpage.org/assets/bunny.zip:false:-1:0:*:*
+(1000,400)ml_gltf_all uid3344 0 0 1 ev:*ev:false:-1:0:*:* tf:*uid3343:false:-1:0:*:* mix:*1.0:false:-1:0:*:* self_mult:*3.0:false:-1:0:*:* rest_mult:*0.0:false:-1:0:*:* mode:*0:false:-1:0:*:* light_dir_x:*400.0:false:-1:0:*:* light_dir_y:*-400.0:false:-1:0:*:* light_dir_z:*300.0:false:-1:0:*:* border_width:*0.0:false:-1:0:*:* border_color:*ff000000:false:-1:0:*:* transparent:*true:false:-1:0:*:* acesfilm:*true:false:-1:0:*:* emissive:*true:false:-1:0:*:*
+(1200,400)mn_translate uid3345 0 0 1 next:*uid3336:false:-1:0:*:* dx:*0:false:-1:0:*:* dy:*0:false:-1:0:*:* dz:*-150:false:-1:0:*:*
+(200,600)move_ml uid3346 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3344:false:-1:0:*:* mn:*uid3345:false:-1:0:*:* clone_count:*1:false:-1:0:*:* time_delta:*10.0:false:-1:0:*:*
+(400,600)gltf_sketchfab_zip uid3347 0 0 1 url_to_zip:*https?//meshpage.org/assets/santa_model.zip:false:-1:0:*:*
+(600,600)ml_gltf_all uid3348 0 0 1 ev:*ev:false:-1:0:*:* tf:*uid3347:false:-1:0:*:* mix:*1.0:false:-1:0:*:* self_mult:*3.0:false:-1:0:*:* rest_mult:*0.0:false:-1:0:*:* mode:*0:false:-1:0:*:* light_dir_x:*400.0:false:-1:0:*:* light_dir_y:*-400.0:false:-1:0:*:* light_dir_z:*300.0:false:-1:0:*:* border_width:*0.0:false:-1:0:*:* border_color:*ff000000:false:-1:0:*:* transparent:*true:false:-1:0:*:* acesfilm:*true:false:-1:0:*:* emissive:*true:false:-1:0:*:*
+(800,600)mn_translate uid3349 0 0 1 next:*uid3336:false:-1:0:*:* dx:*0:false:-1:0:*:* dy:*0:false:-1:0:*:* dz:*150:false:-1:0:*:*
+(1000,600)move_ml uid3350 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3348:false:-1:0:*:* mn:*uid3349:false:-1:0:*:* clone_count:*1:false:-1:0:*:* time_delta:*10.0:false:-1:0:*:*
+(1200,600)gltf_sketchfab_zip uid3351 0 0 1 url_to_zip:*https?//meshpage.org/assets/cinema_camera.zip:false:-1:0:*:*
+(200,800)ml_gltf_all uid3352 0 0 1 ev:*ev:false:-1:0:*:* tf:*uid3351:false:-1:0:*:* mix:*1.0:false:-1:0:*:* self_mult:*3.0:false:-1:0:*:* rest_mult:*0.0:false:-1:0:*:* mode:*0:false:-1:0:*:* light_dir_x:*400.0:false:-1:0:*:* light_dir_y:*-400.0:false:-1:0:*:* light_dir_z:*300.0:false:-1:0:*:* border_width:*0.0:false:-1:0:*:* border_color:*ff000000:false:-1:0:*:* transparent:*true:false:-1:0:*:* acesfilm:*true:false:-1:0:*:* emissive:*true:false:-1:0:*:*
+(400,800)mn_translate uid3353 0 0 1 next:*uid3336:false:-1:0:*:* dx:*0:false:-1:0:*:* dy:*-150:false:-1:0:*:* dz:*0:false:-1:0:*:*
+(600,800)move_ml uid3354 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3352:false:-1:0:*:* mn:*uid3353:false:-1:0:*:* clone_count:*1:false:-1:0:*:* time_delta:*10.0:false:-1:0:*:*
+(800,800)gltf_sketchfab_zip uid3355 0 0 1 url_to_zip:*https?//meshpage.org/assets/punk_free.zip:false:-1:0:*:*
+(1000,800)ml_gltf_all uid3356 0 0 1 ev:*ev:false:-1:0:*:* tf:*uid3355:false:-1:0:*:* mix:*1.0:false:-1:0:*:* self_mult:*3.0:false:-1:0:*:* rest_mult:*0.0:false:-1:0:*:* mode:*0:false:-1:0:*:* light_dir_x:*400.0:false:-1:0:*:* light_dir_y:*-400.0:false:-1:0:*:* light_dir_z:*300.0:false:-1:0:*:* border_width:*0.0:false:-1:0:*:* border_color:*ff000000:false:-1:0:*:* transparent:*true:false:-1:0:*:* acesfilm:*true:false:-1:0:*:* emissive:*true:false:-1:0:*:*
+(1200,800)mn_translate uid3357 0 0 1 next:*uid3336:false:-1:0:*:* dx:*0:false:-1:0:*:* dy:*150:false:-1:0:*:* dz:*0:false:-1:0:*:*
+(200,1000)move_ml uid3358 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3356:false:-1:0:*:* mn:*uid3357:false:-1:0:*:* clone_count:*1:false:-1:0:*:* time_delta:*10.0:false:-1:0:*:*
+(400,1000)array_ml uid3359 0 0 1 ev:*ev:false:-1:0:*:* arr:*[uid3338,uid3342,uid3346,uid3350,uid3354,uid3358]:false:-1:-1:*:*
+(600,1000)touch_rotate uid3360 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3359:false:-1:0:*:* leftright:*true:false:-1:0:*:* topdown:*true:false:-1:0:*:* x_speed:*0.01:false:-1:0:*:* y_speed:*0.01:false:-1:0:*:*
+(800,1000)mouse_zoom2 uid3361 0 0 1 ev:*ev:false:-1:0:*:* next:*uid3360:false:-1:0:*:*
+(1000,1000)run_window uid3362 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3361:false:-1:0:*:* logo:*false:false:-1:0:*:* fpscounter:*false:false:-1:0:*:* start_time:*0.0:false:-1:0:*:* duration:*100000.0:false:-1:0:*:*

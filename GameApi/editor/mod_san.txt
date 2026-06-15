@@ -1,0 +1,30 @@
+test
+
+
+(200,200)p_mtl uid3334 0 0 1 ev:*ev:false:-1:0:*:* obj_url:*https?//meshpage.org/assets/sanmiguel/sanmiguel3_a.ds:false:-1:0:*:* mtl_url:*https?//meshpage.org/assets/sanmiguel/san-miguel-low-poly.mtl:false:-1:0:*:* url_prefix:*https?//meshpage.org/assets/sanmiguel:false:-1:0:*:* count:*1700:false:-1:0:*:*
+(400,200)translate uid3335 0 0 1 orig:*uid3334:false:-1:0:*:* dx:*0:false:-1:0:*:* dy:*-800:false:-1:0:*:* dz:*0:false:-1:0:*:*
+(600,200)decimate uid3336 0 0 1 p:*uid3335:false:-1:0:*:* val:*0.9:false:-1:0:*:*
+(800,200)ext_p uid3337 1 0 1 p:*uid3335:false:-1:0:*:* start_index:*0:false:-1:0:*:* end_index:*1700:false:-1:0:*:* num_slots:*1:false:-1:0:*:* current_slot:*0:false:-1:0:*:*
+(1000,200)ext_mt uid3338 1 0 1 ev:*ev:false:-1:0:*:* p:*uid3334:false:-1:0:*:* mix:*1:false:-1:0:*:* start_index:*0:false:-1:0:*:* end_index:*1700:false:-1:0:*:*
+(1200,200)m_apply_phong uid3339 1 0 1 ev:*ev:false:-1:0:*:* vec:*uid3338:true:262957177:0:*:* light_dir_x:*0.3:false:-1:0:*:* light_dir_y:*-0.3:false:-1:0:*:* light_dir_z:*1.0:false:-1:0:*:* ambient:*ff201001:false:-1:0:*:* specular:*ff080401:false:-1:0:*:* highlight:*ffffccaa:false:-1:0:*:* pow:*1.5:false:-1:0:*:*
+(200,400)point uid3340 0 0 1 x:*0.0:false:-1:0:*:* y:*0.0:false:-1:0:*:* z:*0.0:false:-1:0:*:*
+(400,400)pt_array uid3341 0 0 1 ev:*ev:false:-1:0:*:* vec:*[uid3340]:false:-1:-1:*:*
+(600,400)m_bind_inst_many uid3342 0 0 1 ev:*ev:false:-1:0:*:* vec:*uid3337:true:262957177:0:*:* mat:*uid3339:true:262957177:0:*:* pts:*uid3341:false:-1:0:*:* max_ticks:*6:false:-1:0:*:*
+(800,400)p_mtl uid3343 0 0 1 ev:*ev:false:-1:0:*:* obj_url:*https?//meshpage.org/assets/sanmiguel/sanmiguel3_b.ds:false:-1:0:*:* mtl_url:*https?//meshpage.org/assets/sanmiguel/san-miguel-low-poly.mtl:false:-1:0:*:* url_prefix:*https?//meshpage.org/assets/sanmiguel:false:-1:0:*:* count:*1700:false:-1:0:*:*
+(1000,400)decimate uid3344 0 0 1 p:*uid3343:false:-1:0:*:* val:*0.9:false:-1:0:*:*
+(1200,400)translate uid3345 0 0 1 orig:*uid3343:false:-1:0:*:* dx:*0:false:-1:0:*:* dy:*-800:false:-1:0:*:* dz:*0:false:-1:0:*:*
+(200,600)ext_p uid3346 1 0 1 p:*uid3345:false:-1:0:*:* start_index:*0:false:-1:0:*:* end_index:*1700:false:-1:0:*:* num_slots:*1:false:-1:0:*:* current_slot:*0:false:-1:0:*:*
+(400,600)ext_mt uid3347 1 0 1 ev:*ev:false:-1:0:*:* p:*uid3343:false:-1:0:*:* mix:*1:false:-1:0:*:* start_index:*0:false:-1:0:*:* end_index:*1700:false:-1:0:*:*
+(600,600)m_apply_phong uid3348 1 0 1 ev:*ev:false:-1:0:*:* vec:*uid3347:true:262957178:0:*:* light_dir_x:*0.3:false:-1:0:*:* light_dir_y:*-0.3:false:-1:0:*:* light_dir_z:*1:false:-1:0:*:* ambient:*ff020101:false:-1:0:*:* specular:*ff080401:false:-1:0:*:* highlight:*ffffccaa:false:-1:0:*:* pow:*1.5:false:-1:0:*:*
+(800,600)m_bind_inst_many uid3349 0 0 1 ev:*ev:false:-1:0:*:* vec:*uid3346:true:262957178:0:*:* mat:*uid3348:true:262957178:0:*:* pts:*uid3341:false:-1:0:*:* max_ticks:*1:false:-1:0:*:*
+(1000,600)ogl_transparent uid3350 0 0 1 ml:*uid3349:false:-1:0:*:*
+(1200,600)or_elem_ml uid3351 0 0 1 ev:*ev:false:-1:0:*:* m1:*uid3342:false:-1:0:*:* m2:*uid3350:false:-1:0:*:*
+(200,800)mn_empty uid3352 0 0 1
+(400,800)mn_translate uid3353 0 0 1 next:*uid3352:false:-1:0:*:* dx:*0:false:-1:0:*:* dy:*5000:false:-1:0:*:* dz:*0:false:-1:0:*:*
+(600,800)move_ml uid3354 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3351:false:-1:0:*:* mn:*uid3353:false:-1:0:*:* clone_count:*1:false:-1:0:*:* time_delta:*10.0:false:-1:0:*:*
+(800,800)ogl_disable_polys uid3355 0 0 1 ml:*uid3354:false:-1:0:*:*
+(1000,800)quake_ml2 uid3356 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3355:false:-1:0:*:* speed:*60:false:-1:0:*:* rot_speed:*0.03:false:-1:0:*:*
+(1200,800)fps_display uid3357 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3356:false:-1:0:*:* font:*https?//meshpage.org/assets/Chunkfive.otf:false:-1:0:*:*
+(200,1000)concurrent_download uid3358 0 0 1 ml:*uid3357:false:-1:0:*:*
+(400,1000)ogl_perspective uid3359 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3358:false:-1:0:*:* mult:*80:false:-1:0:*:* front_plane:*10.1:false:-1:0:*:* end_plane:*60000:false:-1:0:*:*
+(600,1000)run_window uid3360 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3359:false:-1:0:*:* logo:*false:false:-1:0:*:* fpscounter:*false:false:-1:0:*:* start_time:*0.0:false:-1:0:*:* duration:*100000.0:false:-1:0:*:*

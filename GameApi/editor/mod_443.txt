@@ -1,0 +1,16 @@
+test
+
+
+(200,200)gltf_sketchfab_zip uid3334 0 0 1 url_to_zip:*https?//meshpage.org/assets/tactical_portable_suitcase_security_information.zip:false:-1:0:*:*
+(400,200)gltf_mesh_all_p uid3335 0 0 1 ev:*ev:false:-1:0:*:* model:*uid3334:false:-1:0:*:*
+(600,200)m_gltf uid3336 0 0 1 ev:*ev:false:-1:0:*:* tf:*uid3334:false:-1:0:*:* material_id:*0:false:-1:0:*:* mix:*1:false:-1:0:*:* self_mult:*3.5:false:-1:0:*:* rest_mult:*0.0:false:-1:0:*:* light_x:*0.3:false:-1:0:*:* light_y:*1:false:-1:0:*:* light_z:*0.3:false:-1:0:*:* emissive:*true:false:-1:26475:*:*
+(800,200)cube uid3337 0 0 1 start_x:*-300:false:-1:0:*:* end_x:*300:false:-1:0:*:* start_y:*-220:false:-1:0:*:* end_y:*-200:false:-1:0:*:* start_z:*-300:false:-1:0:*:* end_z:*300:false:-1:0:*:*
+(1000,200)m_def uid3338 0 0 1 ev:*ev:false:-1:0:*:*
+(1200,200)m_colour uid3339 0 0 1 ev:*ev:false:-1:0:*:* mix:*0.5:false:-1:0:*:* color_from_instance:*false:false:-1:0:*:*
+(200,400)m_dir_shadow uid3340 0 0 1 ev:*ev:false:-1:0:*:* models:*uid3335:false:-1:0:*:* model_mt:*uid3336:false:-1:0:*:* shadow_mesh:*uid3337:false:-1:0:*:* shadow_mt:*uid3339:false:-1:0:*:* light_dir_x:*-0.03:false:-1:0:*:* light_dir_y:*-0.10:false:-1:0:*:* light_dir_z:*-0.03:false:-1:0:*:* dark_level:*0:false:-1:0:*:* light_level:*1:false:-1:0:*:* ambient_color:*ff221100:false:-1:0:*:* dark_color:*ff884422:false:-1:0:*:* light_color:*ffffffff:false:-1:0:*:* scale:*0.8:false:-1:0:*:* size:*1024:false:-1:0:*:* drawmodel:*false:false:-1:0:*:* shadow2_mt:*uid3338:false:-1:0:*:*
+(400,400)ml_gltf_all uid3341 0 0 1 ev:*ev:false:-1:0:*:* tf:*uid3334:false:-1:0:*:* mix:*1:false:-1:0:*:* self_mult:*3.5:false:-1:0:*:* rest_mult:*0.0:false:-1:0:*:* mode:*0:false:-1:0:*:* light_dir_x:*0.3:false:-1:0:*:* light_dir_y:*1:false:-1:0:*:* light_dir_z:*0.3:false:-1:0:*:* border_width:*0.0:false:-1:0:*:* border_color:*00000000:false:-1:0:*:* transparent:*true:false:-1:1601333604:*:* acesfilm:*true:false:-1:1684105331:*:* emissive:*true:false:-1:30575:*:*
+(600,400)or_elem_ml uid3342 0 0 1 ev:*ev:false:-1:0:*:* m1:*uid3340:false:-1:0:*:* m2:*uid3341:false:-1:0:*:*
+(800,400)async_gltf uid3343 0 0 1 ml:*uid3342:false:-1:0:*:* tf:*uid3334:false:-1:0:*:*
+(1000,400)mouse_zoom2 uid3344 0 0 1 ev:*ev:false:-1:0:*:* next:*uid3343:false:-1:0:*:*
+(1200,400)touch_rotate uid3345 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3344:false:-1:0:*:* leftright:*true:false:-1:0:*:* topdown:*true:false:-1:0:*:* x_speed:*0.01:false:-1:0:*:* y_speed:*0.01:false:-1:0:*:*
+(200,600)run_window uid3346 0 0 1 ev:*ev:false:-1:0:*:* ml:*uid3345:false:-1:0:*:* logo:*false:false:-1:0:*:* fpscounter:*false:false:-1:0:*:* start_time:*0.0:false:-1:0:*:* duration:*100000.0:false:-1:0:*:*
