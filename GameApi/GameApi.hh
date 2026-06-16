@@ -2788,12 +2788,21 @@ private:
   Env &e;
 };
 
+struct VertexArrayDataPipe;
 
 class PolygonApi
 {
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT VertexArrayDataPipe *create_vertex_array_start(GameApi::P p, bool keep);
+  IMPORT bool create_vertex_array_ready(VertexArrayDataPipe *pipe);
+  IMPORT void create_vertex_array_send_to_gpu(VertexArrayDataPipe *pipe);
+  IMPORT VA create_vertex_array_continuation(VertexArrayDataPipe *p);
+
+
+
+  
   IMPORT P sphere_rays(float center_x, float center_y, float center_z, float radius,
 		       float delta_alfa, float delta_beta,
 		       FS field,

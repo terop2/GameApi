@@ -11971,39 +11971,62 @@ public:
   }
   void HeavyPrepare() {
     if (va.id==-1) {
-      va = ev.polygon_api.create_vertex_array(p,false);
+      //std::cout << "RenderInstanced::HeavyPrepare" << std::endl;
+      pipe = ev.polygon_api.create_vertex_array_start(p,false);
+      //va = ev.polygon_api.create_vertex_array(p,false);
     }
     initialized=true;
   }
   void Prepare() {
     //if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     if (va.id==-1) {
-      va = ev.polygon_api.create_vertex_array(p,false);
+      //std::cout << "RenderInstanced::Prepare" << std::endl;
+      pipe = ev.polygon_api.create_vertex_array_start(p,false);
+      //va = ev.polygon_api.create_vertex_array(p,false);
     }
     initialized=true;
   }
   void execute(MainLoopEnv &e)
   {
     if (!initialized) { std::cout << "Prepare not called in RenderInstanced!" << std::endl;
-    va = ev.polygon_api.create_vertex_array(p,false);
+      pipe = ev.polygon_api.create_vertex_array_start(p,false);
+      //va = ev.polygon_api.create_vertex_array(p,false);
     initialized=true; }
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     //if (firsttime) { obj2->Prepare(); }
     bool changed = obj2->Update(e);
     // MainLoopEnv ee = e;
-    if (firsttime)
+
+    while(1) {
+      ev.polygon_api.create_vertex_array_send_to_gpu(pipe);
+      if (ev.polygon_api.create_vertex_array_ready(pipe)) break;
+    }
+    if (is_ready==false && ev.polygon_api.create_vertex_array_ready(pipe))
+      {
+	//std::cout << "Setting va" << std::endl;
+	va = ev.polygon_api.create_vertex_array_continuation(pipe);
+	is_ready=true;
+	changed=true;
+      }
+
+    
+    if (is_ready && firsttime)
       {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->Prepare(); 
+    //std::cout << "setting pta" << std::endl;
     pta = ev.points_api.prepare(pts,color_from_pts);
+    //std::cout << "using va1" << std::endl;
     ev.polygon_api.create_vertex_array_hw(va);
     ev.polygon_api.preparedone(p);
       }
     if (changed)
       {
-	ev.points_api.update_from_data(pta, pts,color_from_pts);
+	//std::cout << "using pta1" << std::endl;
+       	ev.points_api.update_from_data(pta, pts,color_from_pts);
       }
 
+    
     if (firsttime) {
     
     GameApi::US u_v;
@@ -12022,6 +12045,13 @@ public:
 	  u_f = ev.uber_api.f_empty(true);
       }
 #if 1
+
+
+    
+    if (ev.polygon_api.create_vertex_array_ready(pipe))
+      {
+	//std::cout << "using va2" << std::endl;
+    
     if (ev.polygon_api.is_texture(va))
       {
 	sh.id = e.sh_texture;
@@ -12061,9 +12091,10 @@ public:
 	      }
 	  }
       }
+      }
 #endif
     //std::cout << "RenderInstanced::Execute" << std::endl;
-    if (firsttime || shader.id==-1)
+    if (is_ready && (firsttime || shader.id==-1))
       {
 	//std::cout << "RenderInstanced::SHADER" << std::endl;
 	GameApi::US vertex;
@@ -12082,23 +12113,30 @@ public:
 	std::string key = v_call->get_key() + f_call->get_key();
 	if (mymap.find(key)!=mymap.end())
 	  {
+	    // std::cout << "setting shader0" << std::endl;
 	    shader = mymap[key];
 	  }
 	else
-	if (e.sfo_id==-1)
-	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
+	  if (e.sfo_id==-1) {
+	    //std::cout << "setting shader1" << std::endl;
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
+	  }
 	else
 	  {
+	    //std::cout << "setting shader2" << std::endl;
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
 	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
+	//std::cout << "using shader0" << std::endl;	
 	mymap[key]=shader;
+	//  std::cout << "using shader1" << std::endl;	
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
 
       }
     }
+    if (is_ready) {
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
@@ -12107,6 +12145,7 @@ public:
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	GameApi::M proj = add_matrix2(env, e.in_P);
+	//  std::cout << "using shader2" << std::endl;	
 	ev.shader_api.use(shader);
 
 	ev.shader_api.set_var(shader, "in_MV", m);
@@ -12121,16 +12160,25 @@ public:
 	ev.shader_api.set_var(shader, "in_N", m2);
 	ev.shader_api.set_var(shader, "in_P", proj);
 	sh = shader;
+	//std::cout << "setting sh" << std::endl;
       }
+    //std::cout << "using sh1" << std::endl;
     ev.shader_api.use(sh);
-    if (firsttime || changed) {
+    }
+    if (is_ready && (firsttime || changed)) {
       firsttime = false;
       //std::cout << "RenderInstanced::PREPARE" << std::endl;
-      ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
-      }
-
-    ev.shader_api.set_var(sh, "in_POS", e.in_POS);
-
+      //std::cout << "using va3" << std::endl;
+      //std::cout << "using sh2" << std::endl;
+      //std::cout << "using pta2" << std::endl;
+	ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh);
+    }
+  
+    if (is_ready) {
+      //std::cout << "using sh3" << std::endl;
+      ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+    }
+    
     int hide_n = -1;
     fade = false;
     if (fade)
@@ -12151,9 +12199,19 @@ public:
 	}
       }
 
-    if (!g_filter_execute)
-    ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+    
+    
+    
+    if (is_ready)
+      if (!g_filter_execute) {
+	//std::cout << "using va4" << std::endl;
+	//std::cout << "using sh4" << std::endl;
+	//std::cout << "using pta3" << std::endl;
+	ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
+      }
+    //std::cout << "using sh5" << std::endl;
     ev.shader_api.print_log(sh);
+    //std::cout << "using sh6" << std::endl;
     ev.shader_api.unuse(sh);
   }
 private:
@@ -12170,6 +12228,8 @@ private:
   bool initialized;
   GameApi::SH sh;
   bool color_from_pts;
+  GameApi::VertexArrayDataPipe *pipe;
+  bool is_ready=false;
 };
 
 class RenderInstanced_matrix : public MainLoopItem
