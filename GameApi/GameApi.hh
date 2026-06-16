@@ -1261,6 +1261,7 @@ public:
   IMPORT SF score_string_fetcher(std::string id, std::string label, int numdigits); // use score_display instead.
   IMPORT IF char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx);
   IMPORT IF key_move_2_area_fetcher(float start_x, float end_x, float start_z, float end_z);
+  IMPORT IF ready_fetcher(P p);
   IMPORT ML dynamic_character(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y);
   IMPORT FML dynamic_character_frame(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y, int fmt, MN mn);
   IMPORT ML dynamic_polygon(EveryApi &ev, std::vector<P> vec, MT material, IF fetcher);

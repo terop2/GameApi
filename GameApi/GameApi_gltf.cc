@@ -9222,7 +9222,7 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
 
 #ifdef RELOAD_TEST
       GameApi::P def_p = ev.polygon_api.p_empty();
-       GameApi::MT def_start = ev.materials_api.m_def(ev);
+      GameApi::MT def_start = ev.materials_api.m_def(ev);
        mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start);
 #endif
 
@@ -9331,7 +9331,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
        mat_res = ev.materials_api.discard_material(ev,mat_res);
 
 #ifdef RELOAD_TEST
-      GameApi::P def_p = ev.polygon_api.p_empty();
+       GameApi::P def_p = ev.polygon_api.p_empty();
        GameApi::MT def_start = ev.materials_api.m_def(ev);
        mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start); 
 #endif

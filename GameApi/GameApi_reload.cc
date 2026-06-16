@@ -11,7 +11,7 @@ void reload_exe_cb(void *data);
 class ReloadMainLoop : public MainLoopItem
 {
 public:
-  ReloadMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, GameApi::P p, GameApi::ML ml, std::string name, int phase, GameApi::P default_p, Material *default_material, GameApi::PTS pts, GameApi::MS ms) : env(env), ev(ev), next(next), name(name), phase(phase), p(p), default_p(default_p), default_material(default_material), pts(pts),ms(ms), use_ml_real(ml)
+  ReloadMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, GameApi::P p, GameApi::ML ml, std::string name, int phase, GameApi::P default_p, GameApi::ML default_ml, Material *default_material, GameApi::PTS pts, GameApi::MS ms) : env(env), ev(ev), next(next), name(name), phase(phase), p(p), default_p(default_p), default_material(default_material), pts(pts),ms(ms), use_ml_real(ml), use_ml_def(default_ml)
   {
     g_reload_instances.push_back(this);
     g_reload_names.push_back(name);
@@ -274,10 +274,10 @@ void reload_exe_cb(void *data)
 }
 
 
-GameApi::ML reload_ml(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, GameApi::P p, GameApi::ML ml, std::string name, int phase, GameApi::P default_p, Material *default_p_material, GameApi::PTS pts, GameApi::MS ms)
+GameApi::ML reload_ml(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, GameApi::P p, GameApi::ML ml, std::string name, int phase, GameApi::P default_p, GameApi::ML default_ml, Material *default_p_material, GameApi::PTS pts, GameApi::MS ms)
 {
   Material *m = (Material*)next;
-  return add_main_loop(e,new ReloadMainLoop(e,ev,next,p,ml,name,phase,default_p,default_p_material,pts,ms));
+  return add_main_loop(e,new ReloadMainLoop(e,ev,next,p,ml,name,phase,default_p,default_ml, default_p_material,pts,ms));
 }
 
 
@@ -291,11 +291,21 @@ public:
     GameApi::ML ml;
     ml.id = next->mat(p.id);
 
+    GameApi::ML ml2;
+    ml2.id = default_p_material->mat(default_p.id);
+
+    std::vector<GameApi::ML> vec;
+    vec.push_back(ml);
+    vec.push_back(ml2);
+    GameApi::IF fetcher = ev.font_api.ready_fetcher(p);
+    GameApi::ML ml4 = ev.font_api.ml_chooser(vec,fetcher);
+    
+    
     GameApi::PTS pts = { -1 };
     GameApi::MS ms = { -1 };
-    GameApi::ML ml2 = reload_ml(e,ev,next,p,ml,name,0,default_p,default_p_material,pts,ms);
+    GameApi::ML ml3 = reload_ml(e,ev,next,p,ml,name,0,default_p,ml2,default_p_material,pts,ms);
 
-    return ev.mainloop_api.or_elem_ml(ev,ml2,ml);
+    return ml4; //ev.mainloop_api.or_elem_ml(ev,ml2,ml);
     
     //GameApi::ML ml;
     //ml.id = next->mat(p.id);
@@ -306,9 +316,19 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst(p0.id, pts.id);
 
-    GameApi::MS ms  = { -1 };
-    GameApi::ML ml2 = reload_ml(e,ev,next,p0,ml,name,1,default_p,default_p_material,pts,ms);
-    return ev.mainloop_api.or_elem_ml(ev,ml2,ml);
+    GameApi::ML ml2;
+    ml2.id = default_p_material->mat_inst(default_p.id,pts.id);
+
+    std::vector<GameApi::ML> vec;
+    vec.push_back(ml);
+    vec.push_back(ml2);
+    GameApi::IF fetcher = ev.font_api.ready_fetcher(p0);
+    GameApi::ML ml4 = ev.font_api.ml_chooser(vec,fetcher);
+
+    
+    //GameApi::MS ms  = { -1 };
+    //GameApi::ML ml3 = reload_ml(e,ev,next,p0,ml,name,1,default_p,ml2,default_p_material,pts,ms);
+    return ml4; //ev.mainloop_api.or_elem_ml(ev,ml2,ml);
     //GameApi::ML ml;
     //ml.id = next->mat_inst(p.id, pts.id);
     //return ml;
@@ -333,10 +353,19 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(p0.id, ms.id);
 
+    GameApi::ML ml2;
+    ml2.id = default_p_material->mat_inst_matrix(default_p.id,ms.id);
+
+    std::vector<GameApi::ML> vec;
+    vec.push_back(ml);
+    vec.push_back(ml2);
+    GameApi::IF fetcher = ev.font_api.ready_fetcher(p0);
+    GameApi::ML ml4 = ev.font_api.ml_chooser(vec,fetcher);
+
     
-    GameApi::PTS pts = { -1 };
-    GameApi::ML ml2 =reload_ml(e,ev,next,p0,ml,name,4,default_p,default_p_material,pts,ms);
-    return ev.mainloop_api.or_elem_ml(ev,ml2,ml);
+    //GameApi::PTS pts = { -1 };
+    //GameApi::ML ml3 =reload_ml(e,ev,next,p0,ml,name,4,default_p,ml2,default_p_material,pts,ms);
+    return ml4; //ev.mainloop_api.or_elem_ml(ev,ml2,ml);
     //GameApi::ML ml;
     //ml.id = next->mat_inst_matrix(p.id, ms.id);
     //return ml;
@@ -346,10 +375,19 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst2(p0.id, pta.id);
 
-    GameApi::PTS pts = { -1 };
-    GameApi::MS ms = { -1 };
-    GameApi::ML ml2 =reload_ml(e,ev,next,p0,ml,name,5,default_p,default_p_material,pts,ms);
-    return ev.mainloop_api.or_elem_ml(ev,ml2,ml);
+    GameApi::ML ml2;
+    ml2.id = default_p_material->mat_inst2(default_p.id,pta.id);
+
+    std::vector<GameApi::ML> vec;
+    vec.push_back(ml);
+    vec.push_back(ml2);
+    GameApi::IF fetcher = ev.font_api.ready_fetcher(p0);
+    GameApi::ML ml4 = ev.font_api.ml_chooser(vec,fetcher);
+    
+    // GameApi::PTS pts = { -1 };
+    //GameApi::MS ms = { -1 };
+    //GameApi::ML ml3 =reload_ml(e,ev,next,p0,ml,name,5,default_p,ml2,default_p_material,pts,ms);
+    return ml4; //ev.mainloop_api.or_elem_ml(ev,ml2,ml);
     //GameApi::ML ml;
     //ml.id = next->mat_inst2(p.id, pta.id);
     //return ml;
@@ -359,9 +397,18 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p0.id, pts.id, flip, start_time, end_time);
 
-    GameApi::MS ms = { -1 };
-    GameApi::ML ml2 = reload_ml(e,ev,next,p0,ml,name,6,default_p,default_p_material,pts,ms);
-    return ev.mainloop_api.or_elem_ml(ev,ml2,ml);
+    GameApi::ML ml2;
+    ml2.id = default_p_material->mat_inst_fade(default_p.id, pts.id, flip, start_time, end_time);
+
+    std::vector<GameApi::ML> vec;
+    vec.push_back(ml);
+    vec.push_back(ml2);
+    GameApi::IF fetcher = ev.font_api.ready_fetcher(p0);
+    GameApi::ML ml4 = ev.font_api.ml_chooser(vec,fetcher);
+    
+    //GameApi::MS ms = { -1 };
+    //GameApi::ML ml3 = reload_ml(e,ev,next,p0,ml,name,6,default_p,ml2,default_p_material,pts,ms);
+    return ml4; // ev.mainloop_api.or_elem_ml(ev,ml2,ml);
     //GameApi::ML ml;
     //ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
     //return ml;
