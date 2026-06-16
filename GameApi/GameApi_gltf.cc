@@ -2048,7 +2048,7 @@ void *thread_func_gltf_bitmap(void *data2)
   image->pixel_type = pixel_type;
   //std::cout << "w:" << w << " h:" << h << " comp:" << comp << " bits:" << bits << std::endl;
   //std::cout << "image:" << (long)image << std::endl;
-  std::cout << "Image alloc: w*h*comp*bits/8 = " << w << "*" << h << "*" << comp << "*" << size_t(bits/8) << std::endl;
+  //std::cout << "Image alloc: w*h*comp*bits/8 = " << w << "*" << h << "*" << comp << "*" << size_t(bits/8) << std::endl;
   if (w<=512 && h<=512) {
     image->image.resize(static_cast<uint64_t>(w * h * comp) * size_t(bits / 8));
     std::copy(data, data + w * h * comp * (bits / 8), image->image.begin());
@@ -2061,7 +2061,7 @@ void *thread_func_gltf_bitmap(void *data2)
 
     int new_w = w/reduce;
     int new_h = h/reduce;
-    std::cout << "reducing with mult=" << reduce << " to " << new_w << "*" << new_h << std::endl;
+    //std::cout << "reducing with mult=" << reduce << " to " << new_w << "*" << new_h << std::endl;
 
     image->image.resize(static_cast<uint64_t>(new_w*new_h*comp) * size_t(bits/8));
     for(int y=0;y<new_h;y++)
