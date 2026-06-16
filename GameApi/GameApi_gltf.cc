@@ -44,6 +44,25 @@ extern bool g_glb_animated;
 extern int g_pthread_count;
 
 
+std::map<int,pthread_mutex_t *> g_decode_mutexes;
+
+void create_decode_mutex(int id)
+{
+  pthread_mutex_t *m = new pthread_mutex_t;
+  pthread_mutex_init(m,NULL);
+  g_decode_mutexes[id] = m;
+}
+void decode_mutex_lock(int id)
+{
+  if (g_decode_mutexes[id])
+    pthread_mutex_lock(g_decode_mutexes[id]);
+}
+void decode_mutex_unlock(int id)
+{
+  if (g_decode_mutexes[id])
+    pthread_mutex_unlock(g_decode_mutexes[id]);
+}
+
 
 
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
@@ -120,9 +139,9 @@ public:
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_file(GameApi::Env &e, FETCHID id);
   FILEID add_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec, std::string filename);
   FILEID find_file(std::string filename);
-  void start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height);
+  void start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height, int m_decode_mutex_id);
   //void decode_file(FILEID id);
-  bool is_decoded(FILEID id);
+  bool is_decoded(FILEID id, int m_decode_mutex_id);
   void set_decode_callback(FILEID id, void (*fptr)(void*), void *user_data);
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_decoded_file(FILEID id);
   IMAGEID convert_to_image(std::vector<unsigned char> &vec);
@@ -467,6 +486,7 @@ struct ThreadInfo_gltf_bitmap
   int decoder_item;
   std::string url;
   int i;
+  int m_decode_mutex_id=-1;
 };
 
 GameApi::Env *g_e = 0;
@@ -926,8 +946,14 @@ public:
      std::stringstream ss; ss<<i;
      async_pending_plus("LoadGltf", "decode_process " + ss.str());
 #endif
-     
-     decoder->start_decode_process(i,id,iid,256,256);
+
+     if (m_decode_mutex_id==-1) {
+       static int id = 500000;
+       id++;
+       m_decode_mutex_id = id;
+       create_decode_mutex(id);
+     }
+     decoder->start_decode_process(i,id,iid,256,256,m_decode_mutex_id);
     }
     //std::cout << "LoadGltf::PrePrePrepare done" << std::endl;
   }
@@ -1210,6 +1236,7 @@ public:
   int mlguiwidget_logo_id;
   bool is_in_splitter_cb=false;
   int m_loadgltf_unique_id = -1;
+  int m_decode_mutex_id=-1;
 };
 void loadgltf_splitter_cb(void *data)
 {
@@ -2083,12 +2110,16 @@ void *thread_func_gltf_bitmap(void *data2)
 
 
   //std::cout << "DECODING DONE" << bm->url << std::endl;
+
+  decode_mutex_lock(bm->m_decode_mutex_id);
   
   FILEID id;
   id.id = bm->decoder_item;
   
   bm->decoder->decoded_image[id] = image;
   bm->decoder->decoded_files[id] = &image->image;
+
+  decode_mutex_unlock(bm->m_decode_mutex_id);
   if (bm->decoder->decode_cb[id])
     bm->decoder->decode_cb[id](bm->decoder->decode_user_data[id]);
 
@@ -2115,7 +2146,7 @@ class GLTFImageDecoder;
 //std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
 
 
-void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item, std::string url)
+void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item, std::string url, int m_decode_mutex_id)
 {
 #ifdef THREADS
   
@@ -2133,6 +2164,7 @@ void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int 
   info->decoder = decoder;
   info->decoder_item = decoder_item;
   info->i = i;
+  info->m_decode_mutex_id = m_decode_mutex_id;
   unsigned char *bytes2 = new unsigned char[size];
   std::copy(bytes, bytes+size,bytes2);
   info->bytes = bytes2;
@@ -2208,8 +2240,14 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
     //std::cout << "JOINING BITMAP THREADS!" << std::endl;
   //  gltf_join_threads(dt->decoder);
   // }
+  int repeat_count = 0;
+  
+ repeat_label:
+  repeat_count++;
+  if (repeat_count<30) {
   //FILEID id2 = dt->decoder->find_file(url);
-  if (dt->decoder->is_decoded(id)) {
+    if (dt->decoder->is_decoded(id,dt->m_decode_mutex_id)) {
+    decode_mutex_lock(dt->m_decode_mutex_id);
     std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr2 = dt->decoder->get_decoded_file(id);
     //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
     image->image = *ptr2;
@@ -2218,8 +2256,16 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
     image->component = dt->decoder->decoded_image[id]->component;
     image->pixel_type = dt->decoder->decoded_image[id]->pixel_type;
     image->bits = dt->decoder->decoded_image[id]->bits;
+    decode_mutex_unlock(dt->m_decode_mutex_id);
     //std::cout << "OUTPUT:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
-  } else { std::cout << "FILE WAS NOT DECODED YET:" << dt->decoder->load->current_gltf_threads.size() << "::" << dt->base_url + image->uri << std::endl; }
+  } else { 
+      std::cout << "REAL JOIN 3008" << std::endl;
+    tasks_join(3008);
+    goto repeat_label;
+  }
+  } else {
+    std::cout << "FILE WAS NOT DECODED YET:" << dt->decoder->load->current_gltf_threads.size() << "::" << dt->base_url + image->uri << std::endl;
+  }
   //#ifdef CONCURRENT_IMAGE_DECODE
   //start_gltf_bitmap_thread(image, req_width, req_height, bytes, size);
   //return true;
@@ -2242,7 +2288,7 @@ bool LoadImageData_from_string(tinygltf::Image *image, const int image_idx, std:
   //  gltf_join_threads(dt->decoder);
   // }
   //FILEID id2 = dt->decoder->find_file(url);
-  if (dt->decoder->is_decoded(id)) {
+  if (dt->decoder->is_decoded(id, -1)) {
     std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr2 = dt->decoder->get_decoded_file(id);
     //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
     image->image = *ptr2;
@@ -16725,14 +16771,14 @@ FILEID GLTFImageDecoder::add_file(std::vector<unsigned char,GameApiAllocator<uns
   filenames2[id] = filename;
   return id;
 }
-void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height)
+void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height, int m_decode_mutex_id)
 {
   //std::cout << "start_process:" << id.id << std::endl;
   tinygltf::Image *img = new tinygltf::Image;
 #ifdef THREADS
 #ifdef EMSCRIPTEN
   std::string filename = get_fetch_filename(fetch_id);
-  start_gltf_bitmap_thread(i,img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id,filename);
+  start_gltf_bitmap_thread(i,img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id,filename,m_decode_mutex_id);
 #else
   // not-emscripten -> do syncronous version
   ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
@@ -16744,6 +16790,7 @@ void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, 
   info->bytes = &(files2[id]->operator[](0));
   info->size = files2[id]->size();
   info->i = i;
+  info->m_decode_mutex_id = m_decode_mutex_id;
   thread_func_gltf_bitmap((void*)info);
 #endif
 #else
@@ -16756,6 +16803,7 @@ void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, 
   info->bytes = &(files2[id]->operator[](0));
   info->size = files2[id]->size();
   info->i = i;
+  info->m_decode_mutex_id = m_decode_mutex_id;
   thread_func_gltf_bitmap((void*)info);
 #endif
   
@@ -16769,12 +16817,15 @@ void GLTFImageDecoder::set_decode_callback(FILEID id, void (*fptr)(void*), void 
 //void GLTFImageDecoder::decode_file(FILEID id)
 //{
 //}
-bool GLTFImageDecoder::is_decoded(FILEID id)
+bool GLTFImageDecoder::is_decoded(FILEID id, int m_decode_mutex_id)
 {
-  return decoded_files[id]!=0;
+  decode_mutex_lock(m_decode_mutex_id);
+  bool b = decoded_files[id]!=0;
+  decode_mutex_unlock(m_decode_mutex_id);
+  return b;
 }
 std::vector<unsigned char, GameApiAllocator<unsigned char> > *GLTFImageDecoder::get_decoded_file(FILEID id)
-{
+{  
   return decoded_files[id];
 }
 IMAGEID GLTFImageDecoder::convert_to_image(std::vector<unsigned char> &vec)

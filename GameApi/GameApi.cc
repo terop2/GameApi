@@ -18528,7 +18528,7 @@ public:
 	    // count--; if (count<0) {
 	    float time_since_pending = env->ev->mainloop_api.get_time()-drift_timer;
 	    //std::cout << "DriftTimer: " << time_since_pending << std::endl;
-	    if (time_since_pending/10.0 > 300.0) {
+	    if (time_since_pending/10.0 > 3000.0) {
 	      std::cout << "ASyncPendingCountDrift:" << async_pending_count << std::endl;
 	      int s = async_labels.size();
 	      for(int i=0;i<s;i++)
