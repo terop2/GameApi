@@ -307,9 +307,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(GLTF_SCENE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
 			 "ml_gltf_scene",
-			 { "ev", "tf", "scene_id", "keys","mix","self_mult", "rest_mult","mode","light_dir_x", "light_dir_y", "light_dir_z", "animation","border_width", "border_color","is_transparent", "acesfilm", "emissive" },
-			 { "EveryApi&", "TF", "int", "std::string","float","float", "float","int", "float", "float", "float", "int", "float", "unsigned int","bool", "bool", "bool" },
-			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","3.0", "1.0","0", "400.0", "-400.0", "300.0", "0", "0.0", "ff000000","true", "true", "true" },
+			 { "ev", "tf", "scene_id", "keys","mix","self_mult", "rest_mult","mode","light_dir_x", "light_dir_y", "light_dir_z", "animation","border_width", "border_color","is_transparent", "acesfilm", "emissive", "frame_skip" },
+			 { "EveryApi&", "TF", "int", "std::string","float","float", "float","int", "float", "float", "float", "int", "float", "unsigned int","bool", "bool", "bool", "int" },
+			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","3.0", "1.0","0", "400.0", "-400.0", "300.0", "0", "0.0", "ff000000","true", "true", "true", "1" },
 			 "ML", "mainloop_api", "gltf_scene"));
 #endif
 #endif
@@ -368,9 +368,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(GLTF_MESH_ALL_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim,
 			 "ml_gltf_all_anim",
-			 { "ev", "tf","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent", "acesfilm", "start_anim_seq","emissive" },
-			 { "EveryApi&", "TF","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool", "bool", "int", "bool" },
-			 { "ev", "", "1.0","3.0","0.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true","true", "0", "true" },
+			 { "ev", "tf","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent", "acesfilm", "start_anim_seq","emissive", "frame_skip" },
+			 { "EveryApi&", "TF","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool", "bool", "int", "bool", "int" },
+			 { "ev", "", "1.0","3.0","0.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true","true", "0", "true", "1" },
 			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
 #endif
 #if 0
@@ -428,9 +428,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(GLTF_SCENE_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene_anim,
 			 "ml_gltf_sc_anim",
-			 { "ev", "tf", "scene_id", "animation", "keys","mix","self_mult", "rest_mult","mode", "light_dir_x", "light_dir_y", "light_dir_z","border_width", "border_color" , "transparent", "acesfilm", "emissive" },
-			 { "EveryApi&", "TF", "int", "int", "std::string","float","float", "float", "int", "float", "float", "float", "float", "unsigned int","bool", "bool", "bool" },
-			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","3.0", "1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true", "true" },
+			 { "ev", "tf", "scene_id", "animation", "keys","mix","self_mult", "rest_mult","mode", "light_dir_x", "light_dir_y", "light_dir_z","border_width", "border_color" , "transparent", "acesfilm", "emissive", "frame_skip" },
+			 { "EveryApi&", "TF", "int", "int", "std::string","float","float", "float", "int", "float", "float", "float", "float", "unsigned int","bool", "bool", "bool", "int" },
+			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","3.0", "1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true", "true", "1" },
 			 "ML", "mainloop_api", "gltf_scene_anim"));
 #endif
 
@@ -971,16 +971,16 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::me
 
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::lod_anim,
 			"m_lod_anim",
-			{ "ev", "tf", "pts", "level1", "level2", "level3", "level4", "l1", "l2", "l3", "l4", "mix", "self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "start_anim_seq","emissive" },
-			{ "EveryApi&", "TF", "PTS", "float", "float", "float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "std::string", "float", "float", "float", "float", "unsigned int", "bool", "bool", "int","bool" },
-			{ "ev", "", "", "0.8", "0.6", "0.4", "0.2", "45", "45", "45", "45", "1.0", "3.0", "0.0", "0", "cvb", "0.1", "400.0", "0.1", "0.0", "ff000000", "false", "true", "0","true" },
+			{ "ev", "tf", "pts", "level1", "level2", "level3", "level4", "l1", "l2", "l3", "l4", "mix", "self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "start_anim_seq","emissive", "frame_skip" },
+			{ "EveryApi&", "TF", "PTS", "float", "float", "float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "std::string", "float", "float", "float", "float", "unsigned int", "bool", "bool", "int","bool", "int" },
+			{ "ev", "", "", "0.8", "0.6", "0.4", "0.2", "45", "45", "45", "45", "1.0", "3.0", "0.0", "0", "cvb", "0.1", "400.0", "0.1", "0.0", "ff000000", "false", "true", "0","true", "1" },
 			"ML", "mainloop_api", "lod_anim"));
 
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::lod_anim_matrix,
 			"m_lod_anim_matrix",
-			{ "ev", "tf", "ms", "level1", "level2", "level3", "level4", "l1", "l2", "l3", "l4", "mix", "self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "start_anim_seq", "emissive" },
-			{ "EveryApi&", "TF", "MS", "float", "float", "float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "std::string", "float", "float", "float", "float", "unsigned int", "bool", "bool", "int","bool" },
-			{ "ev", "", "", "0.8", "0.6", "0.4", "0.2", "45", "45", "45", "45", "1.0", "3.0", "0.0", "0", "cvb", "0.1", "400.0", "0.1", "0.0", "ff000000", "false", "true", "0", "true" },
+			{ "ev", "tf", "ms", "level1", "level2", "level3", "level4", "l1", "l2", "l3", "l4", "mix", "self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "start_anim_seq", "emissive","frame_skip" },
+			{ "EveryApi&", "TF", "MS", "float", "float", "float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "std::string", "float", "float", "float", "float", "unsigned int", "bool", "bool", "int","bool", "int" },
+			{ "ev", "", "", "0.8", "0.6", "0.4", "0.2", "45", "45", "45", "45", "1.0", "3.0", "0.0", "0", "cvb", "0.1", "400.0", "0.1", "0.0", "ff000000", "false", "true", "0", "true", "1" },
 			"ML", "mainloop_api", "lod_anim_matrix"));
 
  
