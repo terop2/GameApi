@@ -449,7 +449,11 @@ void *task_queue_consumer(void *data)
 	g_tasks.set_task_as_execute(dt);
 	g_tasks.pop_from_queue();
 	g_tasks.queue_mutex_end();
+	if (dt.id==3008)
+	  std::cout << "Task executing " << dt.id << std::endl;
 	dt.fptr(dt.data);
+	if (dt.id==3008)
+	  std::cout << "Task stop executing " << dt.id << std::endl;
 	//std::cout << "Tasks finished heavy" << task_num2 << " " << dt.id << " " << dt.num<< std::endl;
 	//g_tasks.queue_mutex_start();
 	g_tasks.set_task_as_done(dt);
@@ -522,6 +526,7 @@ IMPORT void tasks_join(int id)
 pthread_mutex_t *g_queue_mutex;
 std::vector<task_data> *g_queue_tasks_done=0;
 std::vector<task_data> *g_tasks_in_execute=0;
+std::vector<task_data> *g_queue=0;
 
 std::vector<int> g_async_join_m_ids;
 class ASyncJoinProcessData2;
@@ -529,6 +534,12 @@ std::vector<ASyncJoinProcessData2*> g_async_join_m_data;
 
 
 pthread_mutex_t *g_m_mutex = 0;
+
+EXPORT void tasks_done_queue_clear()
+{
+  g_queue_tasks_done->clear();
+}
+
 
 void create_m_mutex()
 {
@@ -553,6 +564,48 @@ void m_mutex_unlock()
   if (g_m_mutex)
     pthread_mutex_unlock(g_m_mutex);
 }
+
+void print_tasks_done()
+{
+  std::cout << "Tasks done:";
+  // pthread_mutex_lock(g_queue_mutex);
+  int s = g_queue_tasks_done->size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << g_queue_tasks_done->operator[](i).id << ",";
+    }
+  //pthread_mutex_unlock(g_queue_mutex);
+  std::cout << std::endl;
+
+}
+void print_tasks_in_execute()
+{
+  std::cout << "Tasks in execute:";
+  //pthread_mutex_lock(g_queue_mutex);
+  int s = g_tasks_in_execute->size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << g_tasks_in_execute->operator[](i).id << ",";
+    }
+  //pthread_mutex_unlock(g_queue_mutex);
+  std::cout << std::endl;
+
+}
+
+void print_tasks_queue()
+{
+  std::cout << "Tasks queue:";
+  //pthread_mutex_lock(g_queue_mutex);
+  int s = g_queue->size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << g_queue->operator[](i).id << ",";
+    }
+  //pthread_mutex_unlock(g_queue_mutex);
+  std::cout << std::endl;
+
+}
+
 
 void print_task_m_ids()
 {
@@ -608,12 +661,14 @@ void *multiple_async_joins(void *data)
 {
   g_m_process_active=true;
   while(1) {
+    
     if (g_stop_multiple ||check_multiple_empty())
       {
+	std::cout << "Stopping multiple process" << std::endl;
 	g_stop_multiple=false;
 	break;
       }
-
+    
 #ifdef EMSCRIPTEN
   g_low->sdl->SDL_Delay(3);
    //emscripten_sleep(3);
@@ -682,14 +737,18 @@ bool async_join_internal(ASyncJoinProcessData2 *dt, int id)
 	    found=true;
 	  }
       }
+    // std::cout << "id=" << dt->id << " found=" << found << " stilltodo=" << found_stilltodo << std::endl;
     if (found && !found_stilltodo) {
       //pthread_mutex_lock(g_queue_mutex);
       int s5 = g_queue_tasks_done->size();
       for(int i=0;i<s5;i++)
 	{
-	  if (g_queue_tasks_done->operator[](i).id==dt->id) { g_queue_tasks_done->erase(g_queue_tasks_done->begin()+i); i--; s5--; }
+	  if (g_queue_tasks_done->operator[](i).id==dt->id)
+	    {
+	      g_queue_tasks_done->erase(g_queue_tasks_done->begin()+i); i--; s5--; }
 	}
       pthread_mutex_unlock(g_queue_mutex);
+      std::cout << "async_join cb with id=" << dt->id << std::endl;
       dt->fptr(dt->data);
       return true;
     }
@@ -764,9 +823,30 @@ void *async_join_process(void *data)
   return 0;
 }
 
+int count_tasks_with_id(int id, std::vector<task_data> *data)
+{
+  int s = data->size();
+  int count = 0;
+  for(int i=0;i<s;i++)
+    {
+      if (data->operator[](i).id == id) count++;
+    }
+  return count;
+}
+
 IMPORT void tasks_async_join_m(int id, void (*fptr)(void*), void *data)
 {
+  int a1 = count_tasks_with_id(id,g_queue);
+  int a2 = count_tasks_with_id(id,g_tasks_in_execute);
+  int a3 = count_tasks_with_id(id,g_queue_tasks_done);
+  if (a1+a2+a3 == 0)
+    {
+      std::cout << "No tasks in queues, " << id << ", sending cb and existing.." << std::endl;
+      fptr(data);
+      return;
+    }
 
+  
   ASyncJoinProcessData2 *dt = new ASyncJoinProcessData2;
   dt->id = id;
   dt->fptr = fptr;
@@ -778,6 +858,7 @@ IMPORT void tasks_async_join_m(int id, void (*fptr)(void*), void *data)
   m_mutex_unlock();
   
   if (!g_m_process_active) {
+    std::cout << "Starting multiple process" << std::endl;
     tasks_add(41972, &multiple_async_joins, (void*)0);
   }
 }
@@ -916,6 +997,11 @@ void check_for_progressbar(pthread_mutex_t *mutex_or_null)
   }
 
 
+bool task_compare(const task_data &a1, const task_data &a2)
+{
+  return a1.id==a2.id;
+}
+
 
 class task_implementation : public task_interface
 {
@@ -924,6 +1010,7 @@ public:
   {
     g_queue_tasks_done = &queue_tasks_done;
     g_tasks_in_execute = &tasks_in_execute;
+    g_queue = &queue;
   }
   virtual void spawn_thread()
   {
@@ -1157,18 +1244,37 @@ public:
     int s3 = queue.size();
     for(int i=0;i<s3;i++)
       {
-	if (queue[i].id==id) { queue.erase(queue.begin()+i); i--; s3--; }
+	if (queue[i].id==id) {
+	  //std::cout << "ERASING from queue:" << queue[i].id << std::endl;
+	  queue.erase(queue.begin()+i); i--; s3--;
+	}
       }
     int s4 = tasks_in_execute.size();
     for(int i=0;i<s4;i++)
       {
-	if (tasks_in_execute[i].id==id) { tasks_in_execute.erase(tasks_in_execute.begin()+i); i--; s4--; }
+	if (tasks_in_execute[i].id==id) {
+	  //std::cout << "ERASING from execute:" << tasks_in_execute[i].id << std::endl;
+	  tasks_in_execute.erase(tasks_in_execute.begin()+i); i--; s4--;
+	}
       }
+
+    auto last = std::unique(queue_tasks_done.begin(),queue_tasks_done.end(),&task_compare);
+    queue_tasks_done.erase(last,queue_tasks_done.end());
+
+#if 0
+    // COMMENTED OUT BECAUSE IT ERASES.
     int s5 = queue_tasks_done.size();
     for(int i=0;i<s5;i++)
       {
-	if (queue_tasks_done[i].id==id) { queue_tasks_done.erase(queue_tasks_done.begin()+i); i--; s5--; }
+	if (queue_tasks_done[i].id==id) {
+
+	  //if (queue_tasks_done[i].id != 3005)
+	  //if (queue_tasks_done[i].id != 1004)
+	  //std::cout << "ERASING from tasks done:" << queue_tasks_done[i].id << std::endl;	  
+	  queue_tasks_done.erase(queue_tasks_done.begin()+i); i--; s5--;
+	}
       }
+#endif
     queue_mutex_end();
     
       in_join=false;

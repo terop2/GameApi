@@ -10,7 +10,12 @@ IMPORT void tasks_async_join(int id, void (*fptr)(void*), void *data);
 IMPORT void tasks_async_join_m(int id, void (*fptr)(void*), void *data);
 IMPORT void tasks_join_property(bool (*fptr)(void*), void *data); // bool=false => exit
 IMPORT bool tasks_m_check_async_ongoing(int id);
+IMPORT void tasks_done_queue_clear();
 void print_task_m_ids();
+void print_tasks_in_execute();
+void print_tasks_done();
+void print_tasks_queue();
+
 int add_splitter_logo_callback(void (*fptr)(void*), void *data);
 void remove_splitter_logo_callback(int id);
 

@@ -1398,6 +1398,8 @@ public:
 	std::sort(urls.begin(),urls.end());
 	auto it = std::unique(urls.begin(),urls.end());
 	urls.erase(it,urls.end());
+
+	tasks_done_queue_clear();
 	
 	ClearProgress();
 	InstallProgress(33344, "collect", 15*15);

@@ -487,6 +487,7 @@ struct TinyGltfProcessData
 
 void *tinygltf_process(void *data)
 {
+  std::cout << "Start tinygltf" << std::endl;
   std::string err;
   std::string warn;
   TinyGltfProcessData *dt = (TinyGltfProcessData*)data;
@@ -499,6 +500,7 @@ void *tinygltf_process(void *data)
     dt->tiny_p->LoadBinaryFromMemory(dt->model_p, &err, &warn, dt->ptr3, dt->sz, dt->base_url, tinygltf::REQUIRE_ALL); 
 
   }
+  std::cout << "End tinygltf" << std::endl;
   return 0;
 }
 
@@ -720,7 +722,7 @@ public:
       }
     */
 #ifdef BITMAP_THREAD_ASYNC_JOIN
-    //std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
+    std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
     tasks_async_join_m(3008,&g_bitmap_thread_async_join_cb,(void*)this);
 
     //bitmap_thread_async_join_cb();
@@ -2117,6 +2119,7 @@ void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int 
   //pthread_attr_setstacksize(&attr,300000);
   g_pthread_count++;
   //pthread_create(&info->thread_id, &attr, &thread_func_gltf_bitmap, (void*)info);
+  std::cout << "3008 tasks_add" << std::endl;
   tasks_add(3008,&thread_func_gltf_bitmap,(void*)info);
   
 #endif
@@ -16878,6 +16881,7 @@ public:
   }
   bool Ready() const
   {
+
     bool b = !(tasks_m_check_async_ongoing(m_id));
     //static int counter=0;
     // counter++;
@@ -16887,6 +16891,14 @@ public:
   }
   void check() const
   {
+    static int flag=0;
+    flag++;
+    if (flag<40) {
+      //print_task_m_ids();
+      //print_tasks_queue();
+      //print_tasks_in_execute();
+      //print_tasks_done();
+    }
     //start_time = g_low->sdl->SDL_GetTicks();
     tasks_join(m_id);
     //std::cout << "check id=" << m_id << std::endl;

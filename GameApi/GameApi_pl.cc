@@ -11315,7 +11315,7 @@ public:
       {
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
-
+	
 
 	ev.shader_api.set_var(sh, "in_PhongLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
 	ev.shader_api.set_var(sh, "level1_color",
@@ -11333,7 +11333,7 @@ public:
 			  ((highlight&0xff00)>>8)/255.0,
 			      ((highlight&0xff))/255.0,
 			  ((highlight&0xff000000)>>24)/255.0);
-	ev.shader_api.set_var(sh, "hilight", pow);
+			  ev.shader_api.set_var(sh, "hilight", pow);
       }
 
 #ifndef NO_MV

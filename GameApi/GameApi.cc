@@ -6677,6 +6677,7 @@ GameApi::MT GameApi::MaterialsApi::progressmaterial(MT nxt, void (*fptr)(void*),
   return add_material(e, new ProgressMaterial(next,fptr,data));
 }
 
+
 class DefaultMaterial : public MaterialForward
 {
 public:
@@ -9223,12 +9224,13 @@ public:
     //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
     ml.id = next->mat(p0.id);
-    GameApi::ML sh;
+    GameApi::ML sh = ml;
+    
     if (background_included) {
       sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     } else {
       sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
-    }
+      }
     return sh;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -40033,6 +40035,8 @@ KP extern "C" void set_new_script(const char *script2_)
   
   const char *script2 = ptr;
   
+
+  tasks_done_queue_clear();
   
   //std::cout << "set_new_script::" << script2 << std::endl;
   g_progress_bar_config = 0;
