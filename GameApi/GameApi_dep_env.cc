@@ -4688,8 +4688,10 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
 #endif
     std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
     unsigned char c2;
-    while(fread(&c2,1,1,f2)==1) {
+    int idx = 30000;
+    while(fread(&c2,1,1,f2)==1 && idx>0) {
       vec2.push_back(c2);
+      idx--;
     }
     pclose(f2);
     std::string s(vec2.begin(),vec2.end());
