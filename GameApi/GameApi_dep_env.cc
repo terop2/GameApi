@@ -1001,6 +1001,10 @@ bool task_compare(const task_data &a1, const task_data &a2)
 {
   return a1.id==a2.id;
 }
+bool task_compare_2(const task_data &a1, const task_data &a2)
+{
+  return a1.id<a2.id;
+}
 
 
 class task_implementation : public task_interface
@@ -1257,7 +1261,7 @@ public:
 	  tasks_in_execute.erase(tasks_in_execute.begin()+i); i--; s4--;
 	}
       }
-
+    std::sort(queue_tasks_done.begin(), queue_tasks_done.end(), &task_compare_2);
     auto last = std::unique(queue_tasks_done.begin(),queue_tasks_done.end(),&task_compare);
     queue_tasks_done.erase(last,queue_tasks_done.end());
 
