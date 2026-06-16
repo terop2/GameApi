@@ -2048,8 +2048,34 @@ void *thread_func_gltf_bitmap(void *data2)
   image->pixel_type = pixel_type;
   //std::cout << "w:" << w << " h:" << h << " comp:" << comp << " bits:" << bits << std::endl;
   //std::cout << "image:" << (long)image << std::endl;
-  image->image.resize(static_cast<uint64_t>(w * h * comp) * size_t(bits / 8));
-  std::copy(data, data + w * h * comp * (bits / 8), image->image.begin());
+  std::cout << "Image alloc: w*h*comp*bits/8 = " << w << "*" << h << "*" << comp << "*" << size_t(bits/8) << std::endl;
+  if (w<=512 && h<=512) {
+    image->image.resize(static_cast<uint64_t>(w * h * comp) * size_t(bits / 8));
+    std::copy(data, data + w * h * comp * (bits / 8), image->image.begin());
+  } else {
+    int reduce=1;
+    if (w<=1024 && h<=1024) reduce=2; else
+      if (w<=2048 && h<=2048) reduce=4; else
+	if (w<=4096 && h<=4096) reduce=8; else
+	  if (w<=8192 && h<=8192) reduce=16;
+
+    int new_w = w/reduce;
+    int new_h = h/reduce;
+    std::cout << "reducing with mult=" << reduce << " to " << new_w << "*" << new_h << std::endl;
+
+    image->image.resize(static_cast<uint64_t>(new_w*new_h*comp) * size_t(bits/8));
+    for(int y=0;y<new_h;y++)
+      for(int x=0;x<new_w;x++)
+	{
+	  unsigned int *ptr = (unsigned int*)(data + (y*reduce)*h*comp*(bits/8) + (x*reduce)*comp*(bits/8));
+	  unsigned int val = *ptr;
+	  unsigned int *ptr2 = (unsigned int*)((&image->image[0]) + (y*new_h*comp*(bits/8)) + (x*comp*(bits/8)));
+	  *ptr2 = val;			      
+	 }
+    image->width = new_w;
+    image->height= new_h;
+    
+  }
   stbi_image_free(data);
 
 
