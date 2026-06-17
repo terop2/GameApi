@@ -11973,6 +11973,7 @@ public:
     if (va.id==-1) {
       //std::cout << "RenderInstanced::HeavyPrepare" << std::endl;
       pipe = ev.polygon_api.create_vertex_array_start(p,false);
+
       //va = ev.polygon_api.create_vertex_array(p,false);
       std::cout << "RenderInstanced::HeavyPrepare" << std::endl;
     }
@@ -11980,11 +11981,12 @@ public:
   }
   void Prepare() {
     //if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
+      std::cout << "RenderInstanced::Prepare" << std::endl;
     if (va.id==-1) {
       //std::cout << "RenderInstanced::Prepare" << std::endl;
       pipe = ev.polygon_api.create_vertex_array_start(p,false);
-      //va = ev.polygon_api.create_vertex_array(p,false);
-      std::cout << "RenderInstanced::Prepare" << std::endl;
+
+    //va = ev.polygon_api.create_vertex_array(p,false);
     }
     initialized=true;
   }
@@ -12003,6 +12005,7 @@ public:
       ev.polygon_api.create_vertex_array_send_to_gpu(pipe);
       if (ev.polygon_api.create_vertex_array_ready(pipe)) break;
     }
+
     if (is_ready==false && ev.polygon_api.create_vertex_array_ready(pipe))
       {
 	//std::cout << "Setting va" << std::endl;
