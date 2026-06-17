@@ -11974,6 +11974,7 @@ public:
       //std::cout << "RenderInstanced::HeavyPrepare" << std::endl;
       pipe = ev.polygon_api.create_vertex_array_start(p,false);
       //va = ev.polygon_api.create_vertex_array(p,false);
+      std::cout << "RenderInstanced::HeavyPrepare" << std::endl;
     }
     initialized=true;
   }
@@ -11983,6 +11984,7 @@ public:
       //std::cout << "RenderInstanced::Prepare" << std::endl;
       pipe = ev.polygon_api.create_vertex_array_start(p,false);
       //va = ev.polygon_api.create_vertex_array(p,false);
+      std::cout << "RenderInstanced::Prepare" << std::endl;
     }
     initialized=true;
   }
@@ -12027,7 +12029,7 @@ public:
       }
 
     
-    if (firsttime) {
+    if (is_ready && firsttime) {
     
     GameApi::US u_v;
     GameApi::US u_f;
@@ -12037,7 +12039,7 @@ public:
       u_v.id = e.us_vertex_shader;
     if (e.us_fragment_shader!=-1)
       u_f.id = e.us_fragment_shader;
-    if (firsttime)
+    if (is_ready && firsttime)
       {
 	if (u_v.id == 0)
 	  u_v = ev.uber_api.v_empty();
@@ -12055,7 +12057,7 @@ public:
     if (ev.polygon_api.is_texture(va))
       {
 	sh.id = e.sh_texture;
-	if (firsttime)
+	if (is_ready && firsttime)
 	  {
 	    if (e.us_vertex_shader==-1)
 	      u_v = ev.uber_api.v_texture(u_v);
@@ -12065,7 +12067,7 @@ public:
 	if (ev.polygon_api.is_array_texture(va))
 	  {
 	    sh.id = e.sh_array_texture;
-	      if (firsttime)
+	      if (is_ready && firsttime)
 	      {
 		if (e.us_vertex_shader==-1)
 		  u_v = ev.uber_api.v_texture_arr(u_v);
@@ -12077,7 +12079,7 @@ public:
     else
       {
 	sh.id = e.sh_color;
-	if (firsttime)
+	if (is_ready && firsttime)
 	  {
 	    if (e.us_vertex_shader==-1)
 	      {
@@ -12212,7 +12214,8 @@ public:
     //std::cout << "using sh5" << std::endl;
     ev.shader_api.print_log(sh);
     //std::cout << "using sh6" << std::endl;
-    ev.shader_api.unuse(sh);
+    if (is_ready)
+      ev.shader_api.unuse(sh);
   }
 private:
   GameApi::Env &env;

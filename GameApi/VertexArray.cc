@@ -4057,7 +4057,7 @@ volatile int thread_counter=0;
 
 void *thread_func(void *data)
 {
-#ifndef BATCHING
+#ifndef B2ATCHING
   ThreadInfo *ti = (ThreadInfo*)data;
   //ti->va->reserve(0);
   Counts ct2_counts = CalcCounts(ti->faces, ti->start_range, ti->end_range);

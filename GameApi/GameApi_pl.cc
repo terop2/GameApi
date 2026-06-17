@@ -6339,6 +6339,8 @@ struct VertexArrayDataPipe
 
   VertexArraySet *nothread_s;
   RenderVertexArray *nothread_arr2;
+
+  int uid;
 };
 }
 EXPORT GameApi::VertexArrayDataPipe *GameApi::PolygonApi::create_vertex_array_start(GameApi::P p, bool keep)
@@ -6412,6 +6414,12 @@ EXPORT GameApi::VertexArrayDataPipe *GameApi::PolygonApi::create_vertex_array_st
     
 #ifdef THREADS
   VertexArrayDataPipe *pipe = new VertexArrayDataPipe;
+
+  static int uid = 444000;
+  uid++;
+  pipe->uid = uid;
+  
+
   pipe->keep = keep;
   pipe->num_threads = 8;
     FaceCollection *faces = find_facecoll(e, p);
@@ -6492,7 +6500,7 @@ EXPORT GameApi::VertexArrayDataPipe *GameApi::PolygonApi::create_vertex_array_st
        if (end_range>s) { end_range = s; }
        //std::cout << "THREAD#" << i << "::Range=(" << start_range << ".." << end_range << ")" << std::endl;
        if (i==pipe->num_threads-1) {end_range = s; }
-       pipe->vec->push_back(pipe->prep->push_thread2(start_range, end_range,pipe->arr2, pipe->mutex1, pipe->mutex2,pipe->mutex3,pipe->gmutex,pipe->gmutex2,pipe->g_cond,pipe->g_cond2));
+       pipe->vec->push_back(pipe->prep->push_thread2(start_range, end_range,pipe->arr2, pipe->mutex1, pipe->mutex2,pipe->mutex3,pipe->gmutex,pipe->gmutex2,pipe->g_cond,pipe->g_cond2,std::vector<int>(),std::vector<int>(),pipe->uid));
       }
     pipe-> progress = 0;
     //InstallProgress(1,"send to gpu mem",10);
@@ -6540,6 +6548,10 @@ EXPORT void GameApi::PolygonApi::create_vertex_array_send_to_gpu(VertexArrayData
       // now ti_global is available
       ThreadInfo volatile *ti_global2 = ti_global;
       if (ti_global2 && !pipe->error) {
+	if (ti_global2->uid != pipe->uid)
+	  {
+	    std::cout << "WARNING: ti_global is clearly WRONG instance" << std::endl;
+	  }
        //std::cout << "transfer"<< std::endl;
 
        //std::cout << "TRANSFER::ctcounts(" << ti_global2->ct2_counts.tri_count << " " << ti_global2->ct2_counts.quad_count << " " << ti_global2->ct2_counts.poly_count << ")" << std::endl;
@@ -6981,7 +6993,12 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       ThreadInfo volatile *ti_global2 = ti_global;
       if (ti_global2 && !error) {
        //std::cout << "transfer"<< std::endl;
+	if (ti_global2->uid != -1)
+	  {
+	    std::cout << "WARNING in original create_vertex_array: ti_global is clearly WRONG instance" << std::endl;
+	  }
 
+	
        //std::cout << "TRANSFER::ctcounts(" << ti_global2->ct2_counts.tri_count << " " << ti_global2->ct2_counts.quad_count << " " << ti_global2->ct2_counts.poly_count << ")" << std::endl;
        //std::cout << "TRANSFER::ctoffsets(" << ti_global2->ct2_offsets.tri_count << " " << ti_global2->ct2_offsets.quad_count << " " << ti_global2->ct2_offsets.poly_count << ")" << std::endl;
 
