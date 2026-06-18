@@ -6,7 +6,7 @@
 #include <emscripten.h>
 #include <emscripten/fetch.h>
 #endif
-#ifdef LINUX
+#ifdef LINUX1
 #include <unistd.h>
 #endif
 
@@ -420,6 +420,7 @@ extern int g_last_loaded_script;
 IMPORT double g_dpr=1.0;
 extern std::vector<const char*> g_urls;
 
+std::vector<std::string> g_error_urls;
 
 IMPORT extern std::string g_window_href;
 IMPORT extern std::string gameapi_homepageurl;
@@ -1843,6 +1844,7 @@ public:
     failcount++;
     if (failcount>10) {
       std::cout << "FetchInBlocks::chunk_failed()" << std::endl;
+      g_error_urls.push_back(url);
       failed(data);
       emscripten_fetch_close(fetch);
     }
@@ -3871,8 +3873,10 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     }
 #endif
 #endif
-    
-    
+    while(1) {   
+
+      
+      
   int u = g_urls.size();
   for(int i=0;i<u;i++)
     {
@@ -3895,14 +3899,38 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
       //std::cout << "DELMAPITEM:" << p.first << std::endl;
     }
     */
-    g_del_map.print();
-    std::cout << "FINDING: " << url << std::endl;
+    //g_del_map.print();
+    //std::cout << "FINDING: " << url << std::endl;
     if (g_del_map.async_find(url)) {
       //std::cout << "FOUND FROM G_DELMAP" << std::endl;
       return g_del_map.async_get2(url); //new ASyncDataFetcher(&(*(g_del_map.async_get(url).second)));
     }
-    else
-      return 0;
+    }
+
+      int u2 = g_error_urls.size();
+      for(int i=0;i<u2;i++)
+	{
+	  if (remove_load(url)==std::string(g_error_urls[i]))
+	    {
+	      std::cout << "Url " << remove_load(url) << " found from error urls => couldn't load the data." << std::endl;
+	      return 0;
+	    }
+	}
+
+    
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(300);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+#endif
+
+    //else
+    //  return 0;
   }
 
 
