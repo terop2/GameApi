@@ -507,7 +507,7 @@ struct TinyGltfProcessData
 
 void *tinygltf_process(void *data)
 {
-  std::cout << "Start tinygltf" << std::endl;
+  //std::cout << "Start tinygltf" << std::endl;
   std::string err;
   std::string warn;
   TinyGltfProcessData *dt = (TinyGltfProcessData*)data;
@@ -520,7 +520,7 @@ void *tinygltf_process(void *data)
     dt->tiny_p->LoadBinaryFromMemory(dt->model_p, &err, &warn, dt->ptr3, dt->sz, dt->base_url, tinygltf::REQUIRE_ALL); 
 
   }
-  std::cout << "End tinygltf" << std::endl;
+  //std::cout << "End tinygltf" << std::endl;
   return 0;
 }
 
@@ -566,7 +566,7 @@ int find_str_vector(std::vector<char> *vec, std::string repl, int max_chars)
 }
 
 int g_loadgltf_uni_id = 0;
-
+int splitter_cb_count();
 class LoadGltf : public CollectInterface
 {
 public:
@@ -601,6 +601,8 @@ public:
     //std::cout << "LoadGltf_cb using url: " << url << std::endl;
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
+    std::cout << "LoadGltf::LoadGltf" << std::endl;
+
     splitter_logo_id=add_splitter_logo_callback(&loadgltf_splitter_cb,(void*)this);
     mlguiwidget_logo_id=add_mlguiwidget_logo_callback(&loadgltf_splitter_cb,(void*)this);
   }
@@ -645,6 +647,7 @@ public:
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
+    std::cout << "LoadGltf::LoadGltf" << std::endl;
     splitter_logo_id=add_splitter_logo_callback(&loadgltf_splitter_cb,(void*)this);
     mlguiwidget_logo_id=add_mlguiwidget_logo_callback(&loadgltf_splitter_cb,(void*)this);
   }
@@ -657,8 +660,11 @@ public:
   }
   ~LoadGltf()
   {
+    std::cout << "LoadGltf::~LoadGltf" << std::endl;
+    std::cout << splitter_cb_count() << std::endl;
     remove_splitter_logo_callback(splitter_logo_id);
     remove_mlguiwidget_logo_callback(mlguiwidget_logo_id);
+    std::cout << splitter_cb_count() << std::endl;
     
     unasync();
     g_deleted_urls.push_back(url);
@@ -742,7 +748,7 @@ public:
       }
     */
 #ifdef BITMAP_THREAD_ASYNC_JOIN
-    std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
+    //std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
     tasks_async_join_m(3008,&g_bitmap_thread_async_join_cb,(void*)this);
 
     //bitmap_thread_async_join_cb();
@@ -779,8 +785,8 @@ public:
 	PrePrePrepare(ig,p.first);
 	ig++;
       }
+    prepreprepare_done=true;
     }
-  
 
     
     
@@ -899,10 +905,10 @@ public:
     //std::cout << "LoadGltf::HeavyPrepare done" << std::endl;
       } else {
       
-      //if (prepare_done) return;
-      //prepare_done=true;
+      if (prepare_done) return;
     if (m_interface) m_interface->Prepare();
       Prepare();
+      prepare_done=true;
     }
   }
   void async_join_cb()
@@ -915,7 +921,7 @@ public:
   void PrePrePrepare(int i, FETCHID id)
   {
     //std::cout << "LoadGltf::PrePrePrepare" << std::endl;
-    if (!decoder) return;
+    if (!decoder) { stackTrace(); std::cout << "PrePrePrepare::nodecoder" << std::endl; return; }
     //std::cout << "PrePrePrepare" << i << std::endl;
     if (url.substr(url.size()-3,3)!="glb") {
     prepreprepare_done = true;
@@ -1027,6 +1033,7 @@ public:
     decoder->fetch_all_files(e,image_ids);
 
 #ifndef EMSCRIPTEN
+    if (!prepreprepare_done) {
     std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
     int ig = 0;
     for(;it!=decoder->filenames.end();it++)
@@ -1035,6 +1042,9 @@ public:
 	PrePrePrepare(ig,p.first);
 	ig++;
       }
+    prepreprepare_done = true;
+    }
+    
 #endif
     }
     //std::cout << "LoadGltf::PrePrepare done" << std::endl;
@@ -1660,6 +1670,9 @@ int register_cache_deleter(void (*fptr)(void*), void*);
 #ifdef EMSCRIPTEN
 void del_instances(void*)
 {
+  std::cout << "Deleting instances.." << std::endl;
+  std::cout << "commented out!" << std::endl;
+#if 0
   int s3 = g_model_del_items.size();
   for(int ii=0;ii<s3;ii++)
     {
@@ -1690,7 +1703,8 @@ void del_instances(void*)
      s.obj->model.cameras.clear();
      s.obj->model.scenes.clear();
      s.obj->model.lights.clear();
-     
+     delete s.obj;
+     s.obj=0;
     }
   g_gltf_instances.clear();
   //instance_deleter_installed=false;
@@ -1727,11 +1741,12 @@ void del_instances(void*)
      s.obj->model.cameras.clear();
      s.obj->model.scenes.clear();
      s.obj->model.lights.clear();
-     
+     delete s.obj;
+     s.obj = 0;
     }
   g_gltf_instances_from_string.clear();
   //instance_deleter_installed=false;
-
+#endif
 }
 #endif
 
@@ -11024,7 +11039,7 @@ void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mes
 
 GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, TF model0, int skin_num)
 {
-  std::cout << "START MSARRAY" << std::endl;
+  //std::cout << "START MSARRAY" << std::endl;
   GLTFModelInterface *interface = find_gltf(e,model0);
   ArrayType *array = new ArrayType;
   array->type=0;
@@ -14920,6 +14935,8 @@ public:
       if (ii<jointMatrices.size()) {
 	jointMatrices[ii] = add_matrix2(env, bindm * mv);
 
+	g_last_resize_pipeline->add_matrix(anim_transfer_id.id*400000,find_matrix(env,jointMatrices[0]));
+	
 #if 0
 #ifdef GLTF_ANIM_RESIZE_TEST
 	jointMatrices[ii] = add_matrix2(env, bindm * mv * resize);
@@ -15349,10 +15366,10 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
   GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
   g_model_del_items.push_back(model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
-      int c = get_current_block();
-      set_current_block(-1);
+  //    int c = get_current_block();
+  //    set_current_block(-1);
   GameApi::TF tf = add_gltf(e,i);
-  set_current_block(c);
+  //set_current_block(c);
   g_tf_instances.push_back(tf);
   GameApi::EveryApi &ev = *g_everyapi;
   tf = tf_join(ev,tf);
@@ -15869,6 +15886,7 @@ void *thread_sketchfab_zip(void *data)
 	    for(int j=0;j<256;j++)
 	      filename[j]=0;
 	    mz_uint err = mz_zip_reader_get_filename(pZip, i, filename, 256);
+	    //std::cout << "ZIP:" << filename << std::endl;
 	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; return 0; }
 	    std::string url_plain = obj->zip_url + "/" + std::string(filename);
 	    std::string url = "load_url.php?url=" + obj->zip_url + "/" + std::string(filename);

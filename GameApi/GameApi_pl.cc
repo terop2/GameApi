@@ -14706,6 +14706,8 @@ private:
   }
   void calc_size()
   {
+
+    
     size_x = fabs(end_x-start_x);
     size_y = fabs(end_y-start_y);
     size_z = fabs(end_z-start_z);
@@ -14860,15 +14862,148 @@ private:
   }
   void calc_center()
   {
-    center_x = start_x+(end_x-start_x)/2.0;
-    center_y = start_y+(end_y-start_y)/2.0;
-    center_z = start_z+(end_z-start_z)/2.0;
+
+    Point p1(start_x,start_y,start_z);
+    Point p2(end_x,start_y,start_z);
+    Point p3(start_x,end_y,start_z);
+    Point p4(end_x,end_y,start_z);
+    Point p5(start_x,start_y,end_z);
+    Point p6(end_x,start_y,end_z);
+    Point p7(start_x,end_y,end_z);
+    Point p8(end_x,end_y,end_z);
+
+    Matrix m = g_last_resize_pipeline->get_matrix(resize_transfer_id.id*400000);
+    p1 = p1*m;
+    p2 = p2*m;
+    p3 = p3*m;
+    p4 = p4*m;
+    p5 = p5*m;
+    p6 = p6*m;
+    p7 = p7*m;
+
+    float mx = std::min(p1.x,p2.x);
+      mx=std::min(mx,p3.x);
+      mx=std::min(mx,p4.x);
+      mx=std::min(mx,p5.x);
+      mx=std::min(mx,p6.x);
+      mx=std::min(mx,p7.x);
+
+      float px = std::max(p1.x,p2.x);
+      px=std::max(px,p3.x);
+      px=std::max(px,p4.x);
+      px=std::max(px,p5.x);
+      px=std::max(px,p6.x);
+      px=std::max(px,p7.x);
+
+
+      float my = std::min(p1.y,p2.y);
+      my=std::min(my,p3.y);
+      my=std::min(my,p4.y);
+      my=std::min(my,p5.y);
+      my=std::min(my,p6.y);
+      my=std::min(my,p7.y);
+
+      float py = std::max(p1.y,p2.y);
+      py=std::max(py,p3.y);
+      py=std::max(py,p4.y);
+      py=std::max(py,p5.y);
+      py=std::max(py,p6.y);
+      py=std::max(py,p7.y);
+
+      float mz = std::min(p1.z,p2.z);
+      mz=std::min(mz,p3.z);
+      mz=std::min(mz,p4.z);
+      mz=std::min(mz,p5.z);
+      mz=std::min(mz,p6.z);
+      mz=std::min(mz,p7.z);
+
+      float pz = std::max(p1.z,p2.z);
+      pz=std::max(pz,p3.z);
+      pz=std::max(pz,p4.z);
+      pz=std::max(pz,p5.z);
+      pz=std::max(pz,p6.z);
+      pz=std::max(pz,p7.z);
+
+      
+    center_x = mx+(px-mx)/2.0;
+    center_y = my+(py-my)/2.0;
+    center_z = mz+(pz-mz)/2.0;
+
+   // center_x = start_x+(end_x-start_x)/2.0;
+   // center_y = start_y+(end_y-start_y)/2.0;
+   // center_z = start_z+(end_z-start_z)/2.0;
   }
   void calc_size()
   {
-    size_x = fabs(end_x-start_x);
-    size_y = fabs(end_y-start_y);
-    size_z = fabs(end_z-start_z);
+    Point p1(start_x,start_y,start_z);
+    Point p2(end_x,start_y,start_z);
+    Point p3(start_x,end_y,start_z);
+    Point p4(end_x,end_y,start_z);
+    Point p5(start_x,start_y,end_z);
+    Point p6(end_x,start_y,end_z);
+    Point p7(start_x,end_y,end_z);
+    Point p8(end_x,end_y,end_z);
+
+    Matrix m = g_last_resize_pipeline->get_matrix(resize_transfer_id.id*400000);
+    p1 = p1*m;
+    p2 = p2*m;
+    p3 = p3*m;
+    p4 = p4*m;
+    p5 = p5*m;
+    p6 = p6*m;
+    p7 = p7*m;
+
+
+    float mx = std::min(p1.x,p2.x);
+      mx=std::min(mx,p3.x);
+      mx=std::min(mx,p4.x);
+      mx=std::min(mx,p5.x);
+      mx=std::min(mx,p6.x);
+      mx=std::min(mx,p7.x);
+
+      float px = std::max(p1.x,p2.x);
+      px=std::max(px,p3.x);
+      px=std::max(px,p4.x);
+      px=std::max(px,p5.x);
+      px=std::max(px,p6.x);
+      px=std::max(px,p7.x);
+
+
+      float my = std::min(p1.y,p2.y);
+      my=std::min(my,p3.y);
+      my=std::min(my,p4.y);
+      my=std::min(my,p5.y);
+      my=std::min(my,p6.y);
+      my=std::min(my,p7.y);
+
+      float py = std::max(p1.y,p2.y);
+      py=std::max(py,p3.y);
+      py=std::max(py,p4.y);
+      py=std::max(py,p5.y);
+      py=std::max(py,p6.y);
+      py=std::max(py,p7.y);
+
+      float mz = std::min(p1.z,p2.z);
+      mz=std::min(mz,p3.z);
+      mz=std::min(mz,p4.z);
+      mz=std::min(mz,p5.z);
+      mz=std::min(mz,p6.z);
+      mz=std::min(mz,p7.z);
+
+      float pz = std::max(p1.z,p2.z);
+      pz=std::max(pz,p3.z);
+      pz=std::max(pz,p4.z);
+      pz=std::max(pz,p5.z);
+      pz=std::max(pz,p6.z);
+      pz=std::max(pz,p7.z);
+
+    size_x = fabs(px-mx);
+    size_y = fabs(py-my);
+    size_z = fabs(pz-mz);
+    
+    //size_x = fabs(end_x-start_x);
+    //size_y = fabs(end_y-start_y);
+    //size_z = fabs(end_z-start_z);
   }
   void calc_matrix()
   {

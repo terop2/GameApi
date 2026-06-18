@@ -18784,10 +18784,13 @@ public:
 
 
 
-	
+	//std::cout << "splitter_cbs" << std::endl;
 	  call_all_splitter_cbs();
-	
+	  //std::cout << "splitter_cbs end" << std::endl;
+
+	  //std::cout << "execute_ml start" << std::endl;
 	if (!g_disable_draws) env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+	//std::cout << "execute_ml end" << std::endl;
 
 	
 
@@ -39902,9 +39905,9 @@ void run_callback(void *ptr)
   static int g_id = -1;
   // TODO, FOR SOME REASON; THE DELETION DOESNT WORK.
   // LOOKS LIKE non-pthread version JAMS badly in view.php if this is enabled.
-  //std::cout << "Clearing block:" << g_id << std::endl;
+  std::cout << "Clearing block:" << g_id << std::endl;
   //std::cout << "Current_block:" << get_current_block() << std::endl;
-  //if (g_id!=-1 && g_id!=-2 && g_id!=0) clear_block(g_id);
+  if (g_id!=-1 && g_id!=-2) clear_block(g_id);
   //std::cout << "Clear ok" << std::endl;
   // END OF TODO.
   clear_shader_cache();
@@ -40020,6 +40023,7 @@ std::string get_new_script_to_end(std::string val, int pos,
 
  extern int g_async_progress_counter;
  extern bool g_async_progress_counter_firsttime;
+extern Pipeline *g_last_resize_pipeline;
 
 void ClearProgress();
 KP extern "C" void set_new_script(const char *script2_)
@@ -40037,6 +40041,8 @@ KP extern "C" void set_new_script(const char *script2_)
   
 
   tasks_done_queue_clear();
+  if (g_last_resize_pipeline)
+    g_last_resize_pipeline->clear();
   
   //std::cout << "set_new_script::" << script2 << std::endl;
   g_progress_bar_config = 0;

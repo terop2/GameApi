@@ -1,50 +1,51 @@
 test
 
 
-(198,200)gltf_load2 uid3334 0 0 1 url:*https?//meshpage.org/beast.glb:false:-1:0:*https?//meshpage.org/beast.glb:*std??string
-(400,200)decimate_tf uid3335 0 0 1 mesh:*uid3334:false:-1:0:*uid3334:*TF val:*1:false:-1:0:*1:*float
-(563,188)ml_gltf_all_anim uid3336 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& tf:*uid3334:false:-1:0:*uid3334:*TF mix:*1.0:false:-1:0:*1.0:*float self_mult:*1.0:false:-1:0:*1.0:*float rest_mult:*1.0:false:-1:0:*1.0:*float mode:*0:false:-1:0:*0:*int keys:*op:false:-1:0:*op:*std??string light_dir_x:*400:false:-1:0:*400:*float light_dir_y:*-400:false:-1:0:*-400:*float light_dir_z:*300:false:-1:0:*300:*float border_width:*0:false:-1:0:*0:*float border_color:*ff000000:false:-1:0:*ff000000:*unsigned#int transparent:*false:false:-1:0:*false:*bool acesfilm:*true:false:-1:0:*true:*bool start_anim_seq:*0:false:-1:0:*0:*int emissive:*true:false:-1:0:*true:*bool
-(800,200)if_keypress uid3337 0 0 1 key:*119:false:-1:0:*119:*int key_down_value:*1:false:-1:0:*1:*int key_up_value:*0:false:-1:0:*0:*int
-(996,200)if_keys uid3338 0 0 1 ml:*uid3336:false:-1:0:*uid3336:*ML fetcher:*uid3337:false:-1:0:*uid3337:*IF keys:*po:false:-1:0:*po:*std??string
+(196,200)gltf_load2 uid3334 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/rich_chic_-_animated.glb:false:-1:0:*file?///home/terop/.gameapi_builder/Downloads/rich_chic_-_animated.glb:*std??string
+(400,200)decimate_tf uid3335 0 0 1 mesh:*uid3334:false:-1:0:*:*TF val:*1:false:-1:0:*01.0:*float
+(600,200)ml_gltf_all_anim uid3336 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& tf:*uid3335:false:-1:0:*:*TF mix:*1.0:false:-1:0:*:*float self_mult:*8.0:false:-1:0:*:*float rest_mult:*0.0:false:-1:0:*:*float mode:*0:false:-1:0:*:*int keys:*op:false:-1:0:*:*std??string light_dir_x:*400:false:-1:0:*:*float light_dir_y:*-400:false:-1:0:*:*float light_dir_z:*300:false:-1:0:*:*float border_width:*0:false:-1:0:*:*float border_color:*ff000000:false:-1:0:*:*unsigned#int transparent:*false:false:-1:0:*:*bool acesfilm:*true:false:-1:0:*:*bool start_anim_seq:*0:false:-1:0:*:*int emissive:*true:false:-1:0:*:*bool frame_skip:*4:false:-1:0:*:*int
+(800,200)if_keypress uid3337 0 0 1 key:*119:false:-1:0:*:*int key_down_value:*1:false:-1:0:*:*int key_up_value:*0:false:-1:0:*:*int
+(994,200)if_keys uid3338 0 0 1 ml:*uid3336:false:-1:0:*:*ML fetcher:*uid3337:false:-1:0:*:*IF keys:*po:false:-1:0:*:*std??string
 (1200,200)mn_empty uid3339 0 0 1
-(198,400)mn_translate uid3340 0 0 1 next:*uid3339:false:-1:0:*uid3339:*MN dx:*0:false:-1:0:*0:*float dy:*0:false:-1:0:*0:*float dz:*100:false:-1:0:*100:*float
-(400,400)mn_rotatey uid3341 0 0 1 next:*uid3340:false:-1:0:*uid3340:*MN angle:*3.14159:false:-1:0:*3.14159:*float
-(600,400)move_ml uid3342 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3338:false:-1:0:*uid3338:*ML mn:*uid3341:false:-1:0:*uid3341:*MN clone_count:*1:false:-1:0:*1:*int time_delta:*10.0:false:-1:0:*10.0:*float
-(740,425)gltf_load2 uid3343 0 0 1 url:*https?//meshpage.org/plant1.glb:false:-1:0:*https?//meshpage.org/plant1.glb:*std??string
-(996,400)decimate_tf uid3344 0 0 1 mesh:*uid3343:false:-1:0:*uid3343:*TF val:*0.5:false:-1:0:*0.5:*float
-(1200,400)gltf_mesh_all_p uid3345 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& model:*uid3343:false:-1:0:*uid3343:*TF
-(198,600)quad_y uid3346 0 0 1 x1:*-15000:false:-1:0:*-15000:*float x2:*15000:false:-1:0:*15000:*float y:*0:false:-1:0:*0:*float z1:*-15000:false:-1:0:*-15000:*float z2:*15000:false:-1:0:*15000:*float
-(400,600)random_quad uid3347 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& p:*uid3346:false:-1:0:*uid3346:*P count:*3000:false:-1:0:*3000:*int
-(600,600)m_gltf uid3348 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& tf:*uid3343:false:-1:0:*uid3343:*TF material_id:*0:false:-1:0:*0:*int mix:*1.0:false:-1:0:*1.0:*float self_mult:*1.0:false:-1:0:*1.0:*float rest_mult:*1.0:false:-1:0:*1.0:*float light_x:*400.0:false:-1:0:*400.0:*float light_y:*-400.0:false:-1:0:*-400.0:*float light_z:*300.0:false:-1:0:*300.0:*float emissive:*true:false:-1:0:*true:*bool
-(800,600)m_phong uid3349 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& nxt:*uid3348:false:-1:0:*uid3348:*MT light_pos_x:*400.0:false:-1:0:*400.0:*float light_pos_y:*-400.0:false:-1:0:*-400.0:*float light_pos_z:*300.0:false:-1:0:*300.0:*float ambient:*ff221100:false:-1:0:*ff221100:*unsigned#int specular:*ffff8800:false:-1:0:*ffff8800:*unsigned#int highlight:*ffffffff:false:-1:0:*ffffffff:*unsigned#int pow:*30.0:false:-1:0:*30.0:*float
-(999,671)m_toon_border uid3350 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& next:*uid3349:false:-1:0:*uid3349:*MT border_width:*2:false:-1:0:*2:*float border_color:*ff000000:false:-1:0:*ff000000:*unsigned#int is_gltf:*true:false:-1:0:*true:*bool
-(1156,577)m_bind_inst uid3351 0 0 1 p:*uid3345:false:-1:0:*uid3345:*P pts:*uid3347:false:-1:0:*uid3347:*PTS mat:*uid3350:false:-1:0:*uid3350:*MT
-(1039,774)gltf_load2 uid3352 0 0 1 url:*https?//meshpage.org/stone_cannon.glb:false:-1:0:*https?//meshpage.org/stone_cannon.glb:*std??string
-(1098,907)decimate_tf uid3353 0 0 1 mesh:*uid3352:false:-1:0:*uid3352:*TF val:*0.5:false:-1:0:*0.5:*float
-(531,751)gltf_mesh_all_p uid3354 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& model:*uid3352:false:-1:0:*uid3352:*TF
-(800,800)quad_y uid3355 0 0 1 x1:*-15000:false:-1:0:*-15000:*float x2:*15000:false:-1:0:*15000:*float y:*-30:false:-1:0:*-30:*float z1:*-15000:false:-1:0:*-15000:*float z2:*15000:false:-1:0:*15000:*float
-(212,892)random_quad uid3356 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& p:*uid3355:false:-1:0:*uid3355:*P count:*4000:false:-1:0:*4000:*int
-(1200,800)m_gltf uid3357 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& tf:*uid3352:false:-1:0:*uid3352:*TF material_id:*0:false:-1:0:*0:*int mix:*0.95:false:-1:0:*0.95:*float self_mult:*1.0:false:-1:0:*1.0:*float rest_mult:*1.0:false:-1:0:*1.0:*float light_x:*400.0:false:-1:0:*400.0:*float light_y:*-400.0:false:-1:0:*-400.0:*float light_z:*300.0:false:-1:0:*300.0:*float emissive:*true:false:-1:0:*true:*bool
-(198,1000)m_toon_border uid3358 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& next:*uid3357:false:-1:0:*uid3357:*MT border_width:*2:false:-1:0:*2:*float border_color:*ff000000:false:-1:0:*ff000000:*unsigned#int is_gltf:*true:false:-1:0:*true:*bool
-(400,1000)m_bind_inst uid3359 0 0 1 p:*uid3354:false:-1:0:*uid3354:*P pts:*uid3356:false:-1:0:*uid3356:*PTS mat:*uid3358:false:-1:0:*uid3358:*MT
-(600,1000)or_elem_ml uid3360 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& m1:*uid319829079:false:-1:0:*uid319829079:*ML m2:*uid319829080:false:-1:0:*uid319829080:*ML
-(800,1000)fly_ml uid3361 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ship:*uid3342:false:-1:0:*uid3342:*ML world:*uid3360:false:-1:0:*uid3360:*ML speed:*5:false:-1:0:*5:*float rot_speed:*0.05:false:-1:0:*0.05:*float p_x:*0:false:-1:0:*0:*float p_y:*0:false:-1:0:*0:*float p_z:*0:false:-1:0:*0:*float
-(996,1000)quad_z uid3362 0 0 1 x1:*-4500:false:-1:0:*-4500:*float x2:*4500:false:-1:0:*4500:*float y1:*-4500:false:-1:0:*-4500:*float y2:*4500:false:-1:0:*4500:*float z:*-2040:false:-1:0:*-2040:*float
-(1200,1000)bm_url uid3363 0 0 1 url:*https?//meshpage.org/ld57/store/ground.png:false:-1:0:*https?//meshpage.org/ld57/store/ground.png:*std??string
-(183,1222)flip_y uid3364 0 0 1 orig:*uid3363:false:-1:0:*uid3363:*BM
-(1081,1179)m_texture uid3365 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& bm:*uid3364:false:-1:0:*uid3364:*BM mix:*1.0:false:-1:0:*1.0:*float
-(578,1216)m_bind uid3366 0 0 1 p:*uid3362:false:-1:0:*uid3362:*P mat:*uid3365:false:-1:0:*uid3365:*MT
-(800,1200)or_elem_ml uid3367 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& m1:*uid3361:false:-1:0:*uid3361:*ML m2:*uid3366:false:-1:0:*uid3366:*ML
-(927,1306)ogl_perspective uid3368 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid3367:false:-1:0:*uid3367:*ML mult:*80.0:false:-1:0:*80.0:*float front_plane:*10.1:false:-1:0:*10.1:*float end_plane:*60000.0:false:-1:0:*60000.0:*float
-(1200,1200)song_ml uid3369 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& next:*uid3368:false:-1:0:*uid3368:*ML url:*https?//meshpage.org/liplatus4.ogg:false:-1:0:*https?//meshpage.org/liplatus4.ogg:*std??string
-(198,1400)keys_to_wasd uid3370 0 0 1 ml:*uid3369:false:-1:0:*uid3369:*ML
-(400,1400)fullscreen_button uid3371 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi&
-(600,1400)or_elem_ml uid3372 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& m1:*uid3370:false:-1:0:*uid3370:*ML m2:*uid3371:false:-1:0:*uid3371:*ML
-(883,1606)run_window uid3373 0 0 1 ev:*ev:false:-1:0:*ev:*EveryApi& ml:*uid439142208:false:-1:0:*uid3372:*ML logo:*false:false:-1:0:*false:*bool fpscounter:*false:false:-1:0:*false:*bool start_time:*0.0:false:-1:0:*0.0:*float duration:*100000.0:false:-1:0:*100000.0:*float
-(677,1614)save_deploy uid734391402 0 0 1 h:*uid734391403:false:-1:0:*uid734391403:*HML filename:*gameapi_deploy.zip:false:-1:1556137728:*gameapi_deploy.zip:*std??string
-(522,1627)html_run uid734391403 0 0 1 ev:*ev:false:-1:1556137600:*ev:*EveryApi& r:*uid3373:false:-1:0:*uid3373:*RUN homepage:*https?//meshpage.org/assets/:false:-1:1556137600:*https?//meshpage.org/assets/:*std??string is_in_envparams_arr:*false:false:-1:0:*false:*bool
-(971,536)m_lod uid319829079 0 0 1 ev:*ev:false:-1:1798172960:*ev:*EveryApi& mesh:*uid3345:false:-1:0:*uid3345:*P mat:*uid3350:false:-1:0:*uid3350:*MT pts:*uid3347:false:-1:0:*uid3347:*PTS decimate_level1:*1:false:-1:1798172960:*1:*float decimate_level2:*0.6:false:-1:1798172960:*0.6:*float decimate_level3:*0.2:false:-1:1798172960:*0.2:*float decimate_level4:*0.05:false:-1:1798172960:*0.05:*float max_obj_count1:*1500:false:-1:1798172960:*1500:*int max_obj_count2:*1500:false:-1:1798172960:*1500:*int max_obj_count3:*1500:false:-1:1798172960:*1500:*int max_obj_count4:*1500:false:-1:1798172960:*1500:*int
-(388,780)m_lod uid319829080 0 0 1 ev:*ev:false:-1:1798172960:*ev:*EveryApi& mesh:*uid3354:false:-1:0:*uid3354:*P mat:*uid3358:false:-1:0:*uid3358:*MT pts:*uid3356:false:-1:0:*uid3356:*PTS decimate_level1:*1:false:-1:1798172960:*1:*float decimate_level2:*0.6:false:-1:1798172960:*0.6:*float decimate_level3:*0.2:false:-1:1798172960:*0.2:*float decimate_level4:*0.05:false:-1:1798172960:*0.05:*float max_obj_count1:*1500:false:-1:1798172960:*1500:*int max_obj_count2:*1500:false:-1:1798172960:*1500:*int max_obj_count3:*1500:false:-1:1798172960:*1500:*int max_obj_count4:*1500:false:-1:1798172960:*1500:*int
-(785,1424)async_gltf uid439142206 0 0 1 ml:*uid3372:false:-1:0:*:* tf:*uid3334:false:-1:0:*:*
-(904,1462)async_gltf uid439142207 0 0 1 ml:*uid439142206:false:-1:0:*:* tf:*uid3343:false:-1:0:*:*
-(1055,1485)async_gltf uid439142208 0 0 1 ml:*uid439142207:false:-1:0:*:* tf:*uid3352:false:-1:0:*:*
+(196,400)mn_translate uid3340 0 0 1 next:*uid3339:false:-1:0:*:*MN dx:*0:false:-1:0:*:*float dy:*0:false:-1:0:*:*float dz:*100:false:-1:0:*:*float
+(400,400)mn_rotatey uid3341 0 0 1 next:*uid3340:false:-1:0:*:*MN angle:*3.14159:false:-1:0:*:*float
+(600,400)move_ml uid3342 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& ml:*uid3338:false:-1:0:*:*ML mn:*uid3341:false:-1:0:*:*MN clone_count:*1:false:-1:0:*:*int time_delta:*10.0:false:-1:0:*:*float
+(740,425)gltf_load2 uid3343 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/skimmia_japonica.glb:false:-1:0:*file?///home/terop/.gameapi_builder/Downloads/skimmia_japonica.glb:*std??string
+(1200,400)gltf_mesh_all_p uid3344 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& model:*uid3343:false:-1:0:*:*TF
+(600,600)m_gltf uid3345 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& tf:*uid3343:false:-1:0:*:*TF material_id:*0:false:-1:0:*:*int mix:*1.0:false:-1:0:*:*float self_mult:*6.0:false:-1:0:*:*float rest_mult:*1.0:false:-1:0:*:*float light_x:*400.0:false:-1:0:*:*float light_y:*-400.0:false:-1:0:*:*float light_z:*300.0:false:-1:0:*:*float emissive:*true:false:-1:26475:*:*bool
+(198,600)m_phong uid3346 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& nxt:*uid3345:false:-1:0:*:*MT light_pos_x:*400.0:false:-1:0:*:*float light_pos_y:*-400.0:false:-1:0:*:*float light_pos_z:*300.0:false:-1:0:*:*float ambient:*ff221100:false:-1:0:*:*unsigned#int specular:*ffff8800:false:-1:0:*:*unsigned#int highlight:*ffffffff:false:-1:0:*:*unsigned#int pow:*30.0:false:-1:0:*:*float
+(400,600)m_toon_border uid3347 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& next:*uid3346:false:-1:0:*:*MT border_width:*2:false:-1:0:*:*float border_color:*ff000000:false:-1:0:*:*unsigned#int is_gltf:*true:false:-1:0:*:*bool
+(800,800)quad_y uid3348 0 0 1 x1:*-15000:false:-1:0:*:*float x2:*15000:false:-1:0:*:*float y:*0:false:-1:0:*:*float z1:*-15000:false:-1:0:*:*float z2:*15000:false:-1:0:*:*float
+(800,600)random_quad uid3349 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& p:*uid3348:false:-1:0:*:*P count:*3000:false:-1:0:*:*int
+(983,569)m_lod uid3350 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& mesh:*uid3344:false:-1:0:*:*P mat:*uid3347:false:-1:0:*:*MT pts:*uid3349:false:-1:0:*:*PTS decimate_level1:*0.5:false:-1:0:*0.5:*float decimate_level2:*0.25:false:-1:0:*0.25:*float decimate_level3:*0.125:false:-1:0:*0.125:*float decimate_level4:*0.01:false:-1:0:*0.01:*float max_obj_count1:*1500:false:-1:0:*1500:*int max_obj_count2:*1500:false:-1:0:*1500:*int max_obj_count3:*1500:false:-1:0:*1500:*int max_obj_count4:*1500:false:-1:0:*1500:*int
+(1200,600)gltf_load2 uid3351 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/free_193839_vairogs_v.2_new_version.glb:false:-1:0:*file?///home/terop/.gameapi_builder/Downloads/free_193839_vairogs_v.2_new_version.glb:*std??string
+(199,737)gltf_mesh_all_p uid3352 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& model:*uid3351:false:-1:0:*:*TF
+(400,800)m_gltf uid3353 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& tf:*uid3351:false:-1:0:*:*TF material_id:*0:false:-1:0:*:*int mix:*0.95:false:-1:0:*:*float self_mult:*3.0:false:-1:0:*:*float rest_mult:*1.0:false:-1:0:*:*float light_x:*400.0:false:-1:0:*:*float light_y:*-400.0:false:-1:0:*:*float light_z:*300.0:false:-1:0:*:*float emissive:*true:false:-1:98:*:*bool
+(600,800)m_toon_border uid3354 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& next:*uid3353:false:-1:0:*:*MT border_width:*2:false:-1:0:*:*float border_color:*ff000000:false:-1:0:*:*unsigned#int is_gltf:*true:false:-1:0:*:*bool
+(800,800)quad_y uid3355 0 0 1 x1:*-15000:false:-1:0:*:*float x2:*15000:false:-1:0:*:*float y:*-30:false:-1:0:*:*float z1:*-15000:false:-1:0:*:*float z2:*15000:false:-1:0:*:*float
+(210,892)random_quad uid3356 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& p:*uid3355:false:-1:0:*:*P count:*4000:false:-1:0:*:*int
+(1200,800)m_lod uid3357 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& mesh:*uid3352:false:-1:0:*:*P mat:*uid3354:false:-1:0:*:*MT pts:*uid3356:false:-1:0:*:*PTS decimate_level1:*1:false:-1:0:*01.0:*float decimate_level2:*0.5:false:-1:0:*00.5:*float decimate_level3:*0.25:false:-1:0:*00.25:*float decimate_level4:*0.12:false:-1:0:*00.12:*float max_obj_count1:*1500:false:-1:0:*1500:*int max_obj_count2:*1500:false:-1:0:*1500:*int max_obj_count3:*1500:false:-1:0:*1500:*int max_obj_count4:*1500:false:-1:0:*1500:*int
+(198,1000)or_elem_ml uid3358 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& m1:*uid3350:false:-1:0:*:*ML m2:*uid3357:false:-1:0:*:*ML
+(400,1000)fly_ml uid3359 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& ship:*uid1265760877:false:-1:0:*:*ML world:*uid3358:false:-1:0:*:*ML speed:*5:false:-1:0:*:*float rot_speed:*0.05:false:-1:0:*:*float p_x:*0:false:-1:0:*:*float p_y:*0:false:-1:0:*:*float p_z:*0:false:-1:0:*:*float
+(994,1000)quad_z uid3360 0 0 1 x1:*-4500:false:-1:0:*:*float x2:*4500:false:-1:0:*:*float y1:*-4500:false:-1:0:*:*float y2:*4500:false:-1:0:*:*float z:*-2040:false:-1:0:*:*float
+(1200,1000)bm_url uid3361 0 0 1 url:*https?//meshpage.org/ld57/store/ground.png:false:-1:0:*:*std??string
+(998,1000)flip_y uid3362 0 0 1 orig:*uid3361:false:-1:0:*:*BM
+(1200,1000)m_texture uid3363 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& bm:*uid3362:false:-1:0:*:*BM mix:*1.0:false:-1:0:*:*float
+(198,1200)m_bind uid3364 0 0 1 p:*uid3360:false:-1:0:*:*P mat:*uid3363:false:-1:0:*:*MT
+(906,1187)or_elem_ml uid3365 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& m1:*uid3359:false:-1:0:*:*ML m2:*uid3364:false:-1:0:*:*ML
+(600,1200)ogl_perspective uid3366 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& ml:*uid3365:false:-1:0:*:*ML mult:*80.0:false:-1:0:*:*float front_plane:*10.1:false:-1:0:*:*float end_plane:*60000.0:false:-1:0:*:*float
+(800,1200)song_ml uid3367 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& next:*uid3366:false:-1:0:*:*ML url:*https?//meshpage.org/liplatus4.ogg:false:-1:0:*:*std??string
+(360,1211)keys_to_wasd uid3368 0 0 1 ml:*uid3366:false:-1:0:*:*ML
+(400,1400)fullscreen_button uid3369 0 0 1 ev:*ev:false:-1:0:*:*EveryApi&
+(198,1400)or_elem_ml uid3370 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& m1:*uid3368:false:-1:0:*:*ML m2:*uid3369:false:-1:0:*:*ML
+(400,1400)ogl_frame_rate uid3371 0 0 1 ml:*uid3370:false:-1:0:*:*ML fps:*0:false:-1:0:*:*int
+(600,1400)async_gltf uid3372 0 0 1 ml:*uid3371:false:-1:0:*:*ML tf:*uid3334:false:-1:0:*:*TF
+(800,1400)async_gltf uid3373 0 0 1 ml:*uid3372:false:-1:0:*:*ML tf:*uid3343:false:-1:0:*:*TF
+(998,1400)async_gltf uid3374 0 0 1 ml:*uid3373:false:-1:0:*:*ML tf:*uid3351:false:-1:0:*:*TF
+(1200,1400)progressbar_config uid3375 0 0 1 ml:*uid3374:false:-1:0:*:*ML progress_impl:*false:false:-1:0:*:*bool max_impl:*false:false:-1:0:*:*bool install_impl:*true:false:-1:0:*:*bool ems_mult_connecting:*1.0:false:-1:0:*:*float ems_mult_download:*3.5:false:-1:0:*:*float ems_mult_preparing:*1.0:false:-1:0:*:*float builder_mult:*1.0:false:-1:0:*:*float
+(198,1600)run_window uid3376 0 0 1 ev:*ev:false:-1:0:*:*EveryApi& ml:*uid3375:false:-1:0:*:*ML logo:*false:false:-1:0:*:*bool fpscounter:*false:false:-1:0:*:*bool start_time:*0.0:false:-1:0:*:*float duration:*100000.0:false:-1:0:*:*float
+(336,-15)move_ml uid1265760877 0 0 1 ev:*ev:false:-1:-290986880:*ev:* ml:*uid3338:false:-1:0:*:* mn:*uid1265760881:false:-1:0:*:* clone_count:*1:false:-1:-290986880:*1:* time_delta:*10:false:-1:-290986880:*10.0:*
+(609,-112)mn_empty uid1265760878 0 0 1
+(732,-119)mn_scale uid1265760879 0 0 1 next:*uid1265760878:false:-1:0:*:* sx:*0.01:false:-1:-290986880:*0.01:* sy:*0.01:false:-1:-290986880:*0.01:* sz:*0.01:false:-1:-290986880:*0.01:*
+(851,-109)mn_translate uid1265760880 0 0 1 next:*uid1265760879:false:-1:0:*:* dx:*0:false:-1:-290986880:*0.0:* dy:*-150:false:-1:-290986880:*-150:* dz:*0:false:-1:-290986880:*0.0:*
+(1002,-114)mn_rotatey uid1265760881 0 0 1 next:*uid1265760880:false:-1:0:*:* angle:*3.14159:false:-1:-290986880:*3.14159:*

@@ -664,7 +664,7 @@ void *multiple_async_joins(void *data)
     
     if (g_stop_multiple ||check_multiple_empty())
       {
-	std::cout << "Stopping multiple process" << std::endl;
+	//std::cout << "Stopping multiple process" << std::endl;
 	g_stop_multiple=false;
 	break;
       }
@@ -748,7 +748,7 @@ bool async_join_internal(ASyncJoinProcessData2 *dt, int id)
 	      g_queue_tasks_done->erase(g_queue_tasks_done->begin()+i); i--; s5--; }
 	}
       pthread_mutex_unlock(g_queue_mutex);
-      std::cout << "async_join cb with id=" << dt->id << std::endl;
+      //std::cout << "async_join cb with id=" << dt->id << std::endl;
       dt->fptr(dt->data);
       return true;
     }
@@ -841,7 +841,7 @@ IMPORT void tasks_async_join_m(int id, void (*fptr)(void*), void *data)
   int a3 = count_tasks_with_id(id,g_queue_tasks_done);
   if (a1+a2+a3 == 0)
     {
-      std::cout << "No tasks in queues, " << id << ", sending cb and existing.." << std::endl;
+      //std::cout << "No tasks in queues, " << id << ", sending cb and existing.." << std::endl;
       fptr(data);
       return;
     }
@@ -858,7 +858,7 @@ IMPORT void tasks_async_join_m(int id, void (*fptr)(void*), void *data)
   m_mutex_unlock();
   
   if (!g_m_process_active) {
-    std::cout << "Starting multiple process" << std::endl;
+    //std::cout << "Starting multiple process" << std::endl;
     tasks_add(41972, &multiple_async_joins, (void*)0);
   }
 }
@@ -4569,6 +4569,8 @@ std::string toLower(std::string s) {
 
 long long load_size_from_url(GameApi::Env &e, std::string url)
 {
+  //std::cout << "load_size_from_url::" << url << std::endl;
+
   //std::cout << "POPEN SIZE" << url << std::endl;
   url = upgrade_to_https(url);
 #ifdef WINDOWS
