@@ -986,7 +986,7 @@ public:
 #endif
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
-    if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << std::endl; stackTrace();  return; }
+    if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << url << std::endl; stackTrace();  return; }
     if (!vec->size()) { std::cout << "PrePrepare FILE SIZE=0!" << std::endl; stackTrace();  return; }
     //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
 
@@ -2192,7 +2192,7 @@ void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int 
   //pthread_attr_setstacksize(&attr,300000);
   g_pthread_count++;
   //pthread_create(&info->thread_id, &attr, &thread_func_gltf_bitmap, (void*)info);
-  std::cout << "3008 tasks_add" << std::endl;
+  //std::cout << "3008 tasks_add" << std::endl;
   tasks_add(3008,&thread_func_gltf_bitmap,(void*)info);
   
 #endif
@@ -15941,9 +15941,12 @@ void *thread_sketchfab_zip(void *data)
 	    ProgressBar(555,g_progress_urls_curr2,g_progress_urls_size2,"file count");
 
 	    
+	    
 	    g_del_map.push_async_url(url,get_fetcher(data) );
 
 	    zip_push(dt->m_zip_mutex_id,url_plain);
+
+	    std::cout << "url ready:" << url << std::endl;
 	    
 	    //g_del_map.load_url_buffers_async[url] = data;
 
@@ -16742,7 +16745,7 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
   int s = ids.size();
   for(int i=0;i<s;i++)
     {
-      //std::cout << "FileName:" << remove_dirs(filenames[ids[i]]) << std::endl;
+      std::cout << "FileName:" << remove_dirs(filenames[ids[i]]) << std::endl;
       filenames_.push_back(remove_dirs(filenames[ids[i]]));
     }
 

@@ -449,11 +449,11 @@ void *task_queue_consumer(void *data)
 	g_tasks.set_task_as_execute(dt);
 	g_tasks.pop_from_queue();
 	g_tasks.queue_mutex_end();
-	if (dt.id==3008)
-	  std::cout << "Task executing " << dt.id << std::endl;
+	//if (dt.id==3008)
+	//  std::cout << "Task executing " << dt.id << std::endl;
 	dt.fptr(dt.data);
-	if (dt.id==3008)
-	  std::cout << "Task stop executing " << dt.id << std::endl;
+	//if (dt.id==3008)
+	//  std::cout << "Task stop executing " << dt.id << std::endl;
 	//std::cout << "Tasks finished heavy" << task_num2 << " " << dt.id << " " << dt.num<< std::endl;
 	//g_tasks.queue_mutex_start();
 	g_tasks.set_task_as_done(dt);
