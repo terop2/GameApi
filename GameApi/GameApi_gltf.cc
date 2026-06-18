@@ -15930,8 +15930,9 @@ void *thread_sketchfab_zip(void *data)
 #endif
 	    // std::cout << url << "::" << data->size() << std::endl;
 	    if (g_del_map.async_find(url)) {
+	      // THIS CODE CRASHES MIALLOC
 	      g_del_map.del_async_url(url);
-	      //delete g_del_map.load_url_buffers_async[url];
+	      ////delete g_del_map.load_url_buffers_async[url];
 	    }
 	    //std::cout << "Pushing zip file: " << url << std::endl;
 	    //*curr += mult;

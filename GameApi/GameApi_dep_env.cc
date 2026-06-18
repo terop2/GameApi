@@ -112,6 +112,7 @@ struct del_map : public del_map_interface
 	    delete e.second;
 	    fetches.erase(fetches.begin()+i);
 	    i--;
+	    s--;
 	    //break;
 	  }
       }
@@ -137,10 +138,11 @@ struct del_map : public del_map_interface
 	  load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
 	  //std::cout << "del_async_url: 7"<< std::endl;
 	  i--;
+	  s--;
 	  //std::cout << "del_async_url: 8"<< std::endl;
 	  //std::cout << "Map Pop() -> " << load_url_buffers_async.size() << std::endl;
 
-	  break;
+	  //break;
 	  //std::cout << "del_async_url: 9"<< std::endl;
 	}
 	//std::cout << "del_async_url: 10"<< std::endl;
@@ -152,6 +154,7 @@ struct del_map : public del_map_interface
 #ifdef EMSCRIPTEN
   void push_fetch_url(std::string url, FetchInBlocks *blk)
   {
+    del_fetch_url(url);
     pthread_mutex_lock(&lock);
     VECENTRY2 e;
     e.first = url;
@@ -162,6 +165,7 @@ struct del_map : public del_map_interface
 #endif
   void push_async_url(std::string url, const GameApi::ASyncVec *ptr)
   {
+    del_async_url(url);
     //std::cout << "push_async_url" << url << std::endl;
     // std::cout << "Push async url: " << url << " " << std::hex << (long)ptr << std::dec << std::endl;
     pthread_mutex_lock(&lock);
@@ -178,7 +182,17 @@ struct del_map : public del_map_interface
   //}
   void print()
   {
+    pthread_mutex_lock(&lock);
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY &e = load_url_buffers_async[i];
+	//std::cout << "COMPARE:'" << e.first << "' '" << url << "'" << std::endl;
+	std::cout << "delmap::print:" << e.first << std::endl;
+      }
+    pthread_mutex_unlock(&lock);
 
+    
   }
   void del_vec(GameApi::ASyncVec * vec)
   {
@@ -3881,7 +3895,8 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
       //std::cout << "DELMAPITEM:" << p.first << std::endl;
     }
     */
-    // g_del_map.print();
+    g_del_map.print();
+    std::cout << "FINDING: " << url << std::endl;
     if (g_del_map.async_find(url)) {
       //std::cout << "FOUND FROM G_DELMAP" << std::endl;
       return g_del_map.async_get2(url); //new ASyncDataFetcher(&(*(g_del_map.async_get(url).second)));

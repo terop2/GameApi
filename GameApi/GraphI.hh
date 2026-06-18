@@ -4003,6 +4003,7 @@ class del_map_interface
 public:
   virtual ~del_map_interface() { }
   virtual void async_cache_clear()=0;
+  virtual void print() { }
 #ifdef EMSCRIPTEN
   virtual void del_fetch_url(std::string url)=0;
 #endif
