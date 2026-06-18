@@ -14744,7 +14744,20 @@ public:
 class GLastResizePipelineToGltfAnimation : public Pipeline
 {
 public:
-  void add_matrix(int id, Matrix m) { ids.push_back(id); matrices.push_back(m); }
+  void add_matrix(int id, Matrix m) {
+    int s = std::min(ids.size(),matrices.size());
+    for(int i=0;i<s;i++)
+      {
+	if (ids[i]==id) {
+	  ids.erase(ids.begin()+i);
+	  matrices.erase(matrices.begin()+i);
+	  i--; s--;
+	}
+      }
+
+    
+    ids.push_back(id); matrices.push_back(m);
+  }
   void clear() { ids.clear(); matrices.clear(); }
   Matrix get_matrix(int id) const {
     int s= std::min(ids.size(),matrices.size());
