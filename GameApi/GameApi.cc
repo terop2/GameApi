@@ -39905,7 +39905,7 @@ void run_callback(void *ptr)
   static int g_id = -1;
   // TODO, FOR SOME REASON; THE DELETION DOESNT WORK.
   // LOOKS LIKE non-pthread version JAMS badly in view.php if this is enabled.
-  std::cout << "Clearing block:" << g_id << std::endl;
+  //std::cout << "Clearing block:" << g_id << std::endl;
   //std::cout << "Current_block:" << get_current_block() << std::endl;
   if (g_id!=-1 && g_id!=-2) clear_block(g_id);
   //std::cout << "Clear ok" << std::endl;

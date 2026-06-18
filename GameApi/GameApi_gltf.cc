@@ -601,7 +601,7 @@ public:
     //std::cout << "LoadGltf_cb using url: " << url << std::endl;
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
-    std::cout << "LoadGltf::LoadGltf" << std::endl;
+    //std::cout << "LoadGltf::LoadGltf" << std::endl;
 
     splitter_logo_id=add_splitter_logo_callback(&loadgltf_splitter_cb,(void*)this);
     mlguiwidget_logo_id=add_mlguiwidget_logo_callback(&loadgltf_splitter_cb,(void*)this);
@@ -647,7 +647,7 @@ public:
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
-    std::cout << "LoadGltf::LoadGltf" << std::endl;
+    //std::cout << "LoadGltf::LoadGltf" << std::endl;
     splitter_logo_id=add_splitter_logo_callback(&loadgltf_splitter_cb,(void*)this);
     mlguiwidget_logo_id=add_mlguiwidget_logo_callback(&loadgltf_splitter_cb,(void*)this);
   }
@@ -15947,7 +15947,7 @@ void *thread_sketchfab_zip(void *data)
 
 	    zip_push(dt->m_zip_mutex_id,url_plain);
 
-	    std::cout << "url ready:" << url << std::endl;
+	    //std::cout << "url ready:" << url << std::endl;
 	    
 	    //g_del_map.load_url_buffers_async[url] = data;
 
@@ -16746,7 +16746,7 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
   int s = ids.size();
   for(int i=0;i<s;i++)
     {
-      std::cout << "FileName:" << remove_dirs(filenames[ids[i]]) << std::endl;
+      //std::cout << "FileName:" << remove_dirs(filenames[ids[i]]) << std::endl;
       filenames_.push_back(remove_dirs(filenames[ids[i]]));
     }
 

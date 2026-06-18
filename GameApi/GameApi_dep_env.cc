@@ -182,6 +182,7 @@ struct del_map : public del_map_interface
   //}
   void print()
   {
+#if 0
     pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
     for(int i=0;i<s;i++)
@@ -191,7 +192,7 @@ struct del_map : public del_map_interface
 	std::cout << "delmap::print:" << e.first << std::endl;
       }
     pthread_mutex_unlock(&lock);
-
+#endif
     
   }
   void del_vec(GameApi::ASyncVec * vec)
