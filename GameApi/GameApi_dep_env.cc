@@ -4351,7 +4351,7 @@ std::string upgrade_to_https(std::string url)
   return url;
 }
 
-//#ifndef ANDROID
+#ifdef ANDROID
 #include <stdio.h>
 #include <curl/curl.h>
 #include <string>
@@ -4468,7 +4468,7 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
 }
 
 
-//#endif
+#endif
 std::string GetInstallDir2(bool pathfix);
 
 #ifdef LINUX
@@ -4646,7 +4646,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
   if (url=="") return 50000;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
     bool succ=false;
-#ifndef STEAM
+#ifndef STEAM_PUPPA
 #ifndef ANDROID
 #ifdef WINDOWS
     std::string dir = GetInstallDir2(true);
@@ -4697,7 +4697,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
     long long num = 50000;
     std::string s = popen_curl_replacement(url,true); // headers only
 #endif
-#ifdef STEAM // STEAM
+#ifdef STEAM_PUPPA // STEAM
     long long num = 50000;
     std::string s = popen_curl_replacement(url,true); // headers only
 #endif // STEAM
@@ -4715,7 +4715,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
 	//std::cout << "Got num: " << num << std::endl;
       }
     }
-#ifndef STEAM
+#ifndef STEAM_PIPPA
 #ifndef ANDROID
     }
 #endif
@@ -4836,7 +4836,7 @@ public:
     
     bool succ = false;
 #ifdef HAS_POPEN
-#ifndef STEAM
+#ifndef STEAM_PUPPA
 #ifdef WINDOWS
     std::string dir = GetInstallDir2(true);
     std::string dir2 = GetInstallDir2(false);
@@ -4886,7 +4886,7 @@ public:
   }
   virtual bool get_ch(unsigned char &ch)
   {
-#ifndef STEAM
+#ifndef STEAM_PUPPA
 #ifdef HAS_POPEN
     if (f) {
       return fread(&ch,1,1,f)==1;
@@ -4960,7 +4960,7 @@ public:
   }
   virtual bool get_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &file)
   {
-#ifndef STEAM
+#ifndef STEAM_PUPPA
 #ifdef HAS_POPEN
     if (f) {
       file.clear();
@@ -5263,7 +5263,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 
 
     //std::cout << "POPEN cmd=" << cmd << std::endl;
-#ifndef STEAM
+#ifndef STEAM_PUPPA
 #ifndef ANDROID
 #ifdef __APPLE__
     FILE *f = my_popen(cmd.c_str(), "r");
@@ -5471,7 +5471,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
     std::string s = popen_curl_replacement(url,false);
     *buffer = std::vector<unsigned char,GameApiAllocator<unsigned char> >(s.begin(),s.end());
 #endif
-#ifdef STEAM
+#ifdef STEAM_PUPPA
     std::string s = popen_curl_replacement(url,false);
     *buffer = std::vector<unsigned char,GameApiAllocator<unsigned char> >(s.begin(),s.end());
 #endif
