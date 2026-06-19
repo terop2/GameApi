@@ -70,6 +70,7 @@ FILE * my_popen(const char *cmd, const char *c)
   //std::cout << "POPEN CMD:" << cmd3.c_str() << std::endl;
  FILE *f = popen(cmd3.c_str(),c);
 #endif
+ if (!f) { std::cout << "popen returned NULL in my_popen() for " << cmd3 << std::endl; }
 #ifndef EMSCRIPTEN
   return f;
 #endif
@@ -385,9 +386,12 @@ std::cout << "You should check if element exists before calling async_get" << st
 
 
 std::string GetContentInstallDir(bool b);
+std::string deploy_replace_string(std::string val, std::string repl, std::string subst);
 
 std::string convert_spaces_to_url_encoding(std::string url)
 {
+
+  
   std::string res;
   int s =url.size();
   for(int i=0;i<s;i++)
@@ -398,6 +402,10 @@ std::string convert_spaces_to_url_encoding(std::string url)
 	  if (url[i]==')') res+="%29"; else
 	res+=url[i];
     }
+  // this is a hack, seems our urls are double-encoding the
+  // percent sign.
+  res = deploy_replace_string(res, "%25", "%");
+  
   return res;
 }
 
@@ -4343,7 +4351,7 @@ std::string upgrade_to_https(std::string url)
   return url;
 }
 
-#ifdef ANDROID
+//#ifndef ANDROID
 #include <stdio.h>
 #include <curl/curl.h>
 #include <string>
@@ -4366,6 +4374,50 @@ void popen_curl_init() {
 
 std::string popen_curl_replacement(std::string url, bool headeronly)
 {
+  if (url.size()>6 && url.substr(0,7)=="file://")
+    {
+      std::string filename = url.substr(7);
+      std::cout << filename << std::endl;
+      filename = deploy_replace_string(filename, "%25", "%");
+      filename = deploy_replace_string(filename, "%20", " ");
+      filename = deploy_replace_string(filename, "%23", "#");
+      filename = deploy_replace_string(filename, "%25", "%");
+      filename = deploy_replace_string(filename, "%3F", "?");
+      filename = deploy_replace_string(filename, "%5B", "[");
+      filename = deploy_replace_string(filename, "%5D", "]");
+      filename = deploy_replace_string(filename, "%22", "\"");
+      filename = deploy_replace_string(filename, "%3C", "<");
+      filename = deploy_replace_string(filename, "%3E", ">");
+      filename = deploy_replace_string(filename, "%5E", "^");
+	    
+      filename = deploy_replace_string(filename, "%27", "\'");
+      filename = deploy_replace_string(filename, "%28", "(");
+      filename = deploy_replace_string(filename, "%29", ")");
+
+      std::cout << "Filename for ifstream: " << filename << std::endl;
+      
+      if (headeronly)
+	{
+	  std::ifstream ss(filename.c_str(), std::ios::binary | std::ios::ate);
+	  if (ss) {
+	    std::streamsize size = ss.tellg();
+	    std::stringstream ss2;
+	    ss2 << "Content-Length: " << size << std::endl;
+	    return ss2.str();
+	  }
+	  return "";
+	}
+      else {
+	std::string res;
+	std::ifstream ss(filename.c_str(),std::ios::binary);
+	char ch;
+	while(ss.get(ch)) { res+=ch; }
+	return res;
+      }
+    }
+
+
+  
   //std::cout << "popen_curl_replacement 1" << std::endl;
   CURLcode res;
   std::string headers;
@@ -4406,7 +4458,7 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
     } else {
       //std::cout << "popen_curl_replacement 11" << std::endl;
       curl_easy_cleanup(curl);
-      std::cout << headers << std::endl;
+      //std::cout << headers << std::endl;
       if (headeronly) return headers;
       return readBuffer;
     }
@@ -4416,7 +4468,7 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
 }
 
 
-#endif
+//#endif
 std::string GetInstallDir2(bool pathfix);
 
 #ifdef LINUX
@@ -4594,6 +4646,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
   if (url=="") return 50000;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
     bool succ=false;
+#ifndef STEAM
 #ifndef ANDROID
 #ifdef WINDOWS
     std::string dir = GetInstallDir2(true);
@@ -4613,7 +4666,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
     }
 
 
-#else
+#else // !WINDOWS
     std::string cmd = "curl -s --max-time 300 -N --url \"" + url + "\"";
     std::string cmdsize = "curl -sI --url \"" + url + "\"";
     succ = true;
@@ -4622,13 +4675,13 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
     if (succ) {
 #ifdef __APPLE__
     FILE *f2 = my_popen(cmdsize.c_str(), "r");
-#else
+#else // !__APPLE__
 #ifdef LINUX
     FILE *f2 = my_popen(cmdsize.c_str(), "r");
-#else    
+#else // !LINUX
     FILE *f2 = my_popen(cmdsize.c_str(), "rb");
 #endif
-#endif
+#endif // WINDOWS
     std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
     unsigned char c2;
     int idx = 30000;
@@ -4638,11 +4691,16 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
     }
     pclose(f2);
     std::string s(vec2.begin(),vec2.end());
-#endif
+#endif // !ANDROID
+#endif // !STEAM
 #ifdef ANDROID
     long long num = 50000;
     std::string s = popen_curl_replacement(url,true); // headers only
 #endif
+#ifdef STEAM // STEAM
+    long long num = 50000;
+    std::string s = popen_curl_replacement(url,true); // headers only
+#endif // STEAM
     //std::cout << "Headers:" << s << std::endl;
     std::stringstream ss(s);
     std::string line;
@@ -4657,8 +4715,10 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
 	//std::cout << "Got num: " << num << std::endl;
       }
     }
+#ifndef STEAM
 #ifndef ANDROID
     }
+#endif
 #endif
     //std::cout << "POPEN1 END" << url << std::endl;
     return num;
@@ -4776,7 +4836,7 @@ public:
     
     bool succ = false;
 #ifdef HAS_POPEN
-
+#ifndef STEAM
 #ifdef WINDOWS
     std::string dir = GetInstallDir2(true);
     std::string dir2 = GetInstallDir2(false);
@@ -4793,24 +4853,30 @@ public:
       if (!succ) std::cout << dir2+"\\curl\\curl.exe" << " or " << cmd2 << " not found." << std::endl;
     }
 
-#else
+#else // !WINDOWS
     //std::cout << "Fetching " << url << std::endl;
     std::string cmd = "curl -s --max-time 300 -N --url \"" + url + "\"";
     std::string cmdsize = "curl -sI --url \"" + url + "\"";
     succ = true;
-#endif
+#endif // WINDOWS
 
 #ifdef __APPLE__
     f = my_popen(cmd.c_str(), "r");
-#else
+#else // !__APPLE__
 #ifdef LINUX
     f = my_popen(cmd.c_str(), "r");
-#else    
+#else // !LINUX
     f = my_popen(cmd.c_str(), "rb");
-#endif
-#endif
+#endif // LINUX
+#endif // __APPLE__
 
-#endif
+#else // STEAM
+    s = popen_curl_replacement(url,false);
+    ss = std::stringstream(s);
+#endif // STEAM
+
+    
+#endif // HAS_POPEN
     
     if (!f) { std::cout << "popen failed" << std::endl;
       //std::cout << errno << std::endl;
@@ -4820,11 +4886,20 @@ public:
   }
   virtual bool get_ch(unsigned char &ch)
   {
+#ifndef STEAM
 #ifdef HAS_POPEN
     if (f) {
       return fread(&ch,1,1,f)==1;
     } else return false;
 #else
+    return false;
+#endif
+#else // STEAM
+    char ch2;
+    if (ss.get(ch2)) {
+      ch=ch2;
+      return true;
+    }
     return false;
 #endif
   }
@@ -4885,6 +4960,7 @@ public:
   }
   virtual bool get_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &file)
   {
+#ifndef STEAM
 #ifdef HAS_POPEN
     if (f) {
       file.clear();
@@ -4897,11 +4973,20 @@ public:
 #else
     return false;
 #endif
+#else // STEAM
+    file.clear();
+    unsigned char c2;
+    while(get_ch(c2)==true) {
+      file.push_back(c2);
+    }
+#endif
   }
 private:
   GameApi::Env &e;
   std::string url;
   FILE *f;
+  std::string s;
+  std::stringstream ss;
   long long size=0;
   long long currentpos=0;
 };
@@ -5178,7 +5263,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 
 
     //std::cout << "POPEN cmd=" << cmd << std::endl;
-    
+#ifndef STEAM
 #ifndef ANDROID
 #ifdef __APPLE__
     FILE *f = my_popen(cmd.c_str(), "r");
@@ -5188,7 +5273,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #else    
     FILE *f = my_popen(cmd.c_str(), "rb");
 #endif
-#endif
+#endif // __APPLE__
     if (!f) {
       g_msg_string = "popen failed!";
       std::cout << "popen failed#2" << std::endl;
@@ -5221,7 +5306,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 	std::cout << "FCNTL F_SETFL failed" << std::endl;
       }
     */
-#endif
+#endif // LINUX
    
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
@@ -5294,7 +5379,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
     }
     
     pclose(f);
-#endif
+#endif // LINUX
 #ifdef WINDOWS
     while ( fread(&c,1,1,f)==1) {
       i++;
@@ -5314,16 +5399,20 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
       if (nosize) std::cout << c;
     }
     
-#endif
+#endif // WINDOWS
 
     
-   }
+    }
 #else // ANDROID
     std::string s = popen_curl_replacement(url,false);
     buffer = std::vector<unsigned char,GameApiAllocator<unsigned char> >(s.begin(),s.end());
 #endif
-    
-    
+#else // STEAM
+    }
+    std::string s = popen_curl_replacement(url,false);
+    buffer = new std::vector<unsigned char,GameApiAllocator<unsigned char> >(s.begin(),s.end());
+#endif
+
     //fseek(f, 0, SEEK_END);
     //long pos = ftell(f);
     //fseek(f, 0, SEEK_SET);
@@ -5332,6 +5421,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
     //std::cout << "::" << std::string(buffer.begin(),buffer.end()) << "::" << std::endl;
     if (buffer->size()==0)
       {
+	std::cout << "Buffer size==0, something is wrong! " << std::endl;
 #ifndef ANDROID
 #ifdef WINDOWS
 	std::string dir = GetInstallDir2(true);
@@ -5381,6 +5471,10 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
     std::string s = popen_curl_replacement(url,false);
     *buffer = std::vector<unsigned char,GameApiAllocator<unsigned char> >(s.begin(),s.end());
 #endif
+#ifdef STEAM
+    std::string s = popen_curl_replacement(url,false);
+    *buffer = std::vector<unsigned char,GameApiAllocator<unsigned char> >(s.begin(),s.end());
+#endif
 
 // no popen
 #endif
@@ -5424,7 +5518,8 @@ void web_request(std::string url, std::string params, void (*fptr)(std::string))
   
 #endif
 }
-#endif
+#endif // if 0
+
 
 std::vector<unsigned char> convert_to_hexdump(std::vector<unsigned char> s)
 {
