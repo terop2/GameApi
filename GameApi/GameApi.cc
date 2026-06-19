@@ -161,7 +161,7 @@ std::string deploy_curl_cmd()
 
 IMPORT bool g_deploy_phase = false;
 
-IMPORT GameApi::PAT gameapi_temp_dir = g_path_handler->default_path();
+EXPORT GameApi::PAT gameapi_temp_dir;
 
 class Envi_2;
 
@@ -26737,9 +26737,9 @@ std::string find_more_data(GameApi::Env &e, std::string line)
 }
 
 
-extern GameApi::PAT gameapi_temp_dir;
+IMPORT extern GameApi::PAT gameapi_temp_dir;
 
-std::string fetch_more_data(GameApi::Env &e, std::string url)
+std::string fetch_more_data(GameApi::Env &env, std::string url)
 {
 #ifdef WINDOWS
   char buffer3[MAX_PATH];
@@ -26764,14 +26764,14 @@ std::string fetch_more_data(GameApi::Env &e, std::string url)
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   if (find_str(url,"$(tempdir)") != -1) {
-    std::string s = gameapi_temp_dir;
+    std::string s = g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace29));
     s = replace_deploy_url(s);
     url = deploy_replace_string(url,"$(tempdir)",s);
   } else {
-    url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
+    url = deploy_replace_string(url,"$(tempdir)",use_path4(gameapi_temp_dir));
   }
   //url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
-  url = deploy_replace_string(url,"$(TEMPDIR)",gameapi_temp_dir);
+  url = deploy_replace_string(url,"$(TEMPDIR)",use_path4(gameapi_temp_dir));
   }
 #endif
 #ifdef LINUX
@@ -26881,7 +26881,7 @@ std::vector<UrlItem> find_url_items(GameApi::Env &env, std::string s)
   s = deploy_replace_string(s,"$(instdir)",cd2);
   s = deploy_replace_string(s,"$(INSTDIR)",cd2);
   if (find_str(s,"$(tempdir)") != -1) {
-    std::string s2 = g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace6);
+    std::string s2 = g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace6));
     s2 = replace_deploy_url(s2);
     s = deploy_replace_string(s,"$(tempdir)",s2);
   } else {
@@ -27383,9 +27383,9 @@ public:
       {
       std::cout << "Step #1: Creating tmp directories.." << std::endl;
       std::string str1 = "mkdir %TEMP%\\_gameapi_builder";
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  str1 = deploy_replace_string(str1,"%TEMP%",gameapi_temp_dir);
+	  str1 = deploy_replace_string(str1,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
       int val1 = system(str1.c_str());
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
@@ -27398,11 +27398,11 @@ public:
       std::string str3 = "mkdir %TEMP%\\_gameapi_builder\\deploy";
       std::string str4 = "mkdir %TEMP%\\_gameapi_builder\\deploy\\licenses";
       
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  str2 = deploy_replace_string(str2,"%TEMP%",gameapi_temp_dir);
-	  str3 = deploy_replace_string(str3,"%TEMP%",gameapi_temp_dir);
-	  str4 = deploy_replace_string(str4,"%TEMP%",gameapi_temp_dir);
+	  str2 = deploy_replace_string(str2,"%TEMP%",use_path4(gameapi_temp_dir));
+	  str3 = deploy_replace_string(str3,"%TEMP%",use_path4(gameapi_temp_dir));
+	  str4 = deploy_replace_string(str4,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
 	int val2=system(str2.c_str());
 	int val3=system(str3.c_str());
@@ -27415,9 +27415,9 @@ public:
       {
       std::cout << "Step #3: Creating tmp directories.." << std::endl;
       std::string str5 = "mkdir %TEMP%\\_gameapi_builder\\deploy\\engine";
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  str5 = deploy_replace_string(str5,"%TEMP%",gameapi_temp_dir);
+	  str5 = deploy_replace_string(str5,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
        
       int val4 = system(str5.c_str());
@@ -27425,9 +27425,9 @@ public:
 
 
       std::string str6 = "mkdir %TEMP%\\_gameapi_builder\\deploy\\store";
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  str6 = deploy_replace_string(str6,"%TEMP%",gameapi_temp_dir);
+	  str6 = deploy_replace_string(str6,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
       int val5 = system(str6.c_str());
       if (val5!=0) { std::cout << "ERROR: mkdir returned error: " << val5 <<std::endl; ok=false; }
@@ -27464,13 +27464,13 @@ public:
       
       
       std::vector<UrlItem> items = find_url_items(env,s);
-      find_url_items2(e,s,items);
-      find_url_items3(e,items);
+      find_url_items2(env,s,items);
+      find_url_items3(env,items);
 
       std::string str6 = "%TEMP%\\_gameapi_builder\\deploy\\license.html";
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  str6 = deploy_replace_string(str6,"%TEMP%",gameapi_temp_dir);
+	  str6 = deploy_replace_string(str6,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
       
       std::ofstream sp(str6.c_str());
@@ -27522,14 +27522,14 @@ public:
   ii.url = deploy_replace_string(ii.url,"$(instdir)",cd2);
   ii.url = deploy_replace_string(ii.url,"$(INSTDIR)",cd2);
   if (find_str(ii.url,"$(tempdir)") != -1) {
-    std::string s2 = gameapi_temp_dir;
+    std::string s2 = use_path4(gameapi_temp_dir);
     s2 = replace_deploy_url(s2);
     ii.url = deploy_replace_string(ii.url,"$(tempdir)",s2);
   } else {
-    ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
+    ii.url = deploy_replace_string(ii.url,"$(tempdir)",use_path4(gameapi_temp_dir));
   }
   //ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
-  ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",gameapi_temp_dir);
+  ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",use_path4(gameapi_temp_dir));
   }
 #endif
 #ifdef LINUX
@@ -27564,10 +27564,10 @@ public:
     s2 = replace_deploy_url(s2);
     ii.url = deploy_replace_string(ii.url,"$(tempdir)",s2);
   } else {
-    ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
+    ii.url = deploy_replace_string(ii.url,"$(tempdir)",use_path4(gameapi_temp_dir));
   }
   //ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
-  ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",gameapi_temp_dir);
+  ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",use_path4(gameapi_temp_dir));
 #endif
 
 	  
@@ -27584,9 +27584,9 @@ public:
 	  std::string dir = find_directory(ii.url);
 	  if (dir!="") {
 	    std::string str7 = std::string("mkdir %TEMP%\\_gameapi_builder\\deploy\\")+dir;
-      if (gameapi_temp_dir!="@")
+	    if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  str7 = deploy_replace_string(str7,"%TEMP%",gameapi_temp_dir);
+	  str7 = deploy_replace_string(str7,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
 	    
 	    int val=system(str7.c_str());
@@ -27600,9 +27600,9 @@ public:
 	  else
 	    curl_string=".\\curl\\curl.exe \"" + convert_spaces_to_url_encoding(deploy_truncate(http_to_https(ii.url))) + "\" --output \"" + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\"";
 	  std::cout << curl_string << std::endl;
-      if (gameapi_temp_dir!="@")
+	  if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  curl_string = deploy_replace_string(curl_string,"%TEMP%",remove_quotes(gameapi_temp_dir));
+	  curl_string = deploy_replace_string(curl_string,"%TEMP%",remove_quotes(use_path4(gameapi_temp_dir)));
 	}
 
 
@@ -27676,9 +27676,9 @@ public:
       
       //std::cout << "Generating script.." << std::endl;
       std::string home = getenv("TEMP");
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  home=remove_quotes(gameapi_temp_dir);
+	  home=remove_quotes(use_path4(gameapi_temp_dir));
 	}
 
       std::vector<std::string> scripts = find_script_filenames(home+"\\_gameapi_builder\\deploy\\",htmlfile);
@@ -27730,9 +27730,9 @@ public:
       std::cout << "Generating date.." << std::endl;
       //system("touch ~/.gameapi_builder/gameapi_date.html");
       std::string home = getenv("TEMP");
-       if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  home = remove_quotes(gameapi_temp_dir);
+	  home = remove_quotes(use_path4(gameapi_temp_dir));
 	}
 
       std::fstream ss2((home + "/_gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
@@ -27792,16 +27792,16 @@ public:
 	
 
 	
-      if (gameapi_temp_dir!="@")
+	if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  line0 = deploy_replace_string(line0,"%TEMP%",gameapi_temp_dir);
-	  line0a = deploy_replace_string(line0a,"%TEMP%",gameapi_temp_dir);
-	  line1 = deploy_replace_string(line1,"%TEMP%",gameapi_temp_dir);
-	  line2 = deploy_replace_string(line2,"%TEMP%",gameapi_temp_dir);
-	  line3 = deploy_replace_string(line3,"%TEMP%",gameapi_temp_dir);
-	  line3a = deploy_replace_string(line3a,"%TEMP%",gameapi_temp_dir);
-	  line4 = deploy_replace_string(line4,"%TEMP%",gameapi_temp_dir);
-	  line5 = deploy_replace_string(line5,"%TEMP%",gameapi_temp_dir);
+	  line0 = deploy_replace_string(line0,"%TEMP%",use_path4(gameapi_temp_dir));
+	  line0a = deploy_replace_string(line0a,"%TEMP%",use_path4(gameapi_temp_dir));
+	  line1 = deploy_replace_string(line1,"%TEMP%",use_path4(gameapi_temp_dir));
+	  line2 = deploy_replace_string(line2,"%TEMP%",use_path4(gameapi_temp_dir));
+	  line3 = deploy_replace_string(line3,"%TEMP%",use_path4(gameapi_temp_dir));
+	  line3a = deploy_replace_string(line3a,"%TEMP%",use_path4(gameapi_temp_dir));
+	  line4 = deploy_replace_string(line4,"%TEMP%",use_path4(gameapi_temp_dir));
+	  line5 = deploy_replace_string(line5,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
 
 	
@@ -27832,17 +27832,17 @@ public:
       	std::cout << "Step #8: Deploying.." << std::endl;
       std::string dep = "call deploy.bat";
       std::string line5 = dep + " \"%TEMP%\\_gameapi_builder\\gameapi_display.zip\"";
-      if (gameapi_temp_dir!="@") {
-	line5 = deploy_replace_string(line5,"%TEMP%",remove_quotes(gameapi_temp_dir));
+      if (use_path4(gameapi_temp_dir)!="@") {
+	line5 = deploy_replace_string(line5,"%TEMP%",remove_quotes(use_path4(gameapi_temp_dir)));
       }
       
       bool is_seamless = deploy_find(h2_script, "ev.mainloop_api.scene_transparency");
       if (is_seamless) {
 	line5 += " seamless";
       } else { line5+=" noseamless"; }
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  line5 += std::string(" \"") + remove_quotes(gameapi_temp_dir) + std::string("\""); 
+	  line5 += std::string(" \"") + remove_quotes(use_path4(gameapi_temp_dir)) + std::string("\""); 
 	}
       std::cout << "Executing cmd: " << line5 << std::endl;
       int val = system(line5.c_str());
@@ -27859,9 +27859,9 @@ public:
       	std::cout << "Step #10: Creating zip file" << std::endl;
 
 	std::string home = getenv("TEMP");
-       if (gameapi_temp_dir!="@")
+	if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  home = gameapi_temp_dir;
+	  home = g_path_handler->use_path(env, gameapi_temp_dir, g_path_handler->situ(PathHandler::ETempDirReplace29));
 	}	
 	std::cout << "Saving to " + home + "/_gameapi_builder/Downloads/gameapi_deploy.zip" << std::endl;
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
@@ -45103,6 +45103,13 @@ private:
   float start_delta_y, end_delta_y;
   float start_delta_z, end_delta_z;
 };
+
+std::string use_path4(GameApi::PAT pat)
+{
+  GameApi::Env &env = g_everyapi->get_env();
+  return use_path3(env,pat,PathHandler::ESituationGeneric);
+}
+
 
 GameApi::ML GameApi::PointsApi::world_filter_cursor(ML ml, float start_delta_x, float end_delta_x,
 						    float start_delta_y, float end_delta_y,

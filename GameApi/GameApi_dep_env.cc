@@ -11,8 +11,10 @@
 #endif
 
 #include <atomic>
+#ifndef WINDOWS
 #include <thread>
 #include <chrono>
+#endif
 
 #include "Tasks.hh"
 #include "GameApi_low.hh"
@@ -20,7 +22,11 @@
 #define idb_disabled 1
 //#define idb_disabled 0
 
-extern GameApi::PAT gameapi_temp_dir;
+#ifdef WINDOWS
+#include <windows.h>
+#endif
+
+IMPORT extern GameApi::PAT gameapi_temp_dir;
 
 bool g_disable_polygons=false;
 bool g_filter_execute = false;
@@ -494,7 +500,8 @@ IMPORT void tasks_join_property(bool (*fptr)(void*), void *data)
     std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
 #ifdef WINDOWS
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    Sleep(3);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
 
     
@@ -663,7 +670,8 @@ void *multiple_async_joins(void *data)
     std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
 #ifdef WINDOWS
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    Sleep(3);
+    //  std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
     
     m_mutex_lock();
@@ -747,7 +755,8 @@ bool async_join_internal(ASyncJoinProcessData2 *dt, int id)
     std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
 #ifdef WINDOWS
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    Sleep(3);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
     return false;
 }
@@ -803,7 +812,8 @@ void *async_join_process(void *data)
     std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
 #ifdef WINDOWS
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    Sleep(3);
+    //    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
   }
   return 0;
@@ -2232,7 +2242,7 @@ EXPORT int GameApi::Env::download_bar_count() const
 EXPORT void GameApi::Env::set_download_data(int i, const std::vector<unsigned char> &file)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  return env->set_download_data(i,file);
+  return env->set_download_data(*this,i,file);
 }
 EXPORT void GameApi::Env::set_download_progress(int i, float percentage)
 {
@@ -3872,7 +3882,8 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    Sleep(300);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 
     //else
@@ -4486,7 +4497,7 @@ std::string take_prefix(std::string cd, std::string path)
   return path;
 }
 
-extern GameApi::PAT gameapi_temp_dir;
+IMPORT extern GameApi::PAT gameapi_temp_dir;
 
 
 std::string toLower(std::string s) {
@@ -5520,14 +5531,14 @@ std::vector<int> g_download_bar_index;
 std::vector<float> g_download_bar_progress;
 std::vector<bool> g_download_bar_ready;
 
-void save_download(std::string filename, const std::vector<unsigned char> *vec)
+void save_download(GameApi::Env &env, std::string filename, const std::vector<unsigned char> *vec)
 {
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
   std::string tmp = "%TEMP%";
-  if (g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable3))!="@")
+  if (g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable3))!="@")
     {
-      tmp = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::EReplaceTmpForSystemAndMkDir0));
+      tmp = g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::EReplaceTmpForSystemAndMkDir0));
     }
   std::string mkdir1 = "mkdir " + tmp + "\\_gameapi_builder";
   std::string mkdir2 = "mkdir " + tmp + "\\_gameapi_builder\\Downloads";
@@ -5536,9 +5547,9 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
   system(mkdir2.c_str());
   std::string home = getenv("TEMP");
   
-  if (g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable2))!="@")
+  if (g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable2))!="@")
     {
-      home = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->sity(PathHandler::EReplaceHomeDirForOfStream));
+      home = g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::EReplaceHomeDirForOfStream));
     }
   home = deploy_replace_string(home,"\"","");
   home = deploy_replace_string(home,"\"","");  
@@ -5596,9 +5607,9 @@ int EnvImpl::add_to_download_bar(std::string filename)
 
   return index;
 }
-void EnvImpl::set_download_data(int i, const std::vector<unsigned char> &file)
+void EnvImpl::set_download_data(GameApi::Env &env, int i, const std::vector<unsigned char> &file)
 {
-  save_download(g_download_bar_filename[i],&file);
+  save_download(env, g_download_bar_filename[i],&file);
 }
 int EnvImpl::download_bar_count() const
 {

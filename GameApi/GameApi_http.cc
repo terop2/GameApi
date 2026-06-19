@@ -5,8 +5,11 @@
 #include "httplib.h"
 #include "GraphI.hh"
 
+bool file_exists(std::string url);
+std::string remove_quotes(std::string str);
 extern std::string g_http_server_ip;
 extern int g_http_server_port;
+std::string GetContentInstallDir(bool b);
 
 
 void *http_server_process(void *);
@@ -227,19 +230,19 @@ HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
 #ifdef WINDOWS
 
       std::string str1 = "mkdir %TEMP%\\_gameapi_builder";
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  str1 = deploy_replace_string(str1,"%TEMP%",gameapi_temp_dir);
+	  str1 = deploy_replace_string(str1,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
       int val1 = system(str1.c_str());
 
       std::string str2 = "rmdir /Q /S %TEMP%\\_gameapi_builder\\deploy";
       std::string str3 = "mkdir %TEMP%\\_gameapi_builder\\deploy";
       
-      if (gameapi_temp_dir!="@")
+      if (use_path4(gameapi_temp_dir)!="@")
 	{
-	  str2 = deploy_replace_string(str2,"%TEMP%",gameapi_temp_dir);
-	  str3 = deploy_replace_string(str3,"%TEMP%",gameapi_temp_dir);
+	  str2 = deploy_replace_string(str2,"%TEMP%",use_path4(gameapi_temp_dir));
+	  str3 = deploy_replace_string(str3,"%TEMP%",use_path4(gameapi_temp_dir));
 	}
       int val2=system(str2.c_str());
       int val3=system(str3.c_str());
@@ -255,8 +258,8 @@ HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
       s = replace_str(s, "\'", "&apos;");
 
       std::vector<UrlItem> items = find_url_items(env,s);
-      find_url_items2(e,s,items);
-      find_url_items3(e,items);
+      find_url_items2(env,s,items);
+      find_url_items3(env,items);
       std::vector<std::string> http_orig_urls;
       std::vector<std::string> http_filenames;
       std::vector<std::string> http_contents;
@@ -293,14 +296,14 @@ HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
 	    ii.url = deploy_replace_string(ii.url,"$(instdir)",cd2);
 	    ii.url = deploy_replace_string(ii.url,"$(INSTDIR)",cd2);
 	    if (find_str(ii.url,"$(tempdir)") != -1) {
-	      std::string s2 = gameapi_temp_dir;
+	      std::string s2 = use_path4(gameapi_temp_dir);
 	      s2 = replace_deploy_url(s2);
 	      ii.url = deploy_replace_string(ii.url,"$(tempdir)",s2);
 	    } else {
-	      ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
+	      ii.url = deploy_replace_string(ii.url,"$(tempdir)",use_path4(gameapi_temp_dir));
 	    }
 	    //ii.url = deploy_replace_string(ii.url,"$(tempdir)",gameapi_temp_dir);
-	    ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",gameapi_temp_dir);
+	    ii.url = deploy_replace_string(ii.url,"$(TEMPDIR)",use_path4(gameapi_temp_dir));
 	  }
 
 	  if (ii.url[ii.url.size()-1]=='/') continue; // ignore directories
@@ -308,9 +311,9 @@ HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
 	  	  std::string dir = find_directory(ii.url);
 	  if (dir!="") {
 	    std::string str7 = std::string("mkdir %TEMP%\\_gameapi_builder\\deploy\\")+dir;
-      if (gameapi_temp_dir!="@")
+	    if (use_path3(env,gameapi_temp_dir,PathHandler::ETempDirReplace33)!="@")
 	{
-	  str7 = deploy_replace_string(str7,"%TEMP%",gameapi_temp_dir);
+	  str7 = deploy_replace_string(str7,"%TEMP%",use_path3(env,gameapi_temp_dir,PathHandler::ETempDirReplace32));
 	}
 	    
 	    int val=system(str7.c_str());
@@ -324,9 +327,9 @@ HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
 	  else
 	    curl_string=".\\curl\\curl.exe \"" + convert_spaces_to_url_encoding(deploy_truncate(http_to_https(ii.url))) + "\" --output \"" + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\"";
 	  std::cout << curl_string << std::endl;
-      if (gameapi_temp_dir!="@")
+	  if (use_path3(env,gameapi_temp_dir,PathHandler::ETempDirReplace31)!="@")
 	{
-	  curl_string = deploy_replace_string(curl_string,"%TEMP%",remove_quotes(gameapi_temp_dir));
+	  curl_string = deploy_replace_string(curl_string,"%TEMP%",remove_quotes(g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace30))));
 	}
 
 

@@ -45,7 +45,7 @@ using namespace GameApi;
 #include <fcntl.h> 
 #endif
 
-extern GameApi::PAT gameapi_temp_dir;
+IMPORT extern GameApi::PAT gameapi_temp_dir;
 
 IMPORT extern bool g_reload_edit_dialog;
 bool g_edit_dialog_available=false;
@@ -65,6 +65,36 @@ struct ArrayType
 {
   int type; // arraytypesinuse
   std::vector<int> vec;
+};
+
+class Path // PAT -id.
+{
+public:
+  //virtual std::string name() const =0;
+  //virtual Path* clone() const=0;
+  virtual ~Path() { }
+  
+  virtual std::string get_path() const=0;
+  virtual std::string get_default_path() const=0;
+  
+  virtual bool is_user_input() const=0;
+  virtual bool is_linux_path() const=0;
+  virtual bool is_windows_path() const=0;
+  virtual bool is_normal_url() const=0;
+  virtual bool is_file_url() const=0;
+  virtual bool is_path_with_unresolved_replaces() const=0;
+  virtual bool is_url_with_unresolved_replaces() const=0;
+
+  virtual bool is_default_set() const=0;
+  
+  virtual bool is_def_user_input() const=0;
+  virtual bool is_def_linux_path() const=0;
+  virtual bool is_def_windows_path() const=0;
+  virtual bool is_def_normal_url() const=0;
+  virtual bool is_def_file_url() const=0;
+  virtual bool is_def_path_with_unresolved_replaces() const=0;
+  virtual bool is_def_url_with_unresolved_replaces() const=0;
+
 };
 
 class PathHandler
@@ -125,6 +155,13 @@ public:
       ETempDirReplace26,
       ETempDirReplace27,
       ETempDirReplace28,
+      ETempDirReplace29,
+      ETempDirReplace30,
+      ETempDirReplace31,
+      ETempDirReplace32,
+      ETempDirReplace33,
+      EDragDropInfoMessage,
+      ESituationGeneric
     };
   
   struct SituationConfig
@@ -138,9 +175,17 @@ public:
   IMPORT GameApi::PAT set_possible_default_path(GameApi::Env &e, GameApi::PAT p, std::string def, const PathConfig &pc);
   IMPORT GameApi::PAT convert_path(GameApi::Env &e, GameApi::PAT old, const PathConfig &pc);  
   IMPORT std::string use_path(GameApi::Env &e, GameApi::PAT val, const SituationConfig &sc);
+  IMPORT std::string use_path2(GameApi::Env &e, GameApi::PAT val, Situation s);
 };
 IMPORT extern PathHandler *g_path_handler;
 
+inline std::string use_path3(GameApi::Env &e, GameApi::PAT val, PathHandler::Situation s)
+{
+  return g_path_handler->use_path2(e,val,s);
+}
+
+
+std::string use_path4(GameApi::PAT pat);
 
 
 class Envi;
@@ -4011,11 +4056,11 @@ public:
 #ifdef WINDOWS
 	      std::string home = getenv("TEMP");
 
-	      if (g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable0)) !="@")
+	      if (g_path_handler->use_path(*env->env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable0)) !="@")
 		{
 		  home = "$(tempdir)"; //gameapi_temp_dir;
 
-		  std::cout << "Note: $(tempdir) is the same as " << g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::EDragDropInfoMessage)) << std::endl;
+		  std::cout << "Note: $(tempdir) is the same as " << g_path_handler->use_path(*env->env,gameapi_temp_dir,g_path_handler->situ(PathHandler::EDragDropInfoMessage)) << std::endl;
 		}
 
 
@@ -4046,9 +4091,9 @@ public:
 		std::string path=getenv("homepath");
 
 		std::string home = drive+path;
-		if (g_path_hander->use_path(e,gameapi_temp_dir,g_path_handler->situ(ETestIfAvailable1))!="@")
+		if (g_path_handler->use_path(*env->env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETestIfAvailable1))!="@")
 		  {
-		    home = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(EReplaceHomeDirForPThreadSystem0));
+		    home = g_path_handler->use_path(*env->env,gameapi_temp_dir,g_path_handler->situ(PathHandler::EReplaceHomeDirForPThreadSystem0));
 		  }		
 		std::string p = home+"\\_gameapi_builder\\Downloads\\";
 		pthread_system((std::string("start \"\" ")+p).c_str());
@@ -4377,6 +4422,7 @@ int g_http_server_port = 50000;
 
 
 int main(int argc, char *argv[]) {
+  gameapi_temp_dir = g_path_handler->default_path();
 
   g_html_dir=get_html_directory2();
 #ifdef LINUX

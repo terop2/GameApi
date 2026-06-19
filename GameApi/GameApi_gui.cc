@@ -4,6 +4,9 @@
 #include "GameApi_cmd.hh"
 #include "Tasks.hh"
 
+#ifdef WINDOWS
+#include <direct.h>
+#endif
 
 
 
@@ -1079,7 +1082,7 @@ bool is_allowed(std::string chars, char ch)
 
 #ifndef EMSCRIPTEN
 
-extern GameApi::PAT gameapi_temp_dir;
+IMPORT extern GameApi::PAT gameapi_temp_dir;
 
 std::string GetContentInstallDir(bool b);
 

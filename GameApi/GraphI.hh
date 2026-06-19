@@ -264,8 +264,13 @@ public:
       ETempDirReplace26,
       ETempDirReplace27,
       ETempDirReplace28,
-
-      EDragDropInfoMessage
+      ETempDirReplace29,
+      ETempDirReplace30,
+      ETempDirReplace31,
+      ETempDirReplace32,
+      ETempDirReplace33,
+      EDragDropInfoMessage,
+      ESituationGeneric
     };
   
   struct SituationConfig
@@ -279,8 +284,20 @@ public:
   IMPORT GameApi::PAT set_possible_default_path(GameApi::Env &e, GameApi::PAT p, std::string def, const PathConfig &pc);
   IMPORT GameApi::PAT convert_path(GameApi::Env &e, GameApi::PAT old, const PathConfig &pc);  
   IMPORT std::string use_path(GameApi::Env &e, GameApi::PAT val, const SituationConfig &sc);
+  IMPORT std::string use_path2(GameApi::Env &e, GameApi::PAT val, Situation s)
+  {
+    return use_path(e,val,situ(s));
+  }
 };
 IMPORT extern PathHandler *g_path_handler;
+
+inline std::string use_path3(GameApi::Env &e, GameApi::PAT val, PathHandler::Situation s)
+{
+  return g_path_handler->use_path2(e,val,s);
+}
+
+
+std::string use_path4(GameApi::PAT pat);
 
 
 class ByteStore
