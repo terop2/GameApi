@@ -848,7 +848,7 @@ struct EnvImpl
   IMPORT int add_to_download_bar(std::string filename); // returns index, must use mapping to put it to i. 
   IMPORT int download_index_mapping(int index);
   IMPORT int download_bar_count() const;
-  IMPORT void set_download_data(int i, const std::vector<unsigned char> &file);
+  IMPORT void set_download_data(GameApi::Env &env, int i, const std::vector<unsigned char> &file);
   IMPORT void set_download_progress(int i, float percentage);
   IMPORT void set_download_ready(int i);
   //IMPORT std::vector<unsigned char> *get_download_bar_item(int i) const;
