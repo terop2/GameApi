@@ -179,6 +179,13 @@
 			 { "ev" },
 			 "MT", "materials_api", "m_def"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::reload_material,
+			 "reload",
+			 { "ev", "next", "name", "default_p", "default_mat" },
+			 { "EveryApi&", "MT", "std::string", "P", "MT" },
+			 { "ev", "", "test", "", "" },
+			 "MT", "materials_api", "reload_material"));
+
 #if (ALL==1)||(HIRES==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::hires,
 			 "m_hires",
@@ -467,9 +474,9 @@
 #if (ALL==1)||(GLTF_ANIM_MATERIAL2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material2,
 			 "m_gltf_anim2",
-			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys", "mode", "anim_transfer_id" },
-			 { "EveryApi&", "TF", "int", "int", "MT", "std::string", "int", "TRA" },
-			 { "ev", "", "0", "150", "", "zxcvbnmfghjklertyuiop", "0", "" },
+			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys", "mode", "anim_transfer_id", "frame_skip" },
+			 { "EveryApi&", "TF", "int", "int", "MT", "std::string", "int", "TRA", "int" },
+			 { "ev", "", "0", "150", "", "zxcvbnmfghjklertyuiop", "0", "", "1" },
 			 "MT", "materials_api", "gltf_anim_material2"));
 #endif
 #if (ALL==1)||(GLTF_MATERIAL3==1)

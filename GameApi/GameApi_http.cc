@@ -1,4 +1,4 @@
-
+#include "GameApi_http.hh"
 #include "GameApi.hh"
 #include "Tasks.hh"
 #define CPPHTTPLIB_NO_EXCEPTIONS
@@ -47,14 +47,23 @@ struct HTTP_files
 {
   std::vector<std::string> filenames;
   std::vector<std::string> contents;
+  std::string homepage;
+  std::string script;
+  std::string date;
 };
 
 void start_http_listening(std::vector<std::string> filenames,
-			  std::vector<std::string> contents)
+			  std::vector<std::string> contents,
+			  std::string homepage,
+			  std::string script,
+			  std::string date)
 {
   HTTP_files *files = new HTTP_files;
   files->filenames = filenames;
   files->contents = contents;
+  files->homepage = homepage;
+  files->script = script;
+  files->date = date;
   tasks_add(9898, &http_server_process, (void*)files);
 }
 void join_http()
@@ -136,11 +145,15 @@ std::string choose_type(std::string filename)
   return "text/plain";
 }
 
+std::string g_http_htmlfile;
 
 httplib::Server *g_http_server = 0;
 
 void http_server(std::vector<std::string> filenames,
-		 std::vector<std::string> contents)
+		 std::vector<std::string> contents,
+		 std::string homepage,
+		 std::string script,
+		 std::string date)
 {
   httplib::Server svr;
   g_http_server = &svr;
@@ -154,6 +167,19 @@ void http_server(std::vector<std::string> filenames,
     svr.stop();
   });
     
+
+  svr.Get(std::string("/user_data/temp/tmp0.txt").c_str(),
+	   [&](const httplib::Request &req,
+	       httplib::Response &res)
+	   {
+	     res.set_content(g_http_htmlfile,"text/plain");
+	   });
+  svr.Get(std::string("/gameapi_example.php").c_str(),
+	   [&](const httplib::Request &req,
+	       httplib::Response &res)
+	   {
+	     res.set_content(gameapi_example(homepage,script,date),"application/x-httpd-php");
+	   });
   
   for(int i=0;i<s;i++)
     {
@@ -171,16 +197,10 @@ void http_server(std::vector<std::string> filenames,
 void *http_server_process(void *ptr)
 {
   HTTP_files *files = (HTTP_files*)ptr;
-  http_server(files->filenames,files->contents);
+  http_server(files->filenames,files->contents, files->homepage, files->script, files->date);
   return 0;
 }
 
-struct HttpDeployResult
-{
-  std::vector<std::string> orig_urls;
-  std::vector<std::string> filenames;
-  std::vector<std::string> contents;
-};
 
 std::string replace_urls_from_script(std::string script,
 				     const HttpDeployResult &data)
@@ -484,4 +504,178 @@ HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
       res.contents = http_contents;
       return res;
 #endif
+}
+
+void set_http_server_htmlfile(std::string file)
+{
+  g_http_htmlfile = file;
+}
+
+std::string gameapi_example(std::string homepage, std::string script, std::string date)
+{
+  std::string example=
+"<?php\n"
+"  //header(\"Cross-Origin-Opener-Policy: same-origin\");\n"
+"  $id = $_GET[\"id\"];\n"
+"  $filename = \"./user_data/temp/tmp\" . $id . \".txt\";\n"
+"  $script = file_get_contents($filename);\n"
+"  $homepage = $_GET[\"homepage\"];\n"
+"  $new_script = str_replace(\"@\",\"\n\",$script);\n"
+"  $date = $_GET[\"date\"];\n"
+"  ?>\n"
+"<!DOCTYPE html>\n"
+"<html>\n"
+"  <head>\n"
+"    <meta name=\"description\" content=\"a 3d model created via meshpage.org/gltf_to_zip.php\">\n"
+"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">\n"
+"  </head>\n"
+"  <body>\n"
+"    <!-- you need to copy the following files to transfer 3d models\n"
+"         to new web server:\n"
+"         https://meshpage.org/gameapi_display.zip\n"
+"\n"
+"	 unzip the package to some new directory in your web host\n"
+"\n"
+"	 Then change the homepage url from inside pre tag below\n"
+"\n"
+"	 Then copy-paste a builder codegen script to the gameapi_script \n"
+"	 pre tag below, last line needs to have type RUN.\n"
+"      -->\n"
+"    <pre id=\"homepage\" style=\"display:none\">\n"
+"    <?php echo $homepage ?>\n"
+"    </pre>\n"
+"    <pre id=\"gameapi_script\" style=\"display:none\">\n"
+"<?php echo $new_script ?>\n"
+"    </pre>\n"
+"    <pre id=\"gameapi_modificationdate\" style=\"display:none\">\n"
+"<?php echo $date ?>\n"
+"    </pre>\n"
+"   <div id=\"container\">\n"
+"    <canvas id=\"canvas\"></canvas>\n"
+"    </div>\n"
+"    <style>\n"
+"      #container { display: inline-block;  width: 400px; height: 300px; }\n"
+"      #canvas { position: absolute;\n"
+"		border-width:0px;\n"
+"		border: 5px solid black;\n"
+"		border-radius: 10px;\n"
+"		background-color: #000000;\n"
+"		margin:0;\n"
+"		padding:0;\n"
+"		width: 820px;\n"
+"		height: 620px;\n"
+"	      }\n"
+"      </style>\n"
+"\n"
+"    <!-- TO CHANGE THE PARAMETERS, YOU SHOULD CHANGE:        \n"                                                                         
+"         container width/height (to change what area of the page is reserved for the model)                                                             \n"
+"         and wd/hd (to change how large the 3d model is)                      \n"
+"                                                                         \n"
+"         and delta_x and delta_y (to position the model)                      \n" "                                                                         \n"
+"    -->\n"
+"    <script>\n"
+"      let wd = 800-28;\n"
+"      let hd = 600-28;\n"
+"      let delta_x=0;\n"
+"      let delta_y=0;\n"
+"      let container_width=800-28;\n"
+"      let container_height=600-28;\n"
+"      let enable_debug_border=false;\n"
+"      if (window.self !== window.top)\n"
+"      { // we're inside iframe, use iframe dimensions\n"
+"	  wd = window.innerWidth-28;\n"
+"	  hd = window.innerHeight-28;\n"
+"	  container_width = window.innerWidth-28;\n"
+"	  container_height= window.innerHeight-28;\n"
+"      }\n"
+"\n"
+"      \n"
+"    </script>\n"
+"    <script src=\"gameapi.js?1\"></script>\n"
+"    <script>\n"
+"function resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border) {\n"
+"    return function (event) {\n"
+"      if (window.self !== window.top)\n"
+"      { // we're inside iframe, use iframe dimensions\n"
+"	  wd = window.innerWidth-28;\n"
+"	  hd = window.innerHeight-28;\n"
+"	  container_width = window.innerWidth-28;\n"
+"	  container_height= window.innerHeight-28;\n"
+"      }\n"
+"	\n"
+"          if (Module && g_emscripten_running) {\n"
+"      var cc = document.getElementById(\"container\");\n"
+"      var c = document.getElementById(\"canvas\");\n"
+"          if (enable_debug_border)\n"
+"              {\n"
+"                  cc.style.borderStyle=\"solid\";\n"
+"                  cc.style.borderWidth=\"1px\";\n"
+"                  cc.style.borderColor=\"black\";\n"
+"                 c.style.borderStyle=\"solid\";\n"
+"                  c.style.borderWidth=\"1px\";\n"
+"                  c.style.borderColor=\"black\";\n"
+"          }\n"
+"           try {\n"
+"               Module.ccall(\"set_resize_event\", null, [\"number\", \"number\"], [wd,hd], {async:true});\n"
+"           } catch(e) {\n"
+"               console.log(e);\n"
+"           }\n"
+"              cc.style.width = (container_width).toString() + \"px\";\n"
+"              cc.style.height = (container_height).toString() + \"px\";\n"
+"              c.style.width = (wd).toString() + \"px\";\n"
+"              c.style.height = (hd).toString() + \"px\";\n"
+"              c.style.left = (delta_x + cc.offsetLeft + (cc.clientWidth-wd)/2).toString() + \"px\";\n"
+"c.style.top = (delta_y + cc.offsetTop + (cc.clientHeight-hd)/2).toString() + \"px\";\n"
+"            const dpr = window.devicePixelRatio || 2;\n"
+"            c.width = (wd)*dpr;\n"
+"            c.height = (hd)*dpr;\n"
+"\n"
+"          } else window.setTimeout(function() { resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null); }, 100);\n"
+"      }\n"
+"}\n"
+"window.addEventListener(\"resize\", function() {\n"
+"   resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null);\n"
+"});\n"
+"window.setTimeout(function() { resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null); },10);\n"
+"\n"
+"    </script>\n"
+"  </body>\n"
+"</html>\n"
+"\n"
+"\n"
+"<!-- html>\n"
+"  <head>\n"
+"  </head>\n"
+"  <body>\n"
+"    <pre id=\"homepage\" style=\"display:none\">\n"
+"<?php echo $homepage ?>\n"
+"    </pre>\n"
+"    <pre id=\"gameapi_script\" style=\"display:none\">\n"
+"<?php echo $new_script ?>\n"
+"    </pre>\n"
+"    <pre id=\"gameapi_modificationdate\" style=\"display:none\">\n"
+"<?php echo $date ?>\n"
+"    </pre>\n"
+"    <div class=\"center\">\n"
+"    <canvas id=\"canvas\" style=\"border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;\"></canvas>\n"
+"    </div>\n"
+"    <style>\n"
+"    .center {\n"
+"       display: flex;\n"
+"       align-items: center;\n"
+"       justify-content: center;\n"
+"    }\n"
+"    </style>\n"
+"    <script src=\"gameapi.js?<?php echo $date ?>\"></script>\n"
+"      \n"
+"  </body>\n"
+"</html -->\n"
+"\n"
+"  \n"
+																					     "}\n";
+
+ example= deploy_replace_string(example,"<?php echo $homepage ?>", homepage);
+ example= deploy_replace_string(example,"<?php echo $new_script ?>", script);
+ example= deploy_replace_string(example,"<?php echo $date ?>", date);
+ return example;
 }

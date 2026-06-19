@@ -2,6 +2,7 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 #include "GameApi_cmd.hh"
+#include "Tasks.hh"
 
 
 
@@ -1840,6 +1841,7 @@ public:
   }  
   void render()
   {
+    call_all_mlguiwidget_cbs();
     OpenglLowApi *ogl = g_low->ogl;
     if (is_visible())
       {
@@ -1861,8 +1863,10 @@ public:
 	// COLLECT LOGIC
 
 	g_inside_mesh_display=true;
+	//std::cout << "MLGuiWidget calling ML prepapre" << std::endl;
 	item->Prepare(); 
 	g_inside_mesh_display=false;
+	//std::cout << "MLGuiWidget finished ML prepapre" << std::endl;
 	firsttime2 = false;
       } 
     }
@@ -1926,7 +1930,9 @@ public:
 
 	}
 	g_inside_mesh_display=true;
+	//std::cout << "MLGUIWiget::Execute_ml" << std::endl;
 	ev.mainloop_api.execute_ml(ev,p, sh, sh2, sh2, sh_arr,mat, in_T, in_N, sz.dx, sz.dy);
+	//std::cout << "MLGUIWiget::finished Execute_ml" << std::endl;
 	g_inside_mesh_display=false;
 	e.type = -1;
 	e.ch = -1;
@@ -4512,6 +4518,9 @@ EXPORT GameApi::W GameApi::GuiApi::va(VA p, SH sh2, int sx, int sy, int screen_s
 {
   return add_widget(e, new VAGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
+
+std::vector<GameApi::TF> g_tf_instances;
+
 EXPORT  GameApi::W GameApi::GuiApi::ml(ML p, SH sh2, SH sh3, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y)
 {
   int s = g_tf_instances.size();

@@ -11,8 +11,11 @@
 #endif
 
 #include <atomic>
+#include <thread>
+#include <chrono>
 
 #include "Tasks.hh"
+#include "GameApi_low.hh"
 
 #define idb_disabled 1
 //#define idb_disabled 0
@@ -99,6 +102,7 @@ struct del_map : public del_map_interface
 	    delete e.second;
 	    fetches.erase(fetches.begin()+i);
 	    i--;
+	    s--;
 	    //break;
 	  }
       }
@@ -123,10 +127,11 @@ struct del_map : public del_map_interface
 	  load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
 	  //std::cout << "del_async_url: 7"<< std::endl;
 	  i--;
+	  s--;
 	  //std::cout << "del_async_url: 8"<< std::endl;
 	  //std::cout << "Map Pop() -> " << load_url_buffers_async.size() << std::endl;
 
-	  break;
+	  //break;
 	  //std::cout << "del_async_url: 9"<< std::endl;
 	}
 	//std::cout << "del_async_url: 10"<< std::endl;
@@ -137,6 +142,7 @@ struct del_map : public del_map_interface
 #ifdef EMSCRIPTEN
   void push_fetch_url(std::string url, FetchInBlocks *blk)
   {
+    del_fetch_url(url);
     pthread_mutex_lock(&lock);
     VECENTRY2 e;
     e.first = url;
@@ -147,6 +153,8 @@ struct del_map : public del_map_interface
 #endif
   void push_async_url(std::string url, const GameApi::ASyncVec *ptr)
   {
+    del_async_url(url);
+    //std::cout << "push_async_url" << url << std::endl;
     // std::cout << "Push async url: " << url << " " << std::hex << (long)ptr << std::dec << std::endl;
     pthread_mutex_lock(&lock);
     VECENTRY e;
@@ -155,13 +163,25 @@ struct del_map : public del_map_interface
     load_url_buffers_async.push_back(e);
     //std::cout << "Map Push() -> " << load_url_buffers_async.size() << " " << std::hex << (long)ptr << std::dec << std::endl;
     pthread_mutex_unlock(&lock);
+    //std::cout << "push_async_url (end)" << url << std::endl;
   }
   //~del_map() {
 
   //}
   void print()
   {
-
+#if 0
+    pthread_mutex_lock(&lock);
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY &e = load_url_buffers_async[i];
+	//std::cout << "COMPARE:'" << e.first << "' '" << url << "'" << std::endl;
+	std::cout << "delmap::print:" << e.first << std::endl;
+      }
+    pthread_mutex_unlock(&lock);
+#endif
+    
   }
   void del_vec(GameApi::ASyncVec * vec)
   {
@@ -382,6 +402,7 @@ extern int g_last_loaded_script;
 IMPORT double g_dpr=1.0;
 extern std::vector<const char*> g_urls;
 
+std::vector<std::string> g_error_urls;
 
 IMPORT extern std::string g_window_href;
 IMPORT extern std::string gameapi_homepageurl;
@@ -458,12 +479,385 @@ IMPORT void tasks_add(int id, void *(*fptr)(void*), void *data)
   fptr(data);
 #endif
 }
+
+IMPORT void tasks_join_property(bool (*fptr)(void*), void *data)
+{
+  while(1) {
+    bool b = fptr(data);
+    if (!b) break;
+
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(3);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+
+    
+  }
+}
+
 IMPORT void tasks_join(int id)
 {
 #ifdef THREADS
   //std::cout << "Tasks join " << id << std::endl;
   g_tasks.join_id(id);
 #endif
+}
+
+pthread_mutex_t *g_queue_mutex;
+std::vector<task_data> *g_queue_tasks_done=0;
+std::vector<task_data> *g_tasks_in_execute=0;
+std::vector<task_data> *g_queue=0;
+
+std::vector<int> g_async_join_m_ids;
+class ASyncJoinProcessData2;
+std::vector<ASyncJoinProcessData2*> g_async_join_m_data;
+
+
+pthread_mutex_t *g_m_mutex = 0;
+
+EXPORT void tasks_done_queue_clear()
+{
+  g_queue_tasks_done->clear();
+}
+
+
+void create_m_mutex()
+{
+  if (!g_m_mutex)
+    g_m_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+}
+void destroy_m_mutex()
+{
+  if (g_m_mutex) {
+    pthread_mutex_destroy(g_m_mutex);
+    delete g_m_mutex;
+    g_m_mutex=0;
+  }
+}
+void m_mutex_lock()
+{
+  if (g_m_mutex)
+    pthread_mutex_lock(g_m_mutex);
+}
+void m_mutex_unlock()
+{
+  if (g_m_mutex)
+    pthread_mutex_unlock(g_m_mutex);
+}
+
+void print_tasks_done()
+{
+  std::cout << "Tasks done:";
+  // pthread_mutex_lock(g_queue_mutex);
+  int s = g_queue_tasks_done->size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << g_queue_tasks_done->operator[](i).id << ",";
+    }
+  //pthread_mutex_unlock(g_queue_mutex);
+  std::cout << std::endl;
+
+}
+void print_tasks_in_execute()
+{
+  std::cout << "Tasks in execute:";
+  //pthread_mutex_lock(g_queue_mutex);
+  int s = g_tasks_in_execute->size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << g_tasks_in_execute->operator[](i).id << ",";
+    }
+  //pthread_mutex_unlock(g_queue_mutex);
+  std::cout << std::endl;
+
+}
+
+void print_tasks_queue()
+{
+  std::cout << "Tasks queue:";
+  //pthread_mutex_lock(g_queue_mutex);
+  int s = g_queue->size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << g_queue->operator[](i).id << ",";
+    }
+  //pthread_mutex_unlock(g_queue_mutex);
+  std::cout << std::endl;
+
+}
+
+
+void print_task_m_ids()
+{
+  std::cout << "Task_m_ids:";
+  m_mutex_lock();
+  int s = g_async_join_m_ids.size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << g_async_join_m_ids[i] << ",";
+    }
+  m_mutex_unlock();
+  std::cout << std::endl;
+}
+
+bool tasks_m_check_async_ongoing(int id)
+{
+  m_mutex_lock();
+  int s = g_async_join_m_ids.size();
+  for(int i=0;i<s;i++)
+    {
+      if (g_async_join_m_ids[i]==id) {
+	m_mutex_unlock();
+	return true;
+      }
+    }
+  m_mutex_unlock();
+  return false;
+}
+
+
+struct ASyncJoinProcessData2
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+
+bool g_stop_multiple=false;
+bool g_m_process_active=false;
+
+bool check_multiple_empty()
+{
+  return g_async_join_m_ids.size()==0 && g_async_join_m_data.size()==0;
+}
+
+void stop_multiple_async_joins()
+{
+  g_stop_multiple=true;
+}
+bool async_join_internal(ASyncJoinProcessData2 *dt, int id);
+
+void *multiple_async_joins(void *data)
+{
+  g_m_process_active=true;
+  while(1) {
+    
+    if (g_stop_multiple ||check_multiple_empty())
+      {
+	//std::cout << "Stopping multiple process" << std::endl;
+	g_stop_multiple=false;
+	break;
+      }
+    
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(3);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+    
+    m_mutex_lock();
+    int s = g_async_join_m_ids.size();
+    for(int i=0;i<s;i++)
+      {
+	int id = g_async_join_m_ids[i];
+	ASyncJoinProcessData2 *dt2 = g_async_join_m_data[i];
+	//ASyncJoinProcessData dt;
+	//dt->id = dt2->id;
+	//dt->fptr = dt2->fptr;
+	//dt->data = dt2->data;
+	bool exit = async_join_internal(dt2,id);
+	if (exit)
+	  {
+	    int s = g_async_join_m_ids.size();
+	    for(int j=0;j<s;j++)
+	      {
+		if (g_async_join_m_ids[i]==id)
+		  {
+		    g_async_join_m_ids.erase(g_async_join_m_ids.begin()+i);
+		    delete g_async_join_m_data[i];
+		    g_async_join_m_data.erase(g_async_join_m_data.begin()+i);
+		    s--;
+		    i--;
+		  }
+	      }
+	  }
+      }
+    m_mutex_unlock();
+
+  }
+  g_m_process_active=false;
+  return 0;
+}
+
+
+
+bool async_join_internal(ASyncJoinProcessData2 *dt, int id)
+{
+    pthread_mutex_lock(g_queue_mutex);
+
+    bool found_stilltodo=false;
+    int s4 = g_tasks_in_execute->size();
+    for(int i=0;i<s4;i++)
+      {
+	if (g_tasks_in_execute->operator[](i).id==dt->id) { found_stilltodo=true; }
+      }
+
+    
+    bool found = false;
+    int s5 = g_queue_tasks_done->size();
+    for(int i=0;i<s5;i++)
+      {
+	if (dt->id==g_queue_tasks_done->operator[](i).id)
+	  {
+	    found=true;
+	  }
+      }
+    // std::cout << "id=" << dt->id << " found=" << found << " stilltodo=" << found_stilltodo << std::endl;
+    if (found && !found_stilltodo) {
+      //pthread_mutex_lock(g_queue_mutex);
+      int s5 = g_queue_tasks_done->size();
+      for(int i=0;i<s5;i++)
+	{
+	  if (g_queue_tasks_done->operator[](i).id==dt->id)
+	    {
+	      g_queue_tasks_done->erase(g_queue_tasks_done->begin()+i); i--; s5--; }
+	}
+      pthread_mutex_unlock(g_queue_mutex);
+      //std::cout << "async_join cb with id=" << dt->id << std::endl;
+      dt->fptr(dt->data);
+      return true;
+    }
+   pthread_mutex_unlock(g_queue_mutex);
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(3);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+    return false;
+}
+
+struct ASyncJoinProcessData
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+
+void *async_join_process(void *data)
+{
+  if (!g_queue_tasks_done) return 0;
+  ASyncJoinProcessData *dt = (ASyncJoinProcessData*)data;
+  while(1) {
+    pthread_mutex_lock(g_queue_mutex);
+
+    bool found_stilltodo=false;
+    int s4 = g_tasks_in_execute->size();
+    for(int i=0;i<s4;i++)
+      {
+	if (g_tasks_in_execute->operator[](i).id==dt->id) { found_stilltodo=true; }
+      }
+
+    
+    bool found = false;
+    int s5 = g_queue_tasks_done->size();
+    for(int i=0;i<s5;i++)
+      {
+	if (dt->id==g_queue_tasks_done->operator[](i).id)
+	  {
+	    found=true;
+	  }
+      }
+    if (found && !found_stilltodo) {
+      //pthread_mutex_lock(g_queue_mutex);
+      int s5 = g_queue_tasks_done->size();
+      for(int i=0;i<s5;i++)
+	{
+	  if (g_queue_tasks_done->operator[](i).id==dt->id) { g_queue_tasks_done->erase(g_queue_tasks_done->begin()+i); i--; s5--; }
+	}
+      pthread_mutex_unlock(g_queue_mutex);
+      dt->fptr(dt->data);
+      break;
+    }
+   pthread_mutex_unlock(g_queue_mutex);
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(3);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+  }
+  return 0;
+}
+
+int count_tasks_with_id(int id, std::vector<task_data> *data)
+{
+  int s = data->size();
+  int count = 0;
+  for(int i=0;i<s;i++)
+    {
+      if (data->operator[](i).id == id) count++;
+    }
+  return count;
+}
+
+IMPORT void tasks_async_join_m(int id, void (*fptr)(void*), void *data)
+{
+  int a1 = count_tasks_with_id(id,g_queue);
+  int a2 = count_tasks_with_id(id,g_tasks_in_execute);
+  int a3 = count_tasks_with_id(id,g_queue_tasks_done);
+  if (a1+a2+a3 == 0)
+    {
+      //std::cout << "No tasks in queues, " << id << ", sending cb and existing.." << std::endl;
+      fptr(data);
+      return;
+    }
+
+  
+  ASyncJoinProcessData2 *dt = new ASyncJoinProcessData2;
+  dt->id = id;
+  dt->fptr = fptr;
+  dt->data = data;
+  create_m_mutex();
+  m_mutex_lock();
+  g_async_join_m_ids.push_back(id);
+  g_async_join_m_data.push_back(dt);
+  m_mutex_unlock();
+  
+  if (!g_m_process_active) {
+    //std::cout << "Starting multiple process" << std::endl;
+    tasks_add(41972, &multiple_async_joins, (void*)0);
+  }
+}
+
+
+IMPORT void tasks_async_join(int id, void (*fptr)(void*), void *data)
+{
+
+  ASyncJoinProcessData *dt = new ASyncJoinProcessData;
+  dt->id = id;
+  dt->fptr = fptr;
+  dt->data = data;
+  tasks_add(65536+id, &async_join_process, (void*)dt);
 }
 
 extern GameApi::EveryApi *g_everyapi;
@@ -519,9 +913,94 @@ int wait_with_timeout(pthread_cond_t *cond, pthread_mutex_t *mutex, int timeout_
   }
 }
 
+IMPORT extern std::vector<std::string> g_prog_labels;
+IMPORT extern GameApi::EveryApi *g_everyapi2;
+IMPORT extern volatile GameApi::W g_progress_dialog;
+IMPORT extern GameApi::GuiApi *g_everyapi_gui;
+IMPORT extern GameApi::FtA g_atlas;
+IMPORT extern GameApi::BM g_atlas_bm;
+IMPORT extern bool g_progress_callback_set;
+IMPORT extern void (*g_progress_callback)();
+long long get_current_size();
+long long get_total_size();
+IMPORT extern void (*update_progress_dialog_cb)(volatile GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max, int process);
+extern pthread_t g_main_thread_id;
+
+#if 0
+void check_for_progressbar(pthread_mutex_t *mutex_or_null)
+  {
+#ifdef EMSCRIPTEN
+  pthread_t curr = pthread_self();
+  if (pthread_equal(curr, g_main_thread_id)) {
+
+    if (g_progress_bar_show_logo) {
+      //std::cout << "ProgressDraw (emscripten)" << std::endl;
+      g_progress_bar_logo_cb(g_progress_bar_logo_cb_data);
+      //g_everyapi->mainloop_api.logo_iter();
+    }
+
+  }
+#endif
+    
+#ifndef EMSCRIPTEN
+  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
+  pthread_t curr = pthread_self();
+  if (pthread_equal(curr, g_main_thread_id)) {
+
+	static int g_val2_cache=0;
+	static int g_max2_cache=0;
+	if (g_val2_cache != g_val2 || g_max2_cache != g_max2)
+	  {
+	    
+	    if (mutex_or_null) pthread_mutex_unlock(mutex_or_null);
+
+	    static bool repeat_prevent=false;
+	    if (!repeat_prevent) {
+	      repeat_prevent=true;
+#ifndef EMSCRIPTEN
+	      //std::cout << "ProgressDraw" << std::endl;
+	      //std::cout << stream.str() << l << stream3.str() << std::flush;
+	if (g_everyapi2)
+	  {
+
+	    g_val2_cache = g_val2;
+	    g_max2_cache = g_max2;
+	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,g_val2 /*FindProgressVal()*/,g_max2 /*FindProgressMax()*/,g_last_loaded_script);
+	    if (g_progress_callback_set) {
+	      g_progress_callback();
+	    }
+	  }
+	
+#endif
+	repeat_prevent=false;
+	    }
+	    if (mutex_or_null) pthread_mutex_lock(mutex_or_null);
+	  }
+  } else { /*std::cout << "Wrong thread used for cyheck_for_progressbar()" << std::endl;*/ }
+#endif
+    
+  }
+#endif
+
+bool task_compare(const task_data &a1, const task_data &a2)
+{
+  return a1.id==a2.id;
+}
+bool task_compare_2(const task_data &a1, const task_data &a2)
+{
+  return a1.id<a2.id;
+}
+
+
 class task_implementation : public task_interface
 {
 public:
+  task_implementation()
+  {
+    g_queue_tasks_done = &queue_tasks_done;
+    g_tasks_in_execute = &tasks_in_execute;
+    g_queue = &queue;
+  }
   virtual void spawn_thread()
   {
     pthread_attr_t attr;
@@ -567,6 +1046,7 @@ public:
   virtual void queue_mutex_init()
   {
     queue_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    g_queue_mutex = queue_mutex; // only for async join
   }
   virtual void queue_mutex_start()
   {
@@ -658,13 +1138,22 @@ public:
 	pthread_mutex_unlock(mutex2);
 	// }
   }
+
+  
   virtual void wait_for_push_or_shutdown()
   {
+
+
+    //check_for_progressbar(NULL);
+    
     pthread_mutex_lock(mutex);
     while(queue.size()==0&&!m_shutdown_ongoing)
       {
 	//pthread_cond_wait(cond, mutex);
-	int val = wait_with_timeout(cond,mutex,1000);
+	int val = wait_with_timeout(cond,mutex,300);
+
+	//check_for_progressbar(mutex);
+	
 	if (val==1) // timeout
 	  {
 	    //std::cout << "Warning: wait timeout!" << std::endl;
@@ -687,6 +1176,8 @@ public:
   }
   virtual void join_id(int id)
   {
+
+    
     static int uni_id =0;
     uni_id++;
     int unique_id = uni_id;
@@ -695,8 +1186,13 @@ public:
     
     //std::cout << "join waiting " << id << std::endl;
       in_join=true;
-    pthread_mutex_lock(mutex2);
+
+      //check_for_progressbar(NULL);
+
+
+      pthread_mutex_lock(mutex2);
     while(1) {
+      //check_for_progressbar(mutex2);
 
     queue_mutex_start();
     
@@ -715,10 +1211,16 @@ public:
     if (count==0) break;
     repeat:
     {
-	int val = wait_with_timeout(cond2,mutex2,1000);
+      int val = wait_with_timeout(cond2,mutex2,300); // 1000
+
+      //check_for_progressbar(mutex2);
+
 	if (val==1) // timeout
 	  {
 	    timeout_getevent();
+
+
+	    
 	    //std::cout << "Warning: wait timeout!" << std::endl;
 	    goto repeat;
 	  }
@@ -731,18 +1233,37 @@ public:
     int s3 = queue.size();
     for(int i=0;i<s3;i++)
       {
-	if (queue[i].id==id) { queue.erase(queue.begin()+i); i--; s3--; }
+	if (queue[i].id==id) {
+	  //std::cout << "ERASING from queue:" << queue[i].id << std::endl;
+	  queue.erase(queue.begin()+i); i--; s3--;
+	}
       }
     int s4 = tasks_in_execute.size();
     for(int i=0;i<s4;i++)
       {
-	if (tasks_in_execute[i].id==id) { tasks_in_execute.erase(tasks_in_execute.begin()+i); i--; s4--; }
+	if (tasks_in_execute[i].id==id) {
+	  //std::cout << "ERASING from execute:" << tasks_in_execute[i].id << std::endl;
+	  tasks_in_execute.erase(tasks_in_execute.begin()+i); i--; s4--;
+	}
       }
+    std::sort(queue_tasks_done.begin(), queue_tasks_done.end(), &task_compare_2);
+    auto last = std::unique(queue_tasks_done.begin(),queue_tasks_done.end(),&task_compare);
+    queue_tasks_done.erase(last,queue_tasks_done.end());
+
+#if 0
+    // COMMENTED OUT BECAUSE IT ERASES.
     int s5 = queue_tasks_done.size();
     for(int i=0;i<s5;i++)
       {
-	if (queue_tasks_done[i].id==id) { queue_tasks_done.erase(queue_tasks_done.begin()+i); i--; s5--; }
+	if (queue_tasks_done[i].id==id) {
+
+	  //if (queue_tasks_done[i].id != 3005)
+	  //if (queue_tasks_done[i].id != 1004)
+	  //std::cout << "ERASING from tasks done:" << queue_tasks_done[i].id << std::endl;	  
+	  queue_tasks_done.erase(queue_tasks_done.begin()+i); i--; s5--;
+	}
       }
+#endif
     queue_mutex_end();
     
       in_join=false;
@@ -1293,6 +1814,7 @@ public:
     failcount++;
     if (failcount>10) {
       std::cout << "FetchInBlocks::chunk_failed()" << std::endl;
+      g_error_urls.push_back(url);
       failed(data);
       emscripten_fetch_close(fetch);
     }
@@ -2253,6 +2775,10 @@ long long get_total_size()
 
 void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, std::string homepage)
 {
+  static int unique_id = 0;
+  unique_id ++;
+  
+  
   //std::cout<< "URLS_SIZE:" << urls.size() << std::endl;
 #if 0
   int s2 = urls.size();
@@ -3223,10 +3749,53 @@ GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigne
   return new ASyncDataFetcher(vec);
 }
 
+extern pthread_t g_main_thread_id;
+
 GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
   {
     //std::cout << "GET LOADED_DATA:" << url << std::endl;
 
+#if 0
+#ifndef EMSCRIPTEN
+  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
+  pthread_t curr = pthread_self();
+  if (pthread_equal(curr, g_main_thread_id)) {
+
+    
+	static int g_val2_cache=0;
+	static int g_max2_cache=0;
+	if (g_val2_cache != g_val2 || g_max2_cache != g_max2)
+	  {
+	    
+	    //pthread_mutex_unlock(mutex2);
+
+	    static bool repeat_prevent=false;
+	    if (!repeat_prevent) {
+	      repeat_prevent=true;
+#ifndef EMSCRIPTEN
+	      //    std::cout << "ProgressDraw" << std::endl;
+	      //std::cout << stream.str() << l << stream3.str() << std::flush;
+	if (g_everyapi2)
+	  {
+
+	    g_val2_cache = g_val2;
+	    g_max2_cache = g_max2;
+	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,g_val2 /*FindProgressVal()*/,g_max2 /*FindProgressMax()*/,g_last_loaded_script);
+	    if (g_progress_callback_set) {
+	      g_progress_callback();
+	    }
+	  }
+	
+#endif
+	repeat_prevent=false;
+	    }
+	    //pthread_mutex_lock(mutex2);
+	  }
+  }
+#endif
+#endif
+
+    
 #ifdef THREADS
 #ifndef EMSCRIPTEN
 
@@ -3250,8 +3819,10 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     }
 #endif
 #endif
-    
-    
+    while(1) {   
+
+      
+      
   int u = g_urls.size();
   for(int i=0;i<u;i++)
     {
@@ -3274,13 +3845,38 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
       //std::cout << "DELMAPITEM:" << p.first << std::endl;
     }
     */
-    // g_del_map.print();
+    //g_del_map.print();
+    //std::cout << "FINDING: " << url << std::endl;
     if (g_del_map.async_find(url)) {
       //std::cout << "FOUND FROM G_DELMAP" << std::endl;
       return g_del_map.async_get2(url); //new ASyncDataFetcher(&(*(g_del_map.async_get(url).second)));
     }
-    else
-      return 0;
+    }
+
+      int u2 = g_error_urls.size();
+      for(int i=0;i<u2;i++)
+	{
+	  if (remove_load(url)==std::string(g_error_urls[i]))
+	    {
+	      std::cout << "Url " << remove_load(url) << " found from error urls => couldn't load the data." << std::endl;
+	      return 0;
+	    }
+	}
+
+    
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_Delay(300);
+   //emscripten_sleep(3);
+#endif
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+#endif
+#ifdef WINDOWS
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+#endif
+
+    //else
+    //  return 0;
   }
 
 
@@ -3537,7 +4133,7 @@ extern int g_progress_bar_config;
 
 void ProgressBar(int num, int val, int max, std::string label)
 {
-  std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
+  //std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
   if (find_str(label,"script")!=-1) return;
 #ifndef EMSCRIPTEN
   //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
@@ -3892,8 +4488,19 @@ std::string take_prefix(std::string cd, std::string path)
 
 extern GameApi::PAT gameapi_temp_dir;
 
+
+std::string toLower(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) {
+                       return std::tolower(c);
+                   });
+    return s;
+}
+
 long long load_size_from_url(GameApi::Env &e, std::string url)
 {
+  //std::cout << "load_size_from_url::" << url << std::endl;
+
   //std::cout << "POPEN SIZE" << url << std::endl;
   url = upgrade_to_https(url);
 #ifdef WINDOWS
@@ -3973,7 +4580,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
   url=convert_spaces_to_url_encoding(url);
   //std::cout << "size url: " << url << std::endl;
   
-  if (url=="") return 1;
+  if (url=="") return 50000;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
     bool succ=false;
 #ifndef ANDROID
@@ -4000,7 +4607,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
     std::string cmdsize = "curl -sI --url \"" + url + "\"";
     succ = true;
 #endif
-    long long num = 1;
+    long long num = 50000;
     if (succ) {
 #ifdef __APPLE__
     FILE *f2 = my_popen(cmdsize.c_str(), "r");
@@ -4013,14 +4620,16 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
 #endif
     std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
     unsigned char c2;
-    while(fread(&c2,1,1,f2)==1) {
+    int idx = 30000;
+    while(fread(&c2,1,1,f2)==1 && idx>0) {
       vec2.push_back(c2);
+      idx--;
     }
     pclose(f2);
     std::string s(vec2.begin(),vec2.end());
 #endif
 #ifdef ANDROID
-    long long num = 1;
+    long long num = 50000;
     std::string s = popen_curl_replacement(url,true); // headers only
 #endif
     //std::cout << "Headers:" << s << std::endl;
@@ -4030,7 +4639,7 @@ long long load_size_from_url(GameApi::Env &e, std::string url)
       //std::cout << "Line: " << line << std::endl;
       //if (line.size()>15)
       //std::cout << "Substr: " << line.substr(0,15) << std::endl;
-      if (line.size()>15 && line.substr(0,15)=="Content-Length:") {
+      if (line.size()>15 && toLower(line.substr(0,15))=="content-length:") {
 	std::stringstream ss2(line);
 	std::string dummy;
 	ss2 >> dummy >> num;
