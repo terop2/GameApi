@@ -5913,6 +5913,7 @@ GameApi::PAT PathHandler::default_path()
 
 GameApi::PAT PathHandler::create_path_from_source(GameApi::Env &e, std::string val, const PathConfig &pc)
 {
+  std::cout << "create_path_from_source:" << val << std::endl;
   return add_path(e,new PathImpl(val,pc));
 }
 

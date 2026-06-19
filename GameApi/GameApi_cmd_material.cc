@@ -1,7 +1,10 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 #include "GameApi_cmd.hh"
- std::vector<GameApiItem*> shadermoduleapi_functions()
+
+//#define RELOAD_TEST 1
+
+std::vector<GameApiItem*> shadermoduleapi_functions()
 {
   std::vector<GameApiItem*> vec;
 #if 0
@@ -179,13 +182,16 @@
 			 { "ev" },
 			 "MT", "materials_api", "m_def"));
 #endif
+
+#ifdef RELOAD_TEST
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::reload_material,
 			 "reload",
 			 { "ev", "next", "name", "default_p", "default_mat" },
 			 { "EveryApi&", "MT", "std::string", "P", "MT" },
 			 { "ev", "", "test", "", "" },
 			 "MT", "materials_api", "reload_material"));
-
+#endif
+  
 #if (ALL==1)||(HIRES==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::hires,
 			 "m_hires",
