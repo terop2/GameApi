@@ -11,18 +11,55 @@ int hhhh_gggg=1;
 #include "tiny_gltf.h"
 #include "Tasks.hh"
 #include <unordered_set>
+#include "MaterialI.hh"
+
+#ifdef EMSCRIPTEN
+#define ASYNC_JOIN 1
+#else
+#undef ASYNC_JOIN
+#endif
+
+// this currently doesn't work
+#define TINYGLTF_ASYNC_JOIN 1
+// this is current working.
+#define BITMAP_THREAD_ASYNC_JOIN 1
+
+//#define RELOAD_TEST 1
 
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
 //#define GLTF_ANIM_RESIZE_TEST 1
 //#define GLTF_ANIM_COORD_TEST 1
 
+
+extern std::vector<GameApi::TF> g_tf_instances;
+
+
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
 extern int g_pthread_count;
 
-std::vector<GameApi::TF> g_tf_instances;
+
+std::map<int,pthread_mutex_t *> g_decode_mutexes;
+
+void create_decode_mutex(int id)
+{
+  pthread_mutex_t *m = new pthread_mutex_t;
+  pthread_mutex_init(m,NULL);
+  g_decode_mutexes[id] = m;
+}
+void decode_mutex_lock(int id)
+{
+  if (g_decode_mutexes[id])
+    pthread_mutex_lock(g_decode_mutexes[id]);
+}
+void decode_mutex_unlock(int id)
+{
+  if (g_decode_mutexes[id])
+    pthread_mutex_unlock(g_decode_mutexes[id]);
+}
+
 
 
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
@@ -99,9 +136,9 @@ public:
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_file(GameApi::Env &e, FETCHID id);
   FILEID add_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec, std::string filename);
   FILEID find_file(std::string filename);
-  void start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height);
+  void start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height, int m_decode_mutex_id);
   //void decode_file(FILEID id);
-  bool is_decoded(FILEID id);
+  bool is_decoded(FILEID id, int m_decode_mutex_id);
   void set_decode_callback(FILEID id, void (*fptr)(void*), void *user_data);
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_decoded_file(FILEID id);
   IMAGEID convert_to_image(std::vector<unsigned char> &vec);
@@ -360,100 +397,6 @@ private:
 };
 
 
-class MaterialForward : public Material
-{
-public:
-  GameApi::ML call(GameApi::P p) const
-  {
-    GameApi::ML ml;
-    ml.id = mat(p.id);
-    return ml;
-  }
-  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst(p.id,pts.id);
-    return ml;
-  }
-  GameApi::ML call_inst_matrix(GameApi::P p, GameApi::MS ms)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst_matrix(p.id,ms.id);
-    return ml;
-  }
-
-  int mat(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::ML ml = mat2(p2);
-    return ml.id;
-  }
-  int mat_inst(int p, int pts) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst(p2,p3);
-    return ml.id;
-  }
-    int mat_inst_va_prepare(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::VA va = mat2_inst_va_prepare(p2);
-    return va.id;
-  }
-  int mat_inst_va(int va, int pts) const
-  {
-    GameApi::VA p2;
-    p2.id = va;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst_va(p2,p3);
-    return ml.id;
-  }
-
-  int mat_inst_matrix(int p, int ms) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::MS p3;
-    p3.id = ms;
-    GameApi::ML ml = mat2_inst_matrix(p2,p3);
-    return ml.id;
-  }
-
-  int mat_inst2(int p, int pta) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTA p3;
-    p3.id = pta;
-    GameApi::ML ml = mat2_inst2(p2,p3);
-    return ml.id;
-
-  }
-  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
-    return ml.id;
-
-  }
-  virtual GameApi::ML mat2(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
-  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const=0;
-  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const=0;
-  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
-  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
-};
-
 
 int bitmap_find_data(std::string data);
 extern std::vector<std::pair<std::string,int> > bitmap_prepare_cache_data;
@@ -539,12 +482,43 @@ struct ThreadInfo_gltf_bitmap
   int decoder_item;
   std::string url;
   int i;
+  int m_decode_mutex_id=-1;
 };
 
 GameApi::Env *g_e = 0;
 
 extern bool g_concurrent_download;
 extern bool g_no_concurrent_download;
+
+struct TinyGltfProcessData
+{
+  bool is_ascii;
+  tinygltf::Model *model_p;
+  tinygltf::TinyGLTF *tiny_p;
+  std::vector<char> *vec2_p;
+  int sz;
+  std::string base_url;
+  unsigned char *ptr3;
+};
+
+void *tinygltf_process(void *data)
+{
+  //std::cout << "Start tinygltf" << std::endl;
+  std::string err;
+  std::string warn;
+  TinyGltfProcessData *dt = (TinyGltfProcessData*)data;
+  if (dt->is_ascii)
+    {
+      dt->tiny_p->LoadASCIIFromString(dt->model_p, &err, &warn, &dt->vec2_p->operator[](0), dt->sz, dt->base_url, tinygltf::REQUIRE_ALL);
+
+    } else {
+    // binary
+    dt->tiny_p->LoadBinaryFromMemory(dt->model_p, &err, &warn, dt->ptr3, dt->sz, dt->base_url, tinygltf::REQUIRE_ALL); 
+
+  }
+  //std::cout << "End tinygltf" << std::endl;
+  return 0;
+}
 
 class LoadGltf;
 struct LoadGltf2_data
@@ -564,14 +538,40 @@ void LoadGltf2_cb(void*);
 void LoadGltf_cb(void *);
 void LoadGltf_cb_from_string(void *);
 void LoadGltf2_cb_from_string(void*);
+void tinygltf_async_join_cb(void *data);
+void g_bitmap_thread_async_join_cb(void *data);
+void loadgltf_splitter_cb(void *data);
 
 int find_str(std::string val, std::string repl);
 
+int find_str_vector(std::vector<char> *vec, std::string repl, int max_chars)
+{
+  int s = vec->size();
+  int s2 = repl.size();
+  int s3 = std::min(s-s2,max_chars);
+  for(int i=0;i<s3;i++)
+    {
+      bool found = true;
+      for(int j=0;j<s2;j++)
+	{
+	  if (vec->operator[](i+j)!=repl[j]) { found=false; break; }
+	}
+      if (found) return i;
+    }
+  return -1;
+}
+
+int g_loadgltf_uni_id = 0;
+int splitter_cb_count();
 class LoadGltf : public CollectInterface
 {
 public:
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
     //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
+
+    g_loadgltf_uni_id++;
+    m_loadgltf_unique_id = g_loadgltf_uni_id + 600000;
+
     g_e = &e;
     decoder = new GLTFImageDecoder(base_url,this);
     tinygltf::FsCallbacks fs = {
@@ -597,9 +597,71 @@ public:
     //std::cout << "LoadGltf_cb using url: " << url << std::endl;
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
+    //std::cout << "LoadGltf::LoadGltf" << std::endl;
+
+    splitter_logo_id=add_splitter_logo_callback(&loadgltf_splitter_cb,(void*)this);
+    mlguiwidget_logo_id=add_mlguiwidget_logo_callback(&loadgltf_splitter_cb,(void*)this);
+  }
+
+
+  // TO USE THIS CTOR, YOU MUST DO:
+  //     e.async_load_callback(url, &yourownfunc, (void*)this);
+  // INSIDE YOU CODE, and once that callback is fired, do your own
+  // operations, and then call f(d); // this is used in ZIP decode currently
+  // in sketchfab zips.
+  LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary, void (*fptr2)(void (*f)(void*), void* d)) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
+    //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
+
+    g_loadgltf_uni_id++;
+    m_loadgltf_unique_id = g_loadgltf_uni_id + 600000;
+
+    g_e = &e;
+    decoder = new GLTFImageDecoder(base_url,this);
+    tinygltf::FsCallbacks fs = {
+      &FileExists,
+      &ExpandFilePath,
+      &ReadWholeFile,
+      &WriteWholeFile,
+      (void*)this
+    };
+    tiny.SetFsCallbacks(fs);
+    //#ifdef CONCURRENT_IMAGE_DECODE
+#ifdef THREADS
+    if (url.substr(url.size()-3,3)!="glb")
+      tiny.SetImageLoader(&LoadImageData, this);
+#endif
+    //#endif
+    //tiny.SetImageWriter(&WriteImageData, this);
+#ifdef EMSCRIPTEN
+    async_pending_count++;
+    async=true;
+    async_pending_plus("LoadGltf", "LoadGltf_cb");
+#endif
+    //std::cout << "LoadGltf_cb using url: " << url << std::endl;
+    //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
+    fptr2(&LoadGltf_cb,(void*)this);
+    e.async_load_callback(url, &LoadGltf_cb, (void*)this);
+    //e.async_load_callback(url, &LoadGltf_cb, (void*)this);
+    //std::cout << "Callback started for " << url << std::endl;
+    //std::cout << "LoadGltf::LoadGltf" << std::endl;
+    splitter_logo_id=add_splitter_logo_callback(&loadgltf_splitter_cb,(void*)this);
+    mlguiwidget_logo_id=add_mlguiwidget_logo_callback(&loadgltf_splitter_cb,(void*)this);
+  }
+
+
+  void set_model(GLTFModelInterface *interface) {
+    m_interface = interface;
+    //std::cout << "SETMODEL setting unique id to m_loadgltf_unique_id" << std::endl;
+    interface->set_loadgltf_unique_id(m_loadgltf_unique_id);
   }
   ~LoadGltf()
   {
+    std::cout << "LoadGltf::~LoadGltf" << std::endl;
+    std::cout << splitter_cb_count() << std::endl;
+    remove_splitter_logo_callback(splitter_logo_id);
+    remove_mlguiwidget_logo_callback(mlguiwidget_logo_id);
+    std::cout << splitter_cb_count() << std::endl;
+    
     unasync();
     g_deleted_urls.push_back(url);
     delete decoder;
@@ -634,15 +696,228 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
-    vis.register_obj(this);
+    //if (m_interface)
+    //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
+      {
+	//std::cout << "LoadGltf::Collect" << std::endl;
+	if (m_interface) m_interface->Collect(vis);
+	vis.register_obj(this);
+	//std::cout << "LoadGltf::Collect end" << std::endl;
+      } else {
+      vis.register_obj(this);
+    }
   }
   void HeavyPrepare()
   {
-    Prepare();
+    //std::cout << "LoadGLTF::HeavyPrepare()" << std::endl;
+    // if (m_interface)
+    //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
+      {
+	//std::cout << "LoadGltf::HeavyPrepare" << std::endl;
+    if (prepare_done) return;
+    if (m_interface) m_interface->Prepare();
+    prepare_done=true;
+    //std::cout << "LoadGltf::HeavyPrepare -> executing" << std::endl;
+    //std::cout << "Prepare" << std::endl;
+    unasync();
+#ifndef EMSCRIPTEN
+    PrePrepare();
+#endif
+    if (!preprepare_done)
+      {
+	PrePrepare();
+      }
+    //std::cout << "LoadGLTF: baseurl=" << base_url << std::endl;
+
+
+ #ifdef THREADS
+    // #ifdef EMSCRIPTEN
+    // wait for all threads to finish
+    /*
+    int ss = current_gltf_threads.size();
+    for(int i=0;i<ss;i++)
+      {
+	void *res;
+	pthread_join(current_gltf_threads[i]->thread_id,&res);
+      }
+    */
+#ifdef BITMAP_THREAD_ASYNC_JOIN
+    //std::cout << "ASYNC JOIN CALLED2! (3008)" << std::endl;
+    tasks_async_join_m(3008,&g_bitmap_thread_async_join_cb,(void*)this);
+
+    //bitmap_thread_async_join_cb();
+    //bitmap_thread_async_continuation();
+
+#else
+    //std::cout << "BLOCKING JOIN CALLED2! (3008)" << std::endl;
+    tasks_join(3008);
+    //bitmap_thread_async_join_cb();
+    //bitmap_thread_async_continuation();
+#endif
+    //current_gltf_threads.clear();
+    //#endif
+#endif
+    bool b = false;
+#ifndef THREADS
+    //bitmap_thread_async_join_cb();
+    //bitmap_thread_async_continuation();
+    b=true;
+#endif
+#ifndef EMSCRIPTEN
+    if (!b) {
+      //bitmap_thread_async_join_cb();
+      //bitmap_thread_async_continuation();
+    }
+#endif
+
+    if (!prepreprepare_done) {
+    std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
+    int ig = 0;
+    for(;it!=decoder->filenames.end();it++)
+      {
+	std::pair<FETCHID,std::string> p = *it;
+	PrePrePrepare(ig,p.first);
+	ig++;
+      }
+    prepreprepare_done=true;
+    }
+
+    
+    
+    //try {
+      //std::cout << "LoadGLTF: url=" << url << std::endl;
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; stackTrace(); return; }
+    int ssz = vec->end()-vec->begin();
+    if (ssz<1) {
+      std::cout << "LoadGLTF: ssz=" << ssz << " at " << url << std::endl;
+      return;
+    }
+    std::vector<char> *vec2 = new std::vector<char>(vec->begin(), vec->end());
+    m_vec2 = vec2;
+    // std::string str(vec->begin(),vec->end());
+
+
+    bool is_animated = false;
+    {
+      int val = find_str_vector(vec2,"\"animations\"", 20000);
+    if (val!=-1)
+      {
+	is_animated=true;
+	g_glb_animated=true;
+      }
+    }
+
+
+    //std::cout << str << std::endl;
+    //bool b = false;
+    std::string err;
+    std::string warn;
+    if (!is_binary) {
+      //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
+      int sz = vec2->size();
+
+      if (g_concurrent_download|| !g_no_concurrent_download) {
+#ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space) {
+      sz--;
+    }
+    if (sz<0) sz=0;
+#endif
+      }
+    //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
+      TinyGltfProcessData *processData = new TinyGltfProcessData;
+      processData->is_ascii = true;
+      processData->model_p = &model;
+      processData->tiny_p = &tiny;
+      processData->vec2_p = vec2;
+      processData->sz = sz;
+      processData->base_url = base_url;
+      processData->ptr3 = 0;
+      tasks_add(m_loadgltf_unique_id,&tinygltf_process,(void*)processData);
+#ifndef TINYGLTF_ASYNC_JOIN
+      tasks_join(m_loadgltf_unique_id);
+#else
+      tasks_async_join_m(m_loadgltf_unique_id, &tinygltf_async_join_cb, (void*)this);
+#endif
+
+      //print_task_m_ids();
+      
+      //tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
+    } else {
+      int sz = vec->size();
+      //std::cout << "File size: " << url  << "::" << sz << std::endl;
+      if (g_concurrent_download|| !g_no_concurrent_download) {
+#ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space)
+      {
+      sz--;
+      }
+    if (sz<0) sz=0;
+#endif
+      }
+    char *ptr2 = &vec2->operator[](0);
+    unsigned char *ptr3 = (unsigned char*)ptr2;
+    //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
+
+      TinyGltfProcessData *processData = new TinyGltfProcessData;
+      processData->is_ascii = false;
+      processData->model_p = &model;
+      processData->tiny_p = &tiny;
+      processData->vec2_p = vec2;
+      processData->sz = sz;
+      processData->base_url = base_url;
+      processData->ptr3 = ptr3;
+      tasks_add(m_loadgltf_unique_id,&tinygltf_process,(void*)processData);
+#ifndef TINYGLTF_ASYNC_JOIN
+      tasks_join(m_loadgltf_unique_id);
+#else
+      tasks_async_join_m(m_loadgltf_unique_id, &tinygltf_async_join_cb, (void*)this);
+#endif
+      //print_task_m_ids();
+
+      //tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
+    }
+    if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
+    if (!err.empty()) { std::cout << "ERROR: " << err << std::endl; }
+    prepare_done = true;
+    delete vec;
+    //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
+    //Prepare();
+    //std::cout << "LoadGltf::HeavyPrepare done" << std::endl;
+      } else {
+      
+      if (prepare_done) return;
+    if (m_interface) m_interface->Prepare();
+      Prepare();
+      prepare_done=true;
+    }
+  }
+  void async_join_cb()
+  {
+  }
+  void bitmap_thread_async_join_cb()
+  {
+    bitmap_async_done = true;
   }
   void PrePrePrepare(int i, FETCHID id)
   {
-    if (!decoder) return;
+    //std::cout << "LoadGltf::PrePrePrepare" << std::endl;
+    if (!decoder) { stackTrace(); std::cout << "PrePrePrepare::nodecoder" << std::endl; return; }
     //std::cout << "PrePrePrepare" << i << std::endl;
     if (url.substr(url.size()-3,3)!="glb") {
     prepreprepare_done = true;
@@ -673,8 +948,14 @@ public:
      std::stringstream ss; ss<<i;
      async_pending_plus("LoadGltf", "decode_process " + ss.str());
 #endif
-     
-     decoder->start_decode_process(i,id,iid,256,256);
+
+     if (m_decode_mutex_id==-1) {
+       static int id = 500000;
+       id++;
+       m_decode_mutex_id = id;
+       create_decode_mutex(id);
+     }
+     decoder->start_decode_process(i,id,iid,256,256,m_decode_mutex_id);
     }
   }
   void PrePrepare() {
@@ -688,7 +969,7 @@ public:
 #endif
     //unasync();
     if (!decoder) { std::cout << "NoDecoder" << std::endl; return; }
-    if (preprepare_done) { std::cout << "PrePrepare already done" << std::endl; return; }
+    if (preprepare_done) { /*std::cout << "PrePrepare already done" << std::endl;*/ return; }
     //std::cout << "PrePrepare" << url << std::endl;
     preprepare_done = true;
     if (url.substr(url.size()-3,3)!="glb") {
@@ -699,7 +980,7 @@ public:
 #endif
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
-    if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << std::endl; stackTrace();  return; }
+    if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << url << std::endl; stackTrace();  return; }
     if (!vec->size()) { std::cout << "PrePrepare FILE SIZE=0!" << std::endl; stackTrace();  return; }
     //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
 
@@ -746,6 +1027,7 @@ public:
     decoder->fetch_all_files(e,image_ids);
 
 #ifndef EMSCRIPTEN
+    if (!prepreprepare_done) {
     std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
     int ig = 0;
     for(;it!=decoder->filenames.end();it++)
@@ -754,10 +1036,22 @@ public:
 	PrePrePrepare(ig,p.first);
 	ig++;
       }
+    prepreprepare_done = true;
+    }
+    
 #endif
     }
   }
   void Prepare() {
+    // if (m_interface)
+    //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation())
+      {
+	//std::cout << "LoadGltf::Prepare" << std::endl;
+    HeavyPrepare();
+    //std::cout << "LoadGltf::Prepare done" << std::endl;
+      } else {
+
     if (prepare_done) return;
     //std::cout << "Prepare" << std::endl;
     unasync();
@@ -771,8 +1065,8 @@ public:
     //std::cout << "LoadGLTF: baseurl=" << base_url << std::endl;
 
 
- #ifdef THREADS
- #ifdef EMSCRIPTEN
+#ifdef THREADS
+    //#ifdef EMSCRIPTEN
     // wait for all threads to finish
     /*
     int ss = current_gltf_threads.size();
@@ -782,11 +1076,19 @@ public:
 	pthread_join(current_gltf_threads[i]->thread_id,&res);
       }
     */
+    
+#ifdef BITMAP_THREAD_ASYNC_JOIN
+    //std::cout << "ASYNC JOIN CALLED! (3008)" << std::endl;
+    tasks_async_join_m(3008,&g_bitmap_thread_async_join_cb,(void*)this);
+    //bitmap_thread_async_join_cb();
+    //bitmap_thread_async_continuation();
+#else
+    //std::cout << "BLOCKING JOIN CALLED! (3008)" << std::endl;
     tasks_join(3008);
     current_gltf_threads.clear();
  #endif
- #endif
-
+    // #endif
+#endif
     if (!prepreprepare_done) {
     std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
     int ig = 0;
@@ -878,14 +1180,40 @@ public:
     prepare_done = true;
     delete vec;
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
+      
+    }
   }
-  void set_urls(std::string burl, std::string url2) { base_url=burl; url=url2; }
+  void set_urls(std::string burl, std::string url2) {
+    base_url=burl; url=url2;
+  }
+  void splitter_cb()
+  {
+    is_in_splitter_cb=true;
+    //std::cout << "Splitter_cb" << std::endl;
+    execute();
+    is_in_splitter_cb=false;
+  }
   void execute()
   {
-    if (!prepare_done) Prepare();
+    // if (m_interface)
+    //  std::cout << "FLAGJOINIMPL:" << m_interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (m_interface && m_interface->IsSketchFabZipASyncJoinImplementation()) {
+      if (tinygltf_ready_flag && zip_done_firsttime) {
+	zip_done_firsttime = false;
+	if (!prepare_done && loadgltf_firsttime) {
+	  Prepare();
+	  loadgltf_firsttime=false;
+	    }
+      }
+      if (m_interface) m_interface->execute();
+    } else {
+      if (!is_in_splitter_cb)
+	if (!prepare_done) { Prepare(); prepare_done=true; }
+    }
   }
 public:
   GameApi::Env &e;
+  GLTFModelInterface *m_interface=0;
   std::string base_url;
   std::string url;
   std::string homepage;
@@ -900,7 +1228,36 @@ public:
   bool async=false;
   std::vector<bool> async_vec;
   std::vector<char> *m_vec2=0;
+  bool tinygltf_ready_flag=false;
+  bool bitmap_async_done=false;
+  bool bitmap_async_firsttime=true;
+  bool loadgltf_firsttime=true;
+  bool loadgltf_firsttime2=true;
+  bool zip_done_firsttime=true;
+  int m_3008_id;
+  int splitter_logo_id;
+  int mlguiwidget_logo_id;
+  bool is_in_splitter_cb=false;
+  int m_loadgltf_unique_id = -1;
+  int m_decode_mutex_id=-1;
 };
+void loadgltf_splitter_cb(void *data)
+{
+ LoadGltf *load = (LoadGltf*)data;
+ load->splitter_cb();
+}
+void g_bitmap_thread_async_join_cb(void *data)
+  {
+    // TMP
+    LoadGltf *load = (LoadGltf*)data;
+    load->bitmap_thread_async_join_cb();
+  }
+  
+void tinygltf_async_join_cb(void *data)
+{
+  LoadGltf *load = (LoadGltf*)data;
+  load->async_join_cb();
+}
 
 void LoadGltf_cb(void *ptr)
 {
@@ -1257,6 +1614,7 @@ public:
   virtual void Collect(CollectVisitor &vis) { load->Collect(vis); vis.register_obj(this); }
   virtual void HeavyPrepare() { if (firsttime&&load) { self=&load->model; model=&load->model; firsttime=false; } }
   virtual void execute() { load->execute(); }
+  LoadGltf *get_load() const { return load; }
 public:
   LoadGltf *load=0;
   tinygltf::Model *model=0;
@@ -1273,6 +1631,7 @@ public:
   virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
   virtual void HeavyPrepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
   virtual void execute() { load->execute(); }
+  LoadGltf *get_load() const { return 0; }
 public:
   LoadGltf_from_string *load=0;
   tinygltf::Model *model=0;
@@ -1304,6 +1663,9 @@ int register_cache_deleter(void (*fptr)(void*), void*);
 #ifdef EMSCRIPTEN
 void del_instances(void*)
 {
+  std::cout << "Deleting instances.." << std::endl;
+  std::cout << "commented out!" << std::endl;
+#if 0
   int s3 = g_model_del_items.size();
   for(int ii=0;ii<s3;ii++)
     {
@@ -1334,7 +1696,8 @@ void del_instances(void*)
      s.obj->model.cameras.clear();
      s.obj->model.scenes.clear();
      s.obj->model.lights.clear();
-     
+     delete s.obj;
+     s.obj=0;
     }
   g_gltf_instances.clear();
   //instance_deleter_installed=false;
@@ -1371,11 +1734,12 @@ void del_instances(void*)
      s.obj->model.cameras.clear();
      s.obj->model.scenes.clear();
      s.obj->model.lights.clear();
-     
+     delete s.obj;
+     s.obj = 0;
     }
   g_gltf_instances_from_string.clear();
   //instance_deleter_installed=false;
-
+#endif
 }
 #endif
 
@@ -1403,6 +1767,33 @@ LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string 
   g_gltf_instances.push_back(s2);
   return obj;
 }
+
+// for sketchfab zip.
+LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary, void (*fptr)(void (*f)(void*),void *d))
+{
+#ifdef EMSCRIPTEN
+  if (instance_deleter_installed==false)
+    {
+      register_cache_deleter(&del_instances,(void*)0);
+      instance_deleter_installed=true;
+  }
+#endif
+  
+  std::string key = base_url + ":" + url;
+
+  int s = g_gltf_instances.size();
+  for(int i=0;i<s;i++) {
+    if (g_gltf_instances[i].key == key) return g_gltf_instances[i].obj;
+  }
+  LoadGltf *obj = new LoadGltf(e,base_url,url,homepage,is_binary,fptr);
+  //obj->Prepare();
+  KeyStruct s2;
+  s2.key = key;
+  s2.obj = obj;
+  g_gltf_instances.push_back(s2);
+  return obj;
+}
+
 
 
 LoadGltf_from_string *find_gltf_instance_from_string(GameApi::Env &e, std::string data, std::string base_url, std::string url, std::string homepage, bool is_binary)
@@ -1692,8 +2083,34 @@ void *thread_func_gltf_bitmap(void *data2)
   image->pixel_type = pixel_type;
   //std::cout << "w:" << w << " h:" << h << " comp:" << comp << " bits:" << bits << std::endl;
   //std::cout << "image:" << (long)image << std::endl;
-  image->image.resize(static_cast<uint64_t>(w * h * comp) * size_t(bits / 8));
-  std::copy(data, data + w * h * comp * (bits / 8), image->image.begin());
+  //std::cout << "Image alloc: w*h*comp*bits/8 = " << w << "*" << h << "*" << comp << "*" << size_t(bits/8) << std::endl;
+  if (w<=512 && h<=512) {
+    image->image.resize(static_cast<uint64_t>(w * h * comp) * size_t(bits / 8));
+    std::copy(data, data + w * h * comp * (bits / 8), image->image.begin());
+  } else {
+    int reduce=1;
+    if (w<=1024 && h<=1024) reduce=2; else
+      if (w<=2048 && h<=2048) reduce=4; else
+	if (w<=4096 && h<=4096) reduce=8; else
+	  if (w<=8192 && h<=8192) reduce=16;
+
+    int new_w = w/reduce;
+    int new_h = h/reduce;
+    //std::cout << "reducing with mult=" << reduce << " to " << new_w << "*" << new_h << std::endl;
+
+    image->image.resize(static_cast<uint64_t>(new_w*new_h*comp) * size_t(bits/8));
+    for(int y=0;y<new_h;y++)
+      for(int x=0;x<new_w;x++)
+	{
+	  unsigned int *ptr = (unsigned int*)(data + (y*reduce)*h*comp*(bits/8) + (x*reduce)*comp*(bits/8));
+	  unsigned int val = *ptr;
+	  unsigned int *ptr2 = (unsigned int*)((&image->image[0]) + (y*new_h*comp*(bits/8)) + (x*comp*(bits/8)));
+	  *ptr2 = val;			      
+	 }
+    image->width = new_w;
+    image->height= new_h;
+    
+  }
   stbi_image_free(data);
 
 
@@ -1701,12 +2118,16 @@ void *thread_func_gltf_bitmap(void *data2)
 
 
   //std::cout << "DECODING DONE" << bm->url << std::endl;
+
+  decode_mutex_lock(bm->m_decode_mutex_id);
   
   FILEID id;
   id.id = bm->decoder_item;
   
   bm->decoder->decoded_image[id] = image;
   bm->decoder->decoded_files[id] = &image->image;
+
+  decode_mutex_unlock(bm->m_decode_mutex_id);
   if (bm->decoder->decode_cb[id])
     bm->decoder->decode_cb[id](bm->decoder->decode_user_data[id]);
 
@@ -1733,7 +2154,7 @@ class GLTFImageDecoder;
 //std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
 
 
-void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item, std::string url)
+void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item, std::string url, int m_decode_mutex_id)
 {
 #ifdef THREADS
   
@@ -1751,6 +2172,7 @@ void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int 
   info->decoder = decoder;
   info->decoder_item = decoder_item;
   info->i = i;
+  info->m_decode_mutex_id = m_decode_mutex_id;
   unsigned char *bytes2 = new unsigned char[size];
   std::copy(bytes, bytes+size,bytes2);
   info->bytes = bytes2;
@@ -1763,6 +2185,7 @@ void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int 
   //pthread_attr_setstacksize(&attr,300000);
   g_pthread_count++;
   //pthread_create(&info->thread_id, &attr, &thread_func_gltf_bitmap, (void*)info);
+  //std::cout << "3008 tasks_add" << std::endl;
   tasks_add(3008,&thread_func_gltf_bitmap,(void*)info);
   
 #endif
@@ -1825,8 +2248,14 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
     //std::cout << "JOINING BITMAP THREADS!" << std::endl;
   //  gltf_join_threads(dt->decoder);
   // }
+  int repeat_count = 0;
+  
+ repeat_label:
+  repeat_count++;
+  if (repeat_count<30) {
   //FILEID id2 = dt->decoder->find_file(url);
-  if (dt->decoder->is_decoded(id)) {
+    if (dt->decoder->is_decoded(id,dt->m_decode_mutex_id)) {
+    decode_mutex_lock(dt->m_decode_mutex_id);
     std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr2 = dt->decoder->get_decoded_file(id);
     //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
     image->image = *ptr2;
@@ -1835,8 +2264,16 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
     image->component = dt->decoder->decoded_image[id]->component;
     image->pixel_type = dt->decoder->decoded_image[id]->pixel_type;
     image->bits = dt->decoder->decoded_image[id]->bits;
+    decode_mutex_unlock(dt->m_decode_mutex_id);
     //std::cout << "OUTPUT:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
-  } else { std::cout << "FILE WAS NOT DECODED YET:" << dt->decoder->load->current_gltf_threads.size() << "::" << dt->base_url + image->uri << std::endl; }
+  } else { 
+      std::cout << "REAL JOIN 3008" << std::endl;
+    tasks_join(3008);
+    goto repeat_label;
+  }
+  } else {
+    std::cout << "FILE WAS NOT DECODED YET:" << dt->decoder->load->current_gltf_threads.size() << "::" << dt->base_url + image->uri << std::endl;
+  }
   //#ifdef CONCURRENT_IMAGE_DECODE
   //start_gltf_bitmap_thread(image, req_width, req_height, bytes, size);
   //return true;
@@ -1859,7 +2296,7 @@ bool LoadImageData_from_string(tinygltf::Image *image, const int image_idx, std:
   //  gltf_join_threads(dt->decoder);
   // }
   //FILEID id2 = dt->decoder->find_file(url);
-  if (dt->decoder->is_decoded(id)) {
+  if (dt->decoder->is_decoded(id, -1)) {
     std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr2 = dt->decoder->get_decoded_file(id);
     //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
     image->image = *ptr2;
@@ -4147,6 +4584,9 @@ public:
   GLTFFaceCollection( GLTFModelInterface *interface, int mesh_index, int prim_index) : interface(interface), mesh_index(mesh_index), prim_index(prim_index) {
   }
   virtual std::string name() const { return "GLTFFaceCollection"; }
+  virtual bool Ready() const { if (interface) return interface->Ready();
+    return false;
+  }
   ~GLTFFaceCollection()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
@@ -4158,7 +4598,7 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
-    interface->Collect(vis);
+    interface->get_load()->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -4417,7 +4857,7 @@ public:
   
   virtual void Prepare() { 
     //std::cout << "GLTFFaceCollection::Prepare()" << std::endl;
-    interface->Prepare();
+    interface->get_load()->Prepare();
     HeavyPrepare();
   }
   virtual int NumFaces() const 
@@ -8091,12 +8531,12 @@ GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, G
 GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, float self_mult, float rest_mult, bool transparent, bool acesfilm, bool emissive), float mix, float self_mult, float rest_mult, Vector light_dir, bool transparent, bool acesfilm, bool emissive);
 
 
-GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, GameApi::TRB transfer_id, bool emissive);
-GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive);
+GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, GameApi::TRB transfer_id, bool emissive, int frame_skip);
+GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive, int frame_skip);
 
-GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, GameApi::TRB transfer_id, bool emissive);
-GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive);
-GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys, int mode,int inst, GameApi::TRA anim_transfer_id);
+GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, GameApi::TRB transfer_id, bool emissive, int frame_skip);
+GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip);
+GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys, int mode,int inst, GameApi::TRA anim_transfer_id, int frame_skip);
 
 
 bool is_child_node(GLTFModelInterface *interface, int node_id, int node2)
@@ -8348,7 +8788,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 
 
 
-GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, float mix, float self_mult, float rest_mult, Matrix root, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool very_root_node, GameApi::TRB transfer_id, bool emissive)
+GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, float mix, float self_mult, float rest_mult, Matrix root, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool very_root_node, GameApi::TRB transfer_id, bool emissive, int frame_skip)
 {
   //if (!load2) load2 = load;
   int s2 = interface->nodes_size(); //load->model.nodes.size();
@@ -8372,7 +8812,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
 	int mesh_id = node.mesh;
 	mesh.id = -1;
 	if (mesh_id != -1) {
-	  mesh = gltf_mesh2_with_skeleton(e,ev,interface, mesh_id, i,keys,mix,self_mult, rest_mult, mode, light_dir, animation, border_width, border_color,transparent,acesfilm, transfer_id, emissive);
+	  mesh = gltf_mesh2_with_skeleton(e,ev,interface, mesh_id, i,keys,mix,self_mult, rest_mult, mode, light_dir, animation, border_width, border_color,transparent,acesfilm, transfer_id, emissive, frame_skip);
 	  done = true;
 	}
 	if (done)
@@ -8384,7 +8824,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     int mesh_id = node.mesh;
     mesh.id = -1;
     if (mesh_id!=-1) {
-      mesh = gltf_mesh2( e, ev, interface, mesh_id, 0, keys,mix,self_mult,rest_mult,mode, light_dir ,animation, border_width, border_color, acesfilm,transfer_id, emissive);
+      mesh = gltf_mesh2( e, ev, interface, mesh_id, 0, keys,mix,self_mult,rest_mult,mode, light_dir ,animation, border_width, border_color, acesfilm,transfer_id, emissive, frame_skip);
     }
   }
   // todo cameras
@@ -8404,7 +8844,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     int child_id = node.children[i];
     if (child_id!=-1) {
       //std::cout << "{";
-      GameApi::ML ml = gltf_node2( e, ev, interface, child_id,keys,mix,self_mult,rest_mult,o2.second,mode, light_dir, animation, border_width, border_color,transparent,acesfilm,false, transfer_id, emissive );
+      GameApi::ML ml = gltf_node2( e, ev, interface, child_id,keys,mix,self_mult,rest_mult,o2.second,mode, light_dir, animation, border_width, border_color,transparent,acesfilm,false, transfer_id, emissive, frame_skip );
       vec.push_back(ml);
       //std::cout << "}";
     }
@@ -8493,7 +8933,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   return ret;
 }
 
-GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  GameApi::P resize_obj, std::function<GameApi::P (GameApi::P p)> fptr, GameApi::MS ms, int node_id, std::string keys, float mix, float self_mult, float rest_mult, Matrix root, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive)
+GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  GameApi::P resize_obj, std::function<GameApi::P (GameApi::P p)> fptr, GameApi::MS ms, int node_id, std::string keys, float mix, float self_mult, float rest_mult, Matrix root, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip)
 {
   //if (!load2) load2 = load;
   int s2 = interface->nodes_size(); //load->model.nodes.size();
@@ -8605,7 +9045,7 @@ GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
 	int mesh_id = node.mesh;
 	mesh.id = -1;
 	if (mesh_id != -1) {
-	  mesh = gltf_mesh2_with_skeleton_inst_matrix(e,ev,interface, resize_obj, [&](GameApi::P p) { return f(p); },ms,  mesh_id, i,keys,mix,self_mult, rest_mult, mode, light_dir, animation, border_width, border_color,transparent,acesfilm, emissive);
+	  mesh = gltf_mesh2_with_skeleton_inst_matrix(e,ev,interface, resize_obj, [&](GameApi::P p) { return f(p); },ms,  mesh_id, i,keys,mix,self_mult, rest_mult, mode, light_dir, animation, border_width, border_color,transparent,acesfilm, emissive, frame_skip);
 	  done = true;
 	}
 	if (done)
@@ -8617,7 +9057,7 @@ GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
     int mesh_id = node.mesh;
     mesh.id = -1;
     if (mesh_id!=-1) {
-      mesh = gltf_mesh2_inst_matrix( e, ev, interface, resize_obj, [&](GameApi::P p) { return f(p); }, ms,  mesh_id, 0, keys,mix,self_mult,rest_mult,mode, light_dir ,animation, border_width, border_color,acesfilm,emissive);
+      mesh = gltf_mesh2_inst_matrix( e, ev, interface, resize_obj, [&](GameApi::P p) { return f(p); }, ms,  mesh_id, 0, keys,mix,self_mult,rest_mult,mode, light_dir ,animation, border_width, border_color,acesfilm,emissive, frame_skip);
     }
   }
   // todo cameras
@@ -8637,7 +9077,7 @@ GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
     int child_id = node.children[i];
     if (child_id!=-1) {
       //std::cout << "{";
-      GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, resize_obj, [&](GameApi::P p) { return f(p); }, ms, child_id,keys,mix,self_mult,rest_mult,o2.second,mode, light_dir, animation, border_width, border_color,transparent,acesfilm,emissive );
+      GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, resize_obj, [&](GameApi::P p) { return f(p); }, ms, child_id,keys,mix,self_mult,rest_mult,o2.second,mode, light_dir, animation, border_width, border_color,transparent,acesfilm,emissive, frame_skip );
       vec.push_back(ml);
       //std::cout << "}";
     }
@@ -8774,7 +9214,7 @@ GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
 }
 
 
-GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, GameApi::TRB transfer_id, bool emissive)
+GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, GameApi::TRB transfer_id, bool emissive, int frame_skip)
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -8787,7 +9227,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   int s = scene.nodes.size();
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys,mix,self_mult,rest_mult,Matrix::Identity(),mode,light_dir,animation, border_width, border_color,transparent,acesfilm,true,transfer_id, emissive );
+    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys,mix,self_mult,rest_mult,Matrix::Identity(),mode,light_dir,animation, border_width, border_color,transparent,acesfilm,true,transfer_id, emissive, frame_skip );
     vec.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, vec);
@@ -8796,7 +9236,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
 GameApi::P identity_p(GameApi::P p) { return p; }
 
 
-GameApi::ML gltf_scene2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, GameApi::MS ms, int scene_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive )
+GameApi::ML gltf_scene2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, GameApi::MS ms, int scene_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip )
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -8809,7 +9249,7 @@ GameApi::ML gltf_scene2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLT
   int s = scene.nodes.size();
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, resize_obj, &identity_p, ms, scene.nodes[i], keys,mix,self_mult,rest_mult,Matrix::Identity(),mode,light_dir,animation, border_width, border_color,transparent,acesfilm, emissive );
+    GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, resize_obj, &identity_p, ms, scene.nodes[i], keys,mix,self_mult,rest_mult,Matrix::Identity(),mode,light_dir,animation, border_width, border_color,transparent,acesfilm, emissive, frame_skip );
     vec.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, vec);
@@ -8859,7 +9299,14 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       if (acesfilm)
        	mat_res = ev.materials_api.acesfilm_material(ev,mat_res);
       mat_res = ev.materials_api.discard_material(ev,mat_res);
-  return mat_res.id;
+
+#ifdef RELOAD_TEST
+      GameApi::P def_p = ev.polygon_api.p_empty();
+      GameApi::MT def_start = ev.materials_api.m_def(ev);
+       mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start);
+#endif
+
+      return mat_res.id;
 }
 
 GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, float self_mult, float rest_mult, bool transparent, bool acesfilm, bool emissive), float mix, float self_mult, float rest_mult, Vector light_dir, bool transparent, bool acesfilm, bool emissive)
@@ -8903,7 +9350,7 @@ int get_cache_id(GLTFModelInterface *interface)
 
 
 
-GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, GameApi::TRB transfer_id, bool emissive)
+GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, GameApi::TRB transfer_id, bool emissive, int frame_skip)
 {
   //std::cout << mesh_id << " :: " << skin_id << std::endl;
   int cache_id = get_cache_id(interface);
@@ -8939,7 +9386,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
 	  if (mm>maxtimeindexes) maxtimeindexes=mm;
 	  //}
 	  GameApi::TRA anim_transfer_id = { transfer_id.id };
-	  mat2_anim= gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+100*cache_id, anim_transfer_id);
+	  mat2_anim= gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+100*cache_id, anim_transfer_id, frame_skip);
       } else
 	{
 	  mat2_anim = mat3;
@@ -8962,7 +9409,13 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       if (acesfilm)
       	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
        mat_res = ev.materials_api.discard_material(ev,mat_res);
-      
+
+#ifdef RELOAD_TEST
+       GameApi::P def_p = ev.polygon_api.p_empty();
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+       mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start); 
+#endif
+       
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind(p,mat_res);
 
@@ -8981,7 +9434,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
 }
 
 
-GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P p)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive)
+GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P p)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip)
 {
   //std::cout << mesh_id << " :: " << skin_id << std::endl;
   int cache_id = get_cache_id(interface);
@@ -9032,7 +9485,7 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
 	  if (mm>maxtimeindexes) maxtimeindexes=mm;
 	  //}
 	  GameApi::TRA anim_transfer_id = { 440 };
-	    mat2_anim= gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+100*cache_id, anim_transfer_id);
+	  mat2_anim= gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+100*cache_id, anim_transfer_id,frame_skip);
       } else
 	{
 	  mat2_anim = mat3;
@@ -9056,6 +9509,12 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
       mat_res = ev.materials_api.discard_material(ev,mat_res);
 
+#ifdef RELOAD_TEST 
+      GameApi::P def_p = ev.polygon_api.p_empty();
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+       mat_res = ev.materials_api.reload_material(ev,mat_res,"foobar",def_p,def_start); 
+#endif
+       
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat_res);
 
@@ -9124,7 +9583,7 @@ GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 
 
 
-GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, GameApi::TRB transfer_id, bool emissive)
+GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, GameApi::TRB transfer_id, bool emissive, int frame_skip)
 {
   //std::cout << mesh_id << " :: " << skin_id << std::endl;
   int cache_id = get_cache_id(interface);
@@ -9160,7 +9619,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
 	  if (mm>maxtimeindexes) maxtimeindexes=mm;
 	  //}
 	  GameApi::TRA anim_transfer_id = { transfer_id.id };
-	  mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+cache_id*100, anim_transfer_id);
+	  mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+cache_id*100, anim_transfer_id, frame_skip);
       } else { mat2_anim=mat3; }
       GameApi::MT mat4;
       if (colour)
@@ -9179,6 +9638,12 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
 	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
       mat4 = ev.materials_api.discard_material(ev,mat4);
 
+#ifdef RELOAD_TEST
+      GameApi::P def_p = ev.polygon_api.p_empty();
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+       mat4 = ev.materials_api.reload_material(ev,mat4,"foobar",def_p,def_start); 
+#endif
+      
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
@@ -9193,7 +9658,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   }
 }
 
-GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr,GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive)
+GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr,GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive, int frame_skip)
 {
   //std::cout << mesh_id << " :: " << skin_id << std::endl;
   int cache_id = get_cache_id(interface);
@@ -9242,7 +9707,7 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
 	  if (mm>maxtimeindexes) maxtimeindexes=mm;
 	  //}
 	  GameApi::TRA anim_transfer_id = { 441 };
-	  mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+cache_id*100, anim_transfer_id);
+	  mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+cache_id*100, anim_transfer_id, frame_skip);
       } else { mat2_anim=mat3; }
       GameApi::MT mat4;
       if (colour)
@@ -9261,6 +9726,12 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
       	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
       mat4 = ev.materials_api.discard_material(ev,mat4);
 
+#ifdef RELOAD_TEST
+      GameApi::P def_p = ev.polygon_api.p_empty();
+       GameApi::MT def_start = ev.materials_api.m_def(ev);
+       mat4 = ev.materials_api.reload_material(ev,mat4,"foobar",def_p,def_start); 
+#endif
+      
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat4);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
@@ -9308,8 +9779,8 @@ GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInt
 class GltfMesh : public MainLoopItem
 {
 public:
-  GltfMesh(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive)
-    :env(env), ev(ev), interface(interface),mesh_id(mesh_id),skin_id(skin_id), keys(keys),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color), acesfilm(acesfilm),emissive(emissive) { res.id=-1; }
+  GltfMesh(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive, int frame_skip)
+    :env(env), ev(ev), interface(interface),mesh_id(mesh_id),skin_id(skin_id), keys(keys),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color), acesfilm(acesfilm),emissive(emissive),frame_skip(frame_skip) { res.id=-1; }
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -9330,7 +9801,7 @@ public:
   interface->Prepare();
   GameApi::P mesh = gltf_mesh2_p(env,ev,interface, mesh_id, skin_id, keys); //env,ev, interface, 0,0);
   GameApi::TRB transfer_id = { 558 };
-  GameApi::ML ml = gltf_mesh2(env,ev,interface, mesh_id, skin_id, keys,mix,self_mult,rest_mult,mode,light_dir,animation, border_width, border_color,acesfilm,transfer_id, emissive);
+  GameApi::ML ml = gltf_mesh2(env,ev,interface, mesh_id, skin_id, keys,mix,self_mult,rest_mult,mode,light_dir,animation, border_width, border_color,acesfilm,transfer_id, emissive, frame_skip);
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(env,interface,mesh))
     {
@@ -9387,20 +9858,21 @@ private:
   unsigned int border_color;
   bool acesfilm;
   bool emissive;
+  int frame_skip;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix,float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive )
+GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix,float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive, int frame_skip )
 {
 
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfMesh(e,ev,interface,mesh_id, skin_id, keys,mix, self_mult,rest_mult, mode,Vector(light_dir_x,light_dir_y,light_dir_z),animation, border_width, border_color, acesfilm,emissive));
+  return add_main_loop(e, new GltfMesh(e,ev,interface,mesh_id, skin_id, keys,mix, self_mult,rest_mult, mode,Vector(light_dir_x,light_dir_y,light_dir_z),animation, border_width, border_color, acesfilm,emissive, frame_skip));
 }
 
 class GltfNode : public MainLoopItem
 {
 public:
-  GltfNode(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int node_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive)
-    :env(env), ev(ev), interface(interface),node_id(node_id),keys(keys),mix(mix), self_mult(self_mult), rest_mult(rest_mult), mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm) { res.id=-1; }
+  GltfNode(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int node_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip)
+    :env(env), ev(ev), interface(interface),node_id(node_id),keys(keys),mix(mix), self_mult(self_mult), rest_mult(rest_mult), mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm), frame_skip(frame_skip) { res.id=-1; }
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -9423,7 +9895,7 @@ public:
   GameApi::TRB transfer_id;
   transfer_id.id = 557;
   
-  GameApi::ML ml = gltf_node2(env,ev,interface,node_id,keys,mix,self_mult,rest_mult,Matrix::Identity(), mode, light_dir, animation,border_width, border_color,transparent,acesfilm,false, transfer_id,emissive);
+  GameApi::ML ml = gltf_node2(env,ev,interface,node_id,keys,mix,self_mult,rest_mult,Matrix::Identity(), mode, light_dir, animation,border_width, border_color,transparent,acesfilm,false, transfer_id,emissive, frame_skip);
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(env,interface,mesh))
     {
@@ -9484,21 +9956,22 @@ private:
   bool transparent;
   bool acesfilm;
   bool emissive;
+  int frame_skip;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, TF model0, int node_id, std::string keys, float mix,float self_mult, float rest_mult, int mode, float light_x, float light_y, float light_z, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive )
+GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, TF model0, int node_id, std::string keys, float mix,float self_mult, float rest_mult, int mode, float light_x, float light_y, float light_z, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip )
 {
 
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e,new GltfNode(e,ev,interface,node_id,keys,mix,self_mult,rest_mult,mode,Vector(light_x,light_y,light_z),animation,border_width,border_color,transparent,acesfilm,emissive));
+  return add_main_loop(e,new GltfNode(e,ev,interface,node_id,keys,mix,self_mult,rest_mult,mode,Vector(light_x,light_y,light_z),animation,border_width,border_color,transparent,acesfilm,emissive, frame_skip));
 }
 
 
 class GltfScene : public MainLoopItem
 {
 public:
-  GltfScene(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix, float self_mult, float rest_mult, int mode,Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive)
-    :env(env), ev(ev), interface(interface),scene_id(scene_id),keys(keys),mix(mix),self_mult(self_mult), rest_mult(rest_mult), mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm),emissive(emissive) { res.id=-1;}
+  GltfScene(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix, float self_mult, float rest_mult, int mode,Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip)
+    :env(env), ev(ev), interface(interface),scene_id(scene_id),keys(keys),mix(mix),self_mult(self_mult), rest_mult(rest_mult), mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm),emissive(emissive), frame_skip(frame_skip) { res.id=-1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -9519,7 +9992,7 @@ public:
   interface->Prepare();
   GameApi::P mesh = gltf_scene2_p(env,ev,interface,scene_id,keys); //env,ev, interface, 0,0);
   GameApi::TRB transfer_id = { 556 };
-  GameApi::ML ml = gltf_scene2(env,ev,interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,animation, border_width, border_color,transparent,acesfilm,transfer_id,emissive);
+  GameApi::ML ml = gltf_scene2(env,ev,interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,animation, border_width, border_color,transparent,acesfilm,transfer_id,emissive, frame_skip);
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(env,interface,mesh))
     {
@@ -9576,24 +10049,25 @@ private:
   bool transparent;
   bool acesfilm;
   bool emissive;
+  int frame_skip;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, TF model0, int scene_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive )
+GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, TF model0, int scene_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip )
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfScene(e,ev,interface,scene_id,keys,mix,self_mult,rest_mult,mode,Vector(light_dir_x, light_dir_y, light_dir_z),animation,border_width,border_color,transparent,acesfilm,emissive));
+  return add_main_loop(e, new GltfScene(e,ev,interface,scene_id,keys,mix,self_mult,rest_mult,mode,Vector(light_dir_x, light_dir_y, light_dir_z),animation,border_width,border_color,transparent,acesfilm,emissive, frame_skip));
   //return ml;
 }
 
 
 
-GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive )
+GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool acesfilm, bool emissive, int frame_skip )
 {
   int s = interface->meshes_size(); //load->model.meshes.size();
   std::vector<GameApi::ML> mls;
   for(int i=0;i<s;i++) {
     GameApi::TRB transfer_id = { 559 };
-    GameApi::ML ml = gltf_mesh2( e, ev, interface, i, 0, "",mix,self_mult,rest_mult,mode,light_dir,animation, border_width, border_color,acesfilm,transfer_id,emissive );
+    GameApi::ML ml = gltf_mesh2( e, ev, interface, i, 0, "",mix,self_mult,rest_mult,mode,light_dir,animation, border_width, border_color,acesfilm,transfer_id,emissive, frame_skip );
     mls.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, mls);
@@ -9613,17 +10087,41 @@ GameApi::ML gltf_mesh_all2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
 class GltfMeshAll : public MainLoopItem
 {
 public:
-  GltfMeshAll(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, float mix, float self_mult, float rest_mult, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color, bool transparent, bool acesfilm, GameApi::TRB transfer_id, bool emissive)
-    :env(env), ev(ev), interface(interface),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm),transfer_id(transfer_id),emissive(emissive) { res.id = -1;}
+  GltfMeshAll(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, float mix, float self_mult, float rest_mult, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color, bool transparent, bool acesfilm, GameApi::TRB transfer_id, bool emissive, int frame_skip)
+    :env(env), ev(ev), interface(interface),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm),transfer_id(transfer_id),emissive(emissive), frame_skip(frame_skip) { res.id = -1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
-    interface->Collect(vis);
+    //std::cout << "FLAGJOINIMPL:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      //std::cout << "gltfmeshall::collect" << std::endl;
+    //DoHeavy(&vis,false);
+    //interface->Collect(vis);
+      //if (res.id!=-1) {
+      //	MainLoopItem *item = find_main_loop(env,res);
+      //	item->Collect(vis);
+      //}
+      interface->get_load()->Collect(vis);
     vis.register_obj(this);
+    } else {
+      interface->Collect(vis);
+      vis.register_obj(this);
+    }
   }
-  virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
-  virtual void HeavyPrepare() {
+  virtual bool ReadyToPrepare() const {
+    //std::cout << "FLAGJOINIMPL2:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      //std::cout << "gltfmeshall::readytoprepare" << std::endl;
+    return interface->ReadyToPrepare();
+    } else {
+      return interface->ReadyToPrepare();
+    }
+    }
 
+  void DoHeavy(CollectVisitor *vis, bool is_prepare)
+  {
+    if (!DoHeavyDone) {
+      //std::cout << "gltfmeshall::DoHeavy 1" << std::endl;
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
@@ -9632,14 +10130,18 @@ public:
     }
     // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+    //std::cout << "gltfmeshall::DoHeavy 2" << std::endl;
     int scene_id = interface->get_default_scene();
     GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
+    //std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
 
 
     GameApi::TRR resize_transfer_id;
     resize_transfer_id.id = transfer_id.id;
+    //std::cout << "gltfmeshall::DoHeavy 4" << std::endl;
     
-    GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, transfer_id, emissive ); // 0 = take numtimeindexes from first animation
+    GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, transfer_id, emissive, frame_skip ); // 0 = take numtimeindexes from first animation
+    //std::cout << "gltfmeshall::DoHeavy 5" << std::endl;
     bool is_animated_g = is_animated(env,interface,mesh);
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(env,interface,mesh))
@@ -9652,40 +10154,183 @@ public:
 #else
   res = scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);
 #endif
+  //std::cout << "gltfmeshall::DoHeavy 6" << std::endl;
     
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
-      if (item)
-	item->Prepare();
+      //if (!is_prepare) {
+      //	if (item)
+      //	  item->Collect(*vis);
+      // }
+    }
+    //std::cout << "gltfmeshall::DoHeavy 7" << std::endl;
+    DoHeavyDone = true;
+    }
+  }
+
+  virtual void HeavyPrepare() {
+    //std::cout << "FLAGJOINIMPL3:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      //std::cout << "gltfmeshall::HeavyPrepare" << std::endl;
+      // DoHeavy() cannot be for some reason moved to Collect()
+      // even though we wanted that.
+      DoHeavy(NULL,true); 
+      //if (res.id!=-1) {
+      //	 MainLoopItem *item = find_main_loop(env,res);
+      //	 item->Prepare();
+      //}
+    } else {
+      
+      std::string url = interface->Url();
+      bool is_binary=false;
+      if (int(url.size())>3) {
+	std::string sub = url.substr(url.size()-3);
+	if (sub=="glb") is_binary=true;
+      }
+      // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+      //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+      int scene_id = interface->get_default_scene();
+      GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
+      
+      
+      GameApi::TRR resize_transfer_id;
+      resize_transfer_id.id = transfer_id.id;
+      
+      GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, transfer_id, emissive, frame_skip ); // 0 = take numtimeindexes from first animation
+      bool is_animated_g = is_animated(env,interface,mesh);
+#ifdef GLTF_ANIM_RESIZE_TEST
+      if (is_animated(env,interface,mesh))
+	{
+	  res = ml;
+	} else
+	{
+	  res= scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);    
+	}
+#else
+      res = scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);
+#endif
+      
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->Prepare();
+      }
+      
     }
   }
   virtual void Prepare() {
-    interface->Prepare();
+    //std::cout << "FLAGJOINIMPL4:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      //std::cout << "gltfmeshall::Prepare 1" << std::endl;
+      //if (res.id!=-1) {
+      //	MainLoopItem *item = find_main_loop(env,res);
+      //	item->Prepare();
+      //}
 
-    HeavyPrepare();
-    
+      interface->get_load()->Prepare();
+      //std::cout << "gltfmeshall::Prepare 2" << std::endl;
+
+      HeavyPrepare();
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	item->Prepare();
+      }
+      //std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
+    } else {
+      interface->Prepare();
+      
+      HeavyPrepare();
+    }
+  }
+  void ZipDecodeDone()
+  {
+    //std::cout << "gltfmeshall::ZipDecodeDone" << std::endl;
+    zip_decode_done = true;
   }
   virtual void execute(MainLoopEnv &e) {
-    if (res.id!=-1) {
-    MainLoopItem *item = find_main_loop(env,res);
-    if (item)
-      item->execute(e);
+    //std::cout << "FLAGJOINIMPL5:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+
+      exe_counter++;
+      
+      if (exe_counter==1)
+	{
+	  MainLoopItem *item = find_main_loop(env,res);
+	  collectdata = collect(item);
+	}
+      if (exe_counter>1)
+	{
+	  collect_repeat(collectdata);
+	}
+
+      //std::cout << "ml_gltf_all_execute" << std::endl;
+      interface->execute();
+      if (interface->ReadyToFetch()) { // TODO, async join needs this?
+	ZipDecodeDone();
+      }
+      //std::cout << "gltfmeshall::execute" << std::endl;
+      if (zip_decode_done && firsttime) {
+	DoHeavy(NULL,false);  // TODO, IS THIS NEEDED?
+	firsttime=false;
+      }
+
+      interface->get_load()->execute();
+      
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item) {
+	  //std::cout << "gltfmeshall::ITEM EXECUTE DONE!" << std::endl;
+	  item->execute(e);
+	}
+      }
+      //std::cout << "gltfmeshall::execute 2" << std::endl;
+    } else {
+      interface->get_load()->execute();
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->execute(e);
+      }
     }
   }
   virtual void handle_event(MainLoopEvent &e) {
-    if (res.id!=-1) {
-      MainLoopItem *item = find_main_loop(env,res);
-      if (item)
-	item->handle_event(e);
+    //std::cout << "FLAGJOINIMPL6:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      //std::cout << "gltfmeshall::handle_event" << std::endl;
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->handle_event(e);
+      }
+      //std::cout << "gltfmeshall::handleevenrt2" << std::endl;
+    } else {
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->handle_event(e);
+      }
+
     }
   }
   virtual std::vector<int> shader_id() {
+    //std::cout << "FLAGJOINIMPL7:" << interface->IsSketchFabZipASyncJoinImplementation() << std::endl;
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      //std::cout << "gltfmeshall::shader_id" << std::endl;
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  return item->shader_id();
+	else return std::vector<int>();
+      } else return std::vector<int>();
+    } else {
     if (res.id!=-1) {
-    MainLoopItem *item = find_main_loop(env,res);
-    if (item)
-      return item->shader_id();
-    else return std::vector<int>();
+      MainLoopItem *item = find_main_loop(env,res);
+      if (item)
+	return item->shader_id();
+      else return std::vector<int>();
     } else return std::vector<int>();
+    
+    }
   }
 
 private:
@@ -9706,25 +10351,74 @@ private:
   bool acesfilm;
   GameApi::TRB transfer_id;
   bool emissive;
+  bool firsttime=true;
+  bool zip_decode_done=false;
+  bool DoHeavyDone = false;
+  int exe_counter=0;
+  CollectData collectdata;
+  int frame_skip;
 };
 
 
 class GltfMeshAllInstMatrix : public MainLoopItem
 {
 public:
-  GltfMeshAllInstMatrix(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GLTFModelInterface *resize_obj, GameApi::MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive)
-    :env(env), ev(ev), interface(interface),resize_obj(resize_obj), ms(ms),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm),emissive(emissive) { res.id = -1;}
+  GltfMeshAllInstMatrix(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GLTFModelInterface *resize_obj, GameApi::MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip)
+    :env(env), ev(ev), interface(interface),resize_obj(resize_obj), ms(ms),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm),emissive(emissive), frame_skip(frame_skip) { res.id = -1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
-    interface->Collect(vis);
-    resize_obj->Collect(vis);
-    MatrixArray *ms0 = find_matrix_array(env,ms);
-    ms0->Collect(vis);
-    vis.register_obj(this);
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->get_load()->Collect(vis);
+      resize_obj->Collect(vis);
+      MatrixArray *ms0 = find_matrix_array(env,ms);
+      ms0->Collect(vis);
+      vis.register_obj(this);
+    } else {
+      interface->Collect(vis);
+      resize_obj->Collect(vis);
+      MatrixArray *ms0 = find_matrix_array(env,ms);
+      ms0->Collect(vis);
+      vis.register_obj(this);
+    }
   }
   virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
+
+  void DoHeavy(CollectVisitor *vis, bool is_prepare)
+  {
+    if (!DoHeavyDone) {
+      std::string url = interface->Url();
+      bool is_binary=false;
+      if (int(url.size())>3) {
+	std::string sub = url.substr(url.size()-3);
+	if (sub=="glb") is_binary=true;
+      }
+      int scene_id2 = resize_obj->get_default_scene();
+      GameApi::P mesh = gltf_scene2_p(env, ev, resize_obj /*interface*/,scene_id2,"");
+      
+      int scene_id = interface->get_default_scene();
+      GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, emissive, frame_skip ); // 0 = take numtimeindexes from first animation
+      
+      res = ml;
+      
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	//if (item)
+	//  item->Prepare();
+      }
+      
+      DoHeavyDone=true;
+    }
+  }
+
   virtual void HeavyPrepare() {
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      DoHeavy(NULL,true);
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	item->Prepare();
+      }
+    } else {
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
@@ -9741,7 +10435,7 @@ public:
     //GameApi::MS ms2 = scale_to_gltf_size_ms(ev,mesh2,ms);
     
     int scene_id = interface->get_default_scene();
-    GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, emissive ); // 0 = take numtimeindexes from first animation
+    GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, emissive, frame_skip ); // 0 = take numtimeindexes from first animation
 
     res = ml;
     //GameApi::P mesh2 = ev.polygon_api.cube(-300.0,300.0,-300.0,300.0,-300.0,300.0);
@@ -9753,14 +10447,30 @@ public:
 	item->Prepare();
     }
 
-
+    }
   }
   virtual void Prepare() {
-    interface->Prepare();
-    resize_obj->Prepare();
-    MatrixArray *ms0 = find_matrix_array(env,ms);
-    ms0->Prepare();
-    HeavyPrepare();
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->get_load()->Prepare();
+      resize_obj->Prepare();
+      MatrixArray *ms0 = find_matrix_array(env,ms);
+      ms0->Prepare();
+      HeavyPrepare();
+      if (res.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,res);
+	item->Prepare();
+      }
+    } else {
+      interface->Prepare();
+      resize_obj->Prepare();
+      MatrixArray *ms0 = find_matrix_array(env,ms);
+      ms0->Prepare();
+      HeavyPrepare();
+    }
+  }
+  void ZipDecodeDone()
+  {
+    zip_decode_done=true;
   }
   virtual void execute(MainLoopEnv &e) {
     interface->execute();
@@ -9805,6 +10515,10 @@ private:
   bool transparent;
   bool acesfilm;
   bool emissive;
+  bool firsttime=true;
+  bool zip_decode_done=false;
+  bool DoHeavyDone=false;
+  int frame_skip;
 };
 
 
@@ -10305,7 +11019,7 @@ void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mes
 
 GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, TF model0, int skin_num)
 {
-  std::cout << "START MSARRAY" << std::endl;
+  //std::cout << "START MSARRAY" << std::endl;
   GLTFModelInterface *interface = find_gltf(e,model0);
   ArrayType *array = new ArrayType;
   array->type=0;
@@ -10901,7 +11615,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model
   TRB transfer_id;
   transfer_id.id = 555;
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,transfer_id,emissive));
+  int frame_skip=1;
+  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,transfer_id,emissive,frame_skip));
 }
 
 GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst2( GameApi::EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent, bool acesfilm, std::string keys, bool emissive)
@@ -10914,12 +11629,13 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst_matrix( GameApi::EveryApi &
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
-  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,emissive));
+  int frame_skip=1;
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,emissive,frame_skip));
 }
 
 
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult,int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq, bool emissive)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult,int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq, bool emissive, int frame_skip)
 {
   static int unique_id = 0;
   unique_id++;
@@ -10927,7 +11643,7 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF 
   
   GameApi::TRB transfer_id = { 8192 + unique_id };
   GLTFModelInterface *interface = find_gltf(e,model0);
-  GameApi::ML ml2 = add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult,mode,keys,Vector(light_dir_x,light_dir_y,light_dir_z),border_width,border_color,transparent,acesfilm, transfer_id,emissive));
+  GameApi::ML ml2 = add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult,mode,keys,Vector(light_dir_x,light_dir_y,light_dir_z),border_width,border_color,transparent,acesfilm, transfer_id,emissive,frame_skip));
   if (keys.size()>start_anim_seq) {
     ml2 = ev.mainloop_api.send_key_at_time(ml2,0.01,keys[start_anim_seq]);
     ml2 = ev.mainloop_api.send_key_at_time(ml2,0.03,keys[start_anim_seq]);
@@ -10940,19 +11656,19 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF 
 }
 
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst( GameApi::EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst( GameApi::EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip)
 {
   GameApi::MS I1=ev.matrices_api.from_points(ms);
   GLTFModelInterface *interface = find_gltf(e,model0);
   GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
-  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,I1,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,emissive));
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,I1,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,emissive, frame_skip));
 
 }
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst_matrix( GameApi::EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst_matrix( GameApi::EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
-  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,emissive));
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,emissive, frame_skip));
 
 }
 							  
@@ -11453,7 +12169,7 @@ private:
 };
 
 
-GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int animation, int target_node, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, float border_width, unsigned int border_color, bool acesfilm, bool emissive)
+GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int animation, int target_node, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, float border_width, unsigned int border_color, bool acesfilm, bool emissive, int frame_skip)
 {
   int channel = -1;
   const tinygltf::Animation &anim = interface->get_animation(animation); //&load->model.animations[animation];
@@ -11464,7 +12180,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       //std::cout << "\nNode:" << node->name << std::endl;
       int mesh_id = node.mesh;
       GameApi::TRB transfer_id = { 559 };
-      GameApi::ML ml = gltf_mesh2(e,ev, interface, mesh_id, 0, "cvb",mix,self_mult, rest_mult,mode,light_dir, animation, border_width, border_color,acesfilm,transfer_id, emissive);
+      GameApi::ML ml = gltf_mesh2(e,ev, interface, mesh_id, 0, "cvb",mix,self_mult, rest_mult,mode,light_dir, animation, border_width, border_color,acesfilm,transfer_id, emissive, frame_skip);
       if (channel==-1)
 	{
 	  std::vector<GameApi::ML> vec;
@@ -11473,7 +12189,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
 	  for(int i=0;i<s2;i++) {
 	    int child_id = node.children[i];
 	    if (child_id!=-1) {
-	      GameApi::ML ml = gltf_anim3( e, ev, interface, animation, child_id,mix,self_mult, rest_mult,mode,light_dir,border_width, border_color, acesfilm, emissive );
+	      GameApi::ML ml = gltf_anim3( e, ev, interface, animation, child_id,mix,self_mult, rest_mult,mode,light_dir,border_width, border_color, acesfilm, emissive, frame_skip );
 	      vec.push_back(ml);
 	    }
 	  }
@@ -11500,7 +12216,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
   for(int i=0;i<s2;i++) {
     int child_id = node.children[i];
     if (child_id!=-1) {
-      GameApi::ML ml = gltf_anim3( e, ev, interface, animation, child_id,mix,self_mult,rest_mult, mode,light_dir,border_width,border_color,acesfilm, emissive );
+      GameApi::ML ml = gltf_anim3( e, ev, interface, animation, child_id,mix,self_mult,rest_mult, mode,light_dir,border_width,border_color,acesfilm, emissive, frame_skip );
       vec.push_back(ml);
     }
   }
@@ -12340,7 +13056,7 @@ GLTFJointMatrices *find_joint_matrices(GameApi::Env &e, GameApi::ML ml)
   return item2;
 }
 
-GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive )
+GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip )
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -12354,7 +13070,7 @@ GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
     GameApi::TRB transfer_id = { 558 };
-    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys,mix,self_mult,rest_mult,Matrix::Identity(),mode,light_dir, animation, border_width, border_color,transparent,acesfilm,true,transfer_id,emissive );
+    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys,mix,self_mult,rest_mult,Matrix::Identity(),mode,light_dir, animation, border_width, border_color,transparent,acesfilm,true,transfer_id,emissive, frame_skip );
     //GameApi::ML ml = gltf_anim3(e,ev,load,animation, scene->nodes[i]);
     vec.push_back(ml);
   }
@@ -12469,7 +13185,7 @@ GameApi::P GameApi::MainLoopApi::gltf_scene_p( GameApi::EveryApi &ev, TF model0,
 class GltfSceneAnim : public MainLoopItem
 {
 public:
-  GltfSceneAnim(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, float border_width, unsigned int border_color,bool transparent, bool acesfilm, bool emissive) : env(env), ev(ev), interface(interface), scene_id(scene_id), animation(animation), keys(keys),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm), emissive(emissive) { res.id = -1; }
+  GltfSceneAnim(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, float border_width, unsigned int border_color,bool transparent, bool acesfilm, bool emissive, int frame_skip) : env(env), ev(ev), interface(interface), scene_id(scene_id), animation(animation), keys(keys),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent),acesfilm(acesfilm), emissive(emissive), frame_skip(frame_skip) { res.id = -1; }
 
   virtual void Collect(CollectVisitor &vis) {
     vis.register_obj(this);
@@ -12488,7 +13204,7 @@ public:
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   interface->Prepare();
   GameApi::P mesh = gltf_scene2_p(env,ev, interface, scene_id,"");
-  GameApi::ML ml = gltf_scene3(env,ev,interface,scene_id,animation,keys,mix,self_mult, rest_mult,mode,light_dir, border_width, border_color,transparent,acesfilm, emissive);
+  GameApi::ML ml = gltf_scene3(env,ev,interface,scene_id,animation,keys,mix,self_mult, rest_mult,mode,light_dir, border_width, border_color,transparent,acesfilm, emissive, frame_skip);
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(env,interface,mesh))
     {
@@ -12545,16 +13261,17 @@ private:
   bool transparent;
   bool acesfilm;
   bool emissive;
+  int frame_skip;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix,float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color,bool transparent, bool acesfilm, bool emissive )
+GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix,float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color,bool transparent, bool acesfilm, bool emissive, int frame_skip )
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfSceneAnim(e,ev,interface,scene_id,animation,keys,mix,self_mult,rest_mult,mode,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,emissive));
+  return add_main_loop(e, new GltfSceneAnim(e,ev,interface,scene_id,animation,keys,mix,self_mult,rest_mult,mode,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm,emissive, frame_skip));
 
 }
 
-GameApi::ML GameApi::MainLoopApi::gltf_anim4( GameApi::EveryApi &ev, TF model0, int animation, int channel, float mix, float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool acesfilm, bool emissive )
+GameApi::ML GameApi::MainLoopApi::gltf_anim4( GameApi::EveryApi &ev, TF model0, int animation, int channel, float mix, float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool acesfilm, bool emissive, int frame_skip )
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   std::string url = interface->Url();
@@ -12573,7 +13290,7 @@ GameApi::ML GameApi::MainLoopApi::gltf_anim4( GameApi::EveryApi &ev, TF model0, 
       
       int target_node = anim->target_node();
       delete anim;
-      GameApi::ML ml = gltf_anim3(e,ev,interface,animation, target_node,mix,self_mult, rest_mult,mode,Vector(light_dir_x,light_dir_y,light_dir_z),border_width, border_color,acesfilm,emissive);
+      GameApi::ML ml = gltf_anim3(e,ev,interface,animation, target_node,mix,self_mult, rest_mult,mode,Vector(light_dir_x,light_dir_y,light_dir_z),border_width, border_color,acesfilm,emissive, frame_skip);
       GameApi::ML ml2;
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(e,interface,mesh))
@@ -13173,7 +13890,7 @@ private:
 class GLTF_Animation_Material : public MaterialForward
 {
 public:
-  GLTF_Animation_Material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, Material *next, int key, int mode, int inst, GameApi::TRA anim_transfer_id) : e(e), ev(ev), interface(interface), skin_num(skin_num), animation(animation), num_timeindexes(num_timeindexes), next(next), key(key),mode(mode), anim_transfer_id(anim_transfer_id) {
+  GLTF_Animation_Material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, Material *next, int key, int mode, int inst, GameApi::TRA anim_transfer_id, int frame_skip) : e(e), ev(ev), interface(interface), skin_num(skin_num), animation(animation), num_timeindexes(num_timeindexes), next(next), key(key),mode(mode), anim_transfer_id(anim_transfer_id), frame_skip(frame_skip) {
 
     cache_key = animation + 10*skin_num + 100*inst;
     //std::cout << "CACHE_KEY: " << cache_key << std::endl;
@@ -13250,7 +13967,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes, anim_transfer_id);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes, anim_transfer_id, frame_skip);
     //GameApi::LI li = draw_pose( e, mls ); // DEBUG
     //GameApi::ML ml3 = ev.lines_api.render_ml2(ev, li, 2.0); // DEBUG
     //return ev.mainloop_api.array_ml(ev,{ml2,ml3}); // DEBUG
@@ -13285,7 +14002,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key,mode,num_timeindexes, anim_transfer_id);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key,mode,num_timeindexes, anim_transfer_id, frame_skip);
     return ml2;
   }
   virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
@@ -13321,7 +14038,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key,mode,num_timeindexes, anim_transfer_id);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key,mode,num_timeindexes, anim_transfer_id, frame_skip);
     return ml2;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
@@ -13353,7 +14070,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes, anim_transfer_id);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes, anim_transfer_id, frame_skip);
     return ml2;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -13381,7 +14098,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes, anim_transfer_id);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes, anim_transfer_id, frame_skip);
     return ml2;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
@@ -13412,7 +14129,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes, anim_transfer_id);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes, anim_transfer_id, frame_skip);
     return ml2;
   }
 
@@ -13428,6 +14145,7 @@ private:
   int mode;
   int cache_key;
   GameApi::TRA anim_transfer_id;
+  int frame_skip=1;
 };
 
 char key_mapping(char ch, int type);
@@ -13755,21 +14473,21 @@ GameApi::MT GameApi::MaterialsApi::m_keys(EveryApi &ev, std::vector<MT> vec, std
 }
 
 
-GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key,int mode, int inst, int timeid, GameApi::TRA anim_transfer_id) // timeid not implemented
+GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key,int mode, int inst, int timeid, GameApi::TRA anim_transfer_id, int frame_skip) // timeid not implemented
 {
   Material *next_mat = find_material(e,next);
-  Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key,mode,inst, anim_transfer_id);
+  Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key,mode,inst, anim_transfer_id, frame_skip);
   return add_material(e, mat);
 }
 
 
-GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int /*num_timeindexes*/, GameApi::MT next, std::string keys, int mode, int inst, GameApi::TRA anim_transfer_id)
+GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int /*num_timeindexes*/, GameApi::MT next, std::string keys, int mode, int inst, GameApi::TRA anim_transfer_id, int frame_skip)
 {
   int s = keys.size();
   std::vector<GameApi::MT> vec;
   for(int i=0;i<s;i++) {
     int mm = gltf_mesh2_calc_max_timeindexes(interface,i,skin_num);
-    GameApi::MT mt = gltf_anim_material4(e,ev,interface, skin_num, i, mm /*num_timeindexes*/, next, keys[i],mode,inst,mm, anim_transfer_id);
+    GameApi::MT mt = gltf_anim_material4(e,ev,interface, skin_num, i, mm /*num_timeindexes*/, next, keys[i],mode,inst,mm, anim_transfer_id, frame_skip);
     vec.push_back(mt);
   }
   return ev.materials_api.m_keys(ev,vec,keys);
@@ -13777,20 +14495,20 @@ GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
 }
 
 
-GameApi::MT GameApi::MaterialsApi::gltf_anim_material2(GameApi::EveryApi &ev, TF model0, int skin_num, int num_timeindexes, MT next, std::string keys, int mode, TRA anim_transfer_id)
+GameApi::MT GameApi::MaterialsApi::gltf_anim_material2(GameApi::EveryApi &ev, TF model0, int skin_num, int num_timeindexes, MT next, std::string keys, int mode, TRA anim_transfer_id, int frame_skip)
 {
   //LTFModelInterface *interface = find_gltf(e,model0);
   int s = keys.size();
   std::vector<GameApi::MT> vec;
   for(int i=0;i<s;i++) {
-    GameApi::MT mt = gltf_anim_material(ev,model0, skin_num, i, num_timeindexes, next, keys[i],mode, anim_transfer_id);
+    GameApi::MT mt = gltf_anim_material(ev,model0, skin_num, i, num_timeindexes, next, keys[i],mode, anim_transfer_id, frame_skip);
     vec.push_back(mt);
   }
   return m_keys(ev,vec,keys);
 }
 
 
-GameApi::MT GameApi::MaterialsApi::gltf_anim_material(GameApi::EveryApi &ev, TF model0, int skin_num, int animation, int num_timeindexes, MT next, int key, int mode, TRA anim_transfer_id)
+GameApi::MT GameApi::MaterialsApi::gltf_anim_material(GameApi::EveryApi &ev, TF model0, int skin_num, int animation, int num_timeindexes, MT next, int key, int mode, TRA anim_transfer_id, int frame_skip)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   std::string url = interface->Url();
@@ -13801,7 +14519,7 @@ GameApi::MT GameApi::MaterialsApi::gltf_anim_material(GameApi::EveryApi &ev, TF 
   }
   //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   Material *next_mat = find_material(e,next);
-  Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key,mode,animation+get_cache_id(interface), anim_transfer_id);
+  Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key,mode,animation+get_cache_id(interface), anim_transfer_id, frame_skip);
   return add_material(e, mat);
 }
 extern Matrix g_last_resize;
@@ -13896,7 +14614,7 @@ extern Pipeline *g_last_resize_pipeline;
 
 class GltfAnimShaderML : public MainLoopItem {
 public:
-  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key, int mode, int id, GameApi::TRA anim_transfer_id) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key),mode(mode),id(id), anim_transfer_id(anim_transfer_id) {
+  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key, int mode, int id, GameApi::TRA anim_transfer_id, int frame_skip) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key),mode(mode),id(id), anim_transfer_id(anim_transfer_id), frame_skip(frame_skip) {
     firsttime=true; resize=Matrix::Identity(); keypressed = false;
     current_time=key_time=ev.mainloop_api.get_time()/1000.0;
     //keypressed =true;
@@ -13954,7 +14672,7 @@ public:
  
   void execute(MainLoopEnv &e) {
 
-    const int update_freq=1;
+    const int update_freq=std::max(1,frame_skip);
     framenum++;
     if (framenum>update_freq-1) framenum=0;
    
@@ -14197,6 +14915,8 @@ public:
       if (ii<jointMatrices.size()) {
 	jointMatrices[ii] = add_matrix2(env, bindm * mv);
 
+	g_last_resize_pipeline->add_matrix(anim_transfer_id.id*400000,find_matrix(env,jointMatrices[0]));
+	
 #if 0
 #ifdef GLTF_ANIM_RESIZE_TEST
 	jointMatrices[ii] = add_matrix2(env, bindm * mv * resize);
@@ -14279,11 +14999,12 @@ private:
   int framenum=0;
   bool frame_firsttime=true;
   GameApi::TRA anim_transfer_id;
+  int frame_skip=1;
 };
 
 int GltfAnimShaderML::count=2;
 int GltfAnimShaderML::curr=0;
-EXPORT GameApi::ML GameApi::PolygonApi::gltf_anim_shader(GameApi::EveryApi &ev, ML ml_orig, std::vector<GameApi::ML> mls, int key,int mode, int timeid, TRA anim_transfer_id)
+EXPORT GameApi::ML GameApi::PolygonApi::gltf_anim_shader(GameApi::EveryApi &ev, ML ml_orig, std::vector<GameApi::ML> mls, int key,int mode, int timeid, TRA anim_transfer_id, int frame_skip)
 {
   int s = mls.size();
   std::vector<MainLoopItem*> items;
@@ -14292,7 +15013,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::gltf_anim_shader(GameApi::EveryApi &ev, 
     items.push_back(item);
   }
   MainLoopItem *orig = find_main_loop(e,ml_orig);
-  return add_main_loop(e, new GltfAnimShaderML(e,ev,orig,items, key,mode,timeid,anim_transfer_id));
+  return add_main_loop(e, new GltfAnimShaderML(e,ev,orig,items, key,mode,timeid,anim_transfer_id,frame_skip));
 }
 
 void ASyncGltfCB(void *data);
@@ -14588,6 +15309,8 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK2(std::string url)
   return gltf_loadKK("",url);
 }
 
+IMPORT extern GameApi::EveryApi *g_everyapi;
+
 GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string url)
 {
   if (g_deploy_phase) base_url="./";
@@ -14614,11 +15337,15 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
   GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
   g_model_del_items.push_back(model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
-      int c = get_current_block();
-      set_current_block(-1);
+  //    int c = get_current_block();
+  //    set_current_block(-1);
   GameApi::TF tf = add_gltf(e,i);
-  set_current_block(c);
+  //set_current_block(c);
   g_tf_instances.push_back(tf);
+  GameApi::EveryApi &ev = *g_everyapi;
+  tf = tf_join(ev,tf);
+  GLTFModelInterface *ii = find_gltf(e,tf);
+  load->set_model(ii);
   return tf;
 }
 
@@ -14728,6 +15455,9 @@ struct ZipThreadData
   GLTF_Model_with_prepare_sketchfab_zip *obj;
   int i;
   mz_zip_archive *pZip;
+  float mult;
+  int m_zip_mutex_id=-1;
+  // mz_zip_archive_file_stat *file_stat;
 };
 
 void *thread_sketchfab_zip(void *data);
@@ -14735,8 +15465,8 @@ void *thread_sketchfab_zip(void *data);
 void Zip_callback(void* ptr);
 
 
-void zip_mutex_create();
-void zip_mutex_destroy();
+void zip_mutex_create(int id);
+void zip_mutex_destroy(int id);
 extern std::vector<std::string> zip_result_urls;
 extern std::string gameapi_homepageurl;
 struct ASyncCallback { void (*fptr)(void*); void *data; };
@@ -14744,11 +15474,13 @@ ASyncCallback *rem_async_cb(std::string url);
 std::string remove_dirs(std::string url);
 
 
+void Zip_done(void *ptr);
+
 class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
 {
 public:
   std::string name() const { return "GLTF_Model_with_prepare_sketchfab_zip"; }
-  GLTF_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.gltf"), zip_url(zip_url), homepage(homepage), load(load), model(model) { firsttime=true;
+  GLTF_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model, void (*fptr)(void*), void *data) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.gltf"), zip_url(zip_url), homepage(homepage), load(load), model(model), fptr(fptr), data(data) { firsttime=true;
 
 #ifdef EMSCRIPTEN
     async_pending_count++;
@@ -14780,34 +15512,53 @@ public:
     }
     UncompressZip();
   }
+  void Zip_ready_cb()
+  {
+  }
   void Prepare() {
+    //load->Prepare();
+    //HeavyPrepare();
     if (firsttime) {
     UncompressZip();
-    load->Prepare();
+    //TMP load->Prepare();
     model=&load->model;
     self=model;
+    
     firsttime=false;
     }
   }
-  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
-  void HeavyPrepare() {
+  void Collect(CollectVisitor &vis) {
     if (firsttime) {
-    UncompressZip();
-    load->Prepare();
+      UncompressZip();
+      // This causes infinite loop
+      // correct order is MODEL <-- LoadGltf <--- GltfMeshAll.
+      //load->Collect(vis); 
+      vis.register_obj(this);
+      firsttime=false;
+    }
+      //}
+    }
+  void HeavyPrepare() {
+    //if (firsttime) {
+    //load->Prepare(); // should not call prepare in HeavyPrepare().
     model=&load->model;
     self=model;
+    
     firsttime=false;
-    }
+    //}
   }
   void UncompressZip()
   {
+    if (uncompress_started) return;
     if (uncompress_done) return;
+    uncompress_started=true;
 #ifndef EMSCRIPTEN
     e.async_load_url(zip_url, homepage);
 #endif
     GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
     if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
-    std::vector<unsigned char> vec2(vec->begin(), vec->end());
+    
+     vec2 = std::vector<unsigned char>(vec->begin(), vec->end());
     mz_ulong size = vec2.end()-vec2.begin();
 
     g_zip_file_size = g_zip_file_size > size ? g_zip_file_size : size;
@@ -14825,8 +15576,7 @@ public:
     //std::cout << "ZIP URL=" << zip_url << std::endl;
     //std::cout << "VECTOR SIZE=" << size << std::endl;
 
-    
-    mz_zip_archive pZip;
+    // memset clearly fixes something.
     std::memset(&pZip,0,sizeof(mz_zip_archive));
 
     mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
@@ -14836,9 +15586,14 @@ public:
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
     //std::cout << "ZIp num=" << num << std::endl;
 
-    zip_mutex_create();
+    static int zip_mutex_id = 0;
+    zip_mutex_id++;
+    m_zip_mutex_id = zip_mutex_id;
+    zip_mutex_create(m_zip_mutex_id);
 
-    std::vector<ZipThreadData*> thread_data;
+    //std::vector<ZipThreadData*> thread_data;
+
+    float mult = num!=0?float(100)/float(num):0;
     for(int i=0;i<num;i++)
       {
 
@@ -14846,6 +15601,9 @@ public:
 	info->obj = this;
 	info->i = i;
 	info->pZip = &pZip;
+	//info->file_stat = &file_stat;
+	info->mult = mult;
+	info->m_zip_mutex_id = m_zip_mutex_id;
 #ifdef THREADS
 	//pthread_attr_t attr;
 	//pthread_attr_init(&attr);
@@ -14854,13 +15612,21 @@ public:
 	//pthread_create(&info->thread_id, &attr, &thread_sketchfab_zip, (void*)info);
 	tasks_add(3009,&thread_sketchfab_zip,(void*)info);
 	
-	thread_data.push_back(info);
+	//thread_data.push_back(info);
 #else
 	thread_sketchfab_zip((void*)info);
 #endif
       }
 #ifdef THREADS
-    tasks_join(3009);
+#ifdef ASYNC_JOIN
+    tasks_async_join_m(3009, &Zip_done,(void*)this);
+#else
+    tasks_join(3009); // normal join onlt
+    ZipDone(); // normal join only
+    execute(); // normal join only
+    execute(); // normal join only
+#endif
+    //std::cout << "ZIPDONE ok" << std::endl;2
     /*
     for(int i2=0;i2<num;i2++)
       {
@@ -14869,7 +15635,35 @@ public:
 	pthread_join(thread_data[i2]->thread_id, &res);
       }
     */
+#else
+    ZipDone();
 #endif
+
+
+
+
+  }
+  void ZipDone()
+  {
+    //std::cout << "ZIPDONE FLAG SET" << std::endl;
+    uncompress_done=true;
+    //std::cout << "ZIPDONE FLAG OK" << std::endl;
+  }
+  bool ReadyToFetch() const
+  {
+    //std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
+    return uncompress_done3;
+  }
+  virtual bool IsSketchFabZipASyncJoinImplementation() const { return true; }
+  
+  void execute()
+  {
+    //std::cout << "ZipDecode::execute" << std::endl;
+    if (uncompress_done && firsttime2)
+      {
+	//std::cout << "ZipDecode::uncompress_done && firsttime2" << std::endl;
+	firsttime2=false;
+
     mz_zip_reader_end(&pZip);
 
     if (mainfilename!="")
@@ -14889,10 +15683,28 @@ public:
 	load->set_urls(base_url,url);
       }
 
-    zip_mutex_destroy();
+    zip_mutex_destroy(m_zip_mutex_id);
+
+	
+    uncompress_done2 = true;
+    //std::cout << "Uncompress_done2=true" << std::endl;
+      }
+
+    if (firsttime3 && uncompress_done2)
+      {
+	//std::cout << "firsttime3 && Uncompress_done2=true" << std::endl;
+
+	//std::cout << "Sending event from ZipDecode to LoadGltf" << std::endl;
+    fptr(data);
+    //std::cout << "Sending event from ZipDecode to LoadGltf (end)" << std::endl;
+
+    
+    //#if NOT_ASYNC_JOIN
     int s = zip_result_urls.size();
     for(int i=0;i<s;i++)
       {
+	//std::cout << "Sending callback of file: " << zip_result_urls[i] << std::endl;
+	//if (zip_result_urls[i]==url) continue; // small fix
 	std::string url_plain = remove_dirs(zip_result_urls[i]);
 
 	//std::cout << "URL for cb: " << url_plain << std::endl;
@@ -14925,56 +15737,86 @@ public:
 	//std::cout << "Load cb!4" << url_only << std::endl;
 	(*cb4->fptr)(cb4->data);
       }
+      //std::cout << "Sending callback of file(end): " << zip_result_urls[i] << std::endl;
 	
       }
+    // SOMETHING WRONG WITH THIS?
     zip_result_urls.clear();
-    
-    uncompress_done = true;
+    //#else
+    //#endif
+
+
+    firsttime3 = false;
+	uncompress_done3 = true;
+	//std::cout << "uncompressdone3=true" << std::endl;
+      }
+
   }
+  LoadGltf *get_load() const { return load; }
 public:
   GameApi::Env &e;
   std::string zip_url;
   std::string homepage;
   LoadGltf *load;
   tinygltf::Model *model;	       
-  bool firsttime;
+  bool firsttime=true;
+  bool firsttime2=true;
+  bool firsttime3=true;
+  bool firsttime4=true;
   std::string mainfilename;
   bool uncompress_done=false;
+  bool uncompress_done2=false;
+  bool uncompress_done3=false;
   bool async = false;
+  mz_zip_archive pZip;
+  //mz_zip_archive_file_stat file_stat;
+  //bool uncompress_done=false;
+  void (*fptr)(void*);
+  void *data;
+  bool uncompress_started=false;
+    std::vector<unsigned char> vec2;
+  int m_zip_mutex_id=-1;
 };
 void Zip_callback(void* ptr)
   {
     GLTF_Model_with_prepare_sketchfab_zip *p = (GLTF_Model_with_prepare_sketchfab_zip*)ptr;
     p->Zip_cb();
   }
-
+void Zip_done(void *ptr)
+{
+    GLTF_Model_with_prepare_sketchfab_zip *p = (GLTF_Model_with_prepare_sketchfab_zip*)ptr;
+    p->ZipDone();
+}
   
 
 std::vector<std::string> zip_result_urls;
 #ifdef THREADS
-pthread_mutex_t *zip_mutex;
+std::map<int,pthread_mutex_t*> zip_mutex;
+//pthread_mutex_t *zip_mutex=0;
 #endif
-void zip_mutex_create()
+void zip_mutex_create(int id)
 {
 #ifdef THREADS
-  zip_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  zip_mutex[id] = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
 #endif
 }
-void zip_push(std::string url)
+void zip_push(int id, std::string url)
 {
 #ifdef THREADS
-  pthread_mutex_lock(zip_mutex);
+  pthread_mutex_lock(zip_mutex[id]);
 #endif
   zip_result_urls.push_back(url);
 #ifdef THREADS
-  pthread_mutex_unlock(zip_mutex);
+  pthread_mutex_unlock(zip_mutex[id]);
 #endif
 }
-void zip_mutex_destroy()
+void zip_mutex_destroy(int id)
 {
 #ifdef THREADS
-  pthread_mutex_destroy(zip_mutex);
-  delete zip_mutex;
+  if (zip_mutex[id])
+    pthread_mutex_destroy(zip_mutex[id]);
+  delete zip_mutex[id];
+  zip_mutex[id]=0;
 #endif
 }
 
@@ -14982,6 +15824,7 @@ size_t writer_cb(void *pOpaque, mz_uint64 offset, const void *pBuf, size_t n)
 {
   //std::cout << "CB:" << offset << " " << n << std::endl;
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = (std::vector<unsigned char,GameApiAllocator<unsigned char> > *)pOpaque;
+  //std::cout << "VECTOR SIZE:" << vec->size() << std::endl;
   std::copy((const unsigned char*)pBuf,((const unsigned char*)pBuf)+n,vec->begin()+offset);
   return n;
 }
@@ -14996,7 +15839,7 @@ void *thread_sketchfab_zip(void *data)
   GLTF_Model_with_prepare_sketchfab_zip *obj = dt->obj;
   mz_zip_archive *pZip = dt->pZip;
   int i = dt->i;
-  
+  float mult = dt->mult;
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(pZip, i);
 	if (is_dir) {
 	    char *filename = new char[256];
@@ -15011,6 +15854,7 @@ void *thread_sketchfab_zip(void *data)
 	    for(int j=0;j<256;j++)
 	      filename[j]=0;
 	    mz_uint err = mz_zip_reader_get_filename(pZip, i, filename, 256);
+	    //std::cout << "ZIP:" << filename << std::endl;
 	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; return 0; }
 	    std::string url_plain = obj->zip_url + "/" + std::string(filename);
 	    std::string url = "load_url.php?url=" + obj->zip_url + "/" + std::string(filename);
@@ -15026,11 +15870,13 @@ void *thread_sketchfab_zip(void *data)
 	    
 	    //size_t sz=0;
 	    //void *ptr = mz_zip_reader_extract_to_heap(pZip, i, &sz, 0);
-	    mz_zip_archive_file_stat file_stat;
 	    std::vector<unsigned char, GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char, GameApiAllocator<unsigned char> >;
+	    mz_zip_archive_file_stat file_stat;
+	    
 	    if (mz_zip_reader_file_stat(pZip, i, &file_stat))
 	      {
 		size_t uncompressed_size = (size_t)file_stat.m_uncomp_size;
+		//std::cout << "RESIZE:" << uncompressed_size << std::endl;
 		data->resize(uncompressed_size);
 	      }
 	    else
@@ -15053,13 +15899,16 @@ void *thread_sketchfab_zip(void *data)
 #endif
 	    // std::cout << url << "::" << data->size() << std::endl;
 	    if (g_del_map.async_find(url)) {
+	      // THIS CODE CRASHES MIALLOC
 	      g_del_map.del_async_url(url);
-	      //delete g_del_map.load_url_buffers_async[url];
+	      ////delete g_del_map.load_url_buffers_async[url];
 	    }
 	    //std::cout << "Pushing zip file: " << url << std::endl;
 	    g_del_map.push_async_url(url,get_fetcher(data) );
 
-	    zip_push(url_plain);
+	    zip_push(dt->m_zip_mutex_id,url_plain);
+
+	    //std::cout << "url ready:" << url << std::endl;
 	    
 	    //g_del_map.load_url_buffers_async[url] = data;
 
@@ -15124,6 +15973,7 @@ public:
     
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
     //std::cout << "ZIp num=" << num << std::endl;
+    float mult = float(100)/float(num);
     for(int i=0;i<num;i++)
       {
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
@@ -15261,6 +16111,7 @@ public:
     
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
     //std::cout << "ZIp num=" << num << std::endl;
+    float mult = float(100)/float(num);
     for(int i=0;i<num;i++)
       {
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
@@ -15640,15 +16491,26 @@ GameApi::ML GameApi::MainLoopApi::load_zip(EveryApi &ev, std::string zip_url)
 }
 
 
+void (*g_sketchfab_f2)(void*);
+void *g_sketchfab_data;
+
+void sketchfab_zip_cb(void (*f2)(void*), void*data) {
+  g_sketchfab_f2 = f2;
+  g_sketchfab_data = data;
+}
 
 GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip)
 {
   bool is_binary=false;
-  LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary);
-  GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model);
+  LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary, &sketchfab_zip_cb);
+  GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model, g_sketchfab_f2,g_sketchfab_data);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
   GameApi::TF tf = add_gltf(e,i);
   g_tf_instances.push_back(tf);
+  GameApi::EveryApi &ev = *g_everyapi;
+  tf = tf_join(ev,tf);
+  GLTFModelInterface *ii = find_gltf(e,tf);
+  load->set_model(ii);
   return tf;
 }
 /*
@@ -15895,14 +16757,14 @@ FILEID GLTFImageDecoder::add_file(std::vector<unsigned char,GameApiAllocator<uns
   filenames2[id] = filename;
   return id;
 }
-void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height)
+void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height, int m_decode_mutex_id)
 {
   //std::cout << "start_process:" << id.id << std::endl;
   tinygltf::Image *img = new tinygltf::Image;
 #ifdef THREADS
 #ifdef EMSCRIPTEN
   std::string filename = get_fetch_filename(fetch_id);
-  start_gltf_bitmap_thread(i,img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id,filename);
+  start_gltf_bitmap_thread(i,img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id,filename,m_decode_mutex_id);
 #else
   // not-emscripten -> do syncronous version
   ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
@@ -15914,6 +16776,7 @@ void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, 
   info->bytes = &(files2[id]->operator[](0));
   info->size = files2[id]->size();
   info->i = i;
+  info->m_decode_mutex_id = m_decode_mutex_id;
   thread_func_gltf_bitmap((void*)info);
 #endif
 #else
@@ -15926,6 +16789,7 @@ void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, 
   info->bytes = &(files2[id]->operator[](0));
   info->size = files2[id]->size();
   info->i = i;
+  info->m_decode_mutex_id = m_decode_mutex_id;
   thread_func_gltf_bitmap((void*)info);
 #endif
   
@@ -15939,12 +16803,15 @@ void GLTFImageDecoder::set_decode_callback(FILEID id, void (*fptr)(void*), void 
 //void GLTFImageDecoder::decode_file(FILEID id)
 //{
 //}
-bool GLTFImageDecoder::is_decoded(FILEID id)
+bool GLTFImageDecoder::is_decoded(FILEID id, int m_decode_mutex_id)
 {
-  return decoded_files[id]!=0;
+  decode_mutex_lock(m_decode_mutex_id);
+  bool b = decoded_files[id]!=0;
+  decode_mutex_unlock(m_decode_mutex_id);
+  return b;
 }
 std::vector<unsigned char, GameApiAllocator<unsigned char> > *GLTFImageDecoder::get_decoded_file(FILEID id)
-{
+{  
   return decoded_files[id];
 }
 IMAGEID GLTFImageDecoder::convert_to_image(std::vector<unsigned char> &vec)
@@ -16029,4 +16896,197 @@ private:
 GameApi::ML GameApi::MainLoopApi::glb_to_download_bar(TF tf, std::string filename)
 {
   return add_main_loop(e, new GlbToDownloadBar(e,tf,filename));
+}
+
+bool tf_join_property(void *t);
+
+class GLTFJoin : public GLTFModelInterface
+{
+public:
+  GLTFJoin(GameApi::EveryApi &ev, GLTFModelInterface *next) : ev(ev), next(next) { }
+  virtual std::string name() const { return "GLTFJoin"; }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  void Prepare() { next->Prepare(); }
+  
+  virtual std::string BaseUrl() const { return next->BaseUrl(); }
+  virtual std::string Url() const { return next->Url(); }
+
+  virtual bool ReadyToFetch() const { return next->ReadyToFetch(); }
+  virtual bool IsSketchFabZipASyncJoinImplementation() const {
+    return next->IsSketchFabZipASyncJoinImplementation();
+  }  
+  virtual void execute() { next->execute(); }
+
+  virtual LoadGltf *get_load() const { return next->get_load(); }
+
+  void set_loadgltf_unique_id(int id) {
+    //std::cout << "GLTF_join received id " << id << std::endl;
+    m_id = id;
+    next->set_loadgltf_unique_id(id);
+  }
+  
+  bool property()
+  {
+    unsigned int time = g_low->sdl->SDL_GetTicks();
+    unsigned int delta_ms = time - start_time;
+    if (delta_ms > 30) return false;
+    if (tasks_m_check_async_ongoing(m_id)) return true; 
+    //if (tasks_m_check_async_ongoing(7778)) return true; 
+    //if (tasks_m_check_async_ongoing(3008)) return true; 
+    //if (tasks_m_check_async_ongoing(3009)) return true; 
+    //int mesh_count = next->meshes_size();
+    //if (mesh_count>0) return false;
+    return false;
+  }
+  bool Ready() const
+  {
+
+    bool b = !(tasks_m_check_async_ongoing(m_id));
+    //static int counter=0;
+    // counter++;
+    //if (counter<20)
+    //  std::cout << "JOIN ready=" << m_id << " " << b << std::endl;
+    return b;
+  }
+  void check() const
+  {
+    static int flag=0;
+    flag++;
+    if (flag<40) {
+      //print_task_m_ids();
+      //print_tasks_queue();
+      //print_tasks_in_execute();
+      //print_tasks_done();
+    }
+    //start_time = g_low->sdl->SDL_GetTicks();
+    tasks_join(m_id);
+    //std::cout << "check id=" << m_id << std::endl;
+    //tasks_join_property(&tf_join_property, (void*)this);
+  }
+  
+  
+  virtual int get_default_scene() const
+  {
+    check();
+    return next->get_default_scene(); }
+  
+  virtual int accessors_size() const { check(); return next->accessors_size(); }
+  virtual const tinygltf::Accessor &get_accessor(int i) const
+  {
+    check();
+    return next->get_accessor(i);
+  }
+
+  virtual int animations_size() const { check(); return next->animations_size(); }
+  virtual const tinygltf::Animation &get_animation(int i) const
+  {
+    check();
+    return next->get_animation(i);
+  }
+
+  virtual int buffers_size() const { check(); return next->buffers_size(); }
+  virtual const tinygltf::Buffer &get_buffer(int i) const
+  {
+    check();
+    return next->get_buffer(i);
+  }
+
+  virtual int bufferviews_size() const { check(); return next->bufferviews_size(); }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const
+  {
+    check();
+    return next->get_bufferview(i);
+  }
+
+  virtual int materials_size() const { check(); return next->materials_size(); }
+  virtual const tinygltf::Material &get_material(int i) const
+  {
+    check();
+    return next->get_material(i);
+  }
+
+  virtual int meshes_size() const { check(); return next->meshes_size(); }
+  virtual const tinygltf::Mesh &get_mesh(int i) const
+  {
+    check();
+    return next->get_mesh(i);
+  }
+
+  virtual int nodes_size() const { check(); return next->nodes_size(); }
+  virtual const tinygltf::Node &get_node(int i) const
+  {
+    check();
+    return next->get_node(i);
+  }
+
+  virtual int textures_size() const { check(); return next->textures_size(); }
+  virtual const tinygltf::Texture &get_texture(int i) const
+  {
+    check();
+    return next->get_texture(i);
+  }
+
+  virtual int images_size() const { check(); return next->images_size(); }
+  virtual const tinygltf::Image &get_image(int i) const
+  {
+    check();
+    return next->get_image(i);
+  }
+
+  virtual int skins_size() const { check(); return next->skins_size(); }
+  virtual const tinygltf::Skin &get_skin(int i) const
+  {
+    check();
+    return next->get_skin(i);
+  }
+
+  virtual int samplers_size() const { check(); return next->samplers_size(); }
+  virtual const tinygltf::Sampler &get_sampler(int i) const
+  {
+    check();
+    return next->get_sampler(i);
+  }
+
+  virtual int cameras_size() const { check(); return next->cameras_size(); }
+  virtual const tinygltf::Camera &get_camera(int i) const
+  {
+    check();
+    return next->get_camera(i);
+  }
+
+  virtual int scenes_size() const { check(); return next->scenes_size(); }
+  virtual const tinygltf::Scene &get_scene(int i) const
+  {
+    check();
+    return next->get_scene(i);
+  }
+
+  virtual int lights_size() const { check(); return next->lights_size(); }
+  virtual const tinygltf::Light &get_light(int i) const
+  {
+    check();
+    return next->get_light(i);
+  }
+private:
+  GameApi::EveryApi &ev;
+  GLTFModelInterface *next;
+  mutable unsigned int start_time;
+  int m_id;
+};
+
+bool tf_join_property(void *t)
+{
+  GLTFJoin *j = (GLTFJoin*)t;
+  return j->property();
+}
+
+  
+GameApi::TF GameApi::MainLoopApi::tf_join(GameApi::EveryApi &ev, TF tf)
+{
+  GLTFModelInterface *i = find_gltf(e,tf);
+  return add_gltf(e, new GLTFJoin(ev,i));
 }

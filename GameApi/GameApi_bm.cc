@@ -762,9 +762,15 @@ void stackTrace()
 #endif
 
 #ifdef EMSCRIPTEN
+  emscripten_log(
+    EM_LOG_CONSOLE |
+    EM_LOG_C_STACK |
+    EM_LOG_JS_STACK |
+    EM_LOG_DEMANGLE,
+    "stack");
   char stack[40960];
   emscripten_get_callstack(
-			   EM_LOG_C_STACK | EM_LOG_JS_STACK,
+			   EM_LOG_C_STACK | EM_LOG_JS_STACK | EM_LOG_DEMANGLE,
 			   stack,
 			   sizeof(stack)
 			   );

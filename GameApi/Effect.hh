@@ -3175,6 +3175,7 @@ public:
   }
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
+  virtual bool Ready() const { return coll.Ready(); }
   virtual bool IsTransparent() const { return coll.IsTransparent(); }
   virtual void Prepare() { coll.Prepare(); }
   virtual void SetDoneCount(int i) { coll.SetDoneCount(i); }

@@ -3145,6 +3145,8 @@ public:
 };
 #endif
 
+class LoadGltf;
+
 class GLTFModelInterface : public CollectInterface
 {
 public:
@@ -3153,14 +3155,21 @@ public:
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual bool ReadyToPrepare() const { return true; }
-
+  virtual bool ReadyToFetch() const { return true; } // tasks_async_join
+  virtual bool IsSketchFabZipASyncJoinImplementation() const { return false; }
   virtual void execute() { }
+  virtual void set_loadgltf_unique_id(int id) { }
+
+  virtual bool Ready() const { return true; }
+  
   
   virtual std::string name() const=0;
   
   virtual std::string BaseUrl() const=0;
   virtual std::string Url() const=0;
 
+  virtual LoadGltf *get_load() const=0;
+  
   virtual int get_default_scene() const=0;
   
   virtual int accessors_size() const=0;
@@ -3215,7 +3224,15 @@ public:
   virtual std::string BaseUrl() const { return next->BaseUrl(); }
   virtual std::string Url() const { return next->Url(); }
 
+  virtual bool ReadyToFetch() const { return next->ReadyToFetch(); }
+  virtual bool IsSketchFabZipASyncJoinImplementation() const {
+    return next->IsSketchFabZipASyncJoinImplementation();
+  }
+  
   virtual void execute() { next->execute(); }
+  virtual void set_loadgltf_unique_id(int id) { next->set_loadgltf_unique_id(id); }
+
+  virtual LoadGltf *get_load() const { return next->get_load(); }
   
   virtual int get_default_scene() const { return next->get_default_scene(); }
   
@@ -3983,6 +4000,7 @@ class del_map_interface
 public:
   virtual ~del_map_interface() { }
   virtual void async_cache_clear()=0;
+  virtual void print() { }
 #ifdef EMSCRIPTEN
   virtual void del_fetch_url(std::string url)=0;
 #endif
@@ -4248,8 +4266,69 @@ public:
 
 
 
+#if 0
+class HeavyWork
+{
+public:
+  virtual void heavy(void *thread_data)=0;
+  virtual void *get_data_initial() const=0;
+  virtual bool heavy_op_done() const=0;
+  virtual void *get_data_from_heavy_op() const=0;
+  virtual int num_slots() const =0;
+  virtual void *get_data_for_slots(int slot_idx) const=0;
+};
+class HeavyWorkSlot
+{
+public:
+  virtual void heavy(int idx, void *thread_data, void *slotdata)=0;
+};
 
+class HeavyWorkOpenGL
+{
+public:
+  // initial will first be true, but over time it'll change to false.
+  // will be called every frame. data changes on the true->false transition.
+  virtual void set_data(bool is_initial, void *data)=0;
+  virtual void set_data_for_slot(void *slotdata, int slot_idx)=0;
+  virtual void render()=0;
+};
 
+class HeavyWorkThread
+{
+  // This class must be instantiated in your object's DATA MEMBER.
+  
+  // You're not allowed to pass data between work and ogl without going through
+  // the get_data() and set_data(), which is called automatically.
+public:
+  HeavyWorkThread(HeavyWork *work, bool get_execute_from_eventloop, int id);
+  HeavyWorkThread(HeavyWork *work, HeavyWorkOpenGL *ogl, bool get_execute_from_eventloop, int id);
+  ~HeavyWorkThread();
+  void add_thread(void *thread_data);
+  void run();
+  void execute();
+  //void join(void (*fptr)(void*), void *data);
+  //void async_join(void (*fptr)(void*), void *data);
+private:
+  void heavy(int num);
+  void create_mutex();
+  void lock_mutex();
+  void unlock_mutex();
+  void destroy_mutex();
+  void join();
+  void join_slot(int slot_idx);
+  void cb();
+  HeavyWork *work;
+  HeavyWorkOpenGL *ogl;
+  HeavyWorkSlot *slot;
+  int id;
+  std::vector<void*> thread_data;
+  std::vector<HeavyWorkData*> data;
+  pthread_mutex_t mutex;
+  bool flipped=false;
+  bool firsttime=true;
+  int slot_num=-1;
+};
+#endif
 
 #endif
 

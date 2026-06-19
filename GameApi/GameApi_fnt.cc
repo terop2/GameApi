@@ -1166,6 +1166,29 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
 
 extern Point g_key_move_2_pos;
 
+class ReadyFetcher : public Fetcher<int>
+{
+public:
+  ReadyFetcher(FaceCollection *coll) : coll(coll) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+    if (coll->Ready()) return 0;
+    return 1;
+  }
+private:
+  FaceCollection *coll;
+};
+GameApi::IF GameApi::FontApi::ready_fetcher(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_int_fetcher(e, new ReadyFetcher(coll));
+}
+
 class KeyMoveAreaFetcher : public Fetcher<int>
 {
 public:

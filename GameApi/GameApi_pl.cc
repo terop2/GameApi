@@ -4160,6 +4160,16 @@ public:
   ColorElem2(FaceCollection *coll, unsigned int col) : ForwardFaceCollection(*coll), col(col),coll(coll) { }
   virtual std::string name() const { return "ColorElem2"; }
 
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  void Prepare()
+  {
+    coll->Prepare();
+  }
+  
   ~ColorElem2()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
@@ -11294,7 +11304,7 @@ public:
       {
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
-
+	
 
 	ev.shader_api.set_var(sh, "in_PhongLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
 	ev.shader_api.set_var(sh, "level1_color",
@@ -11312,7 +11322,7 @@ public:
 			  ((highlight&0xff00)>>8)/255.0,
 			      ((highlight&0xff))/255.0,
 			  ((highlight&0xff000000)>>24)/255.0);
-	ev.shader_api.set_var(sh, "hilight", pow);
+			  ev.shader_api.set_var(sh, "hilight", pow);
       }
 
 #ifndef NO_MV
@@ -14685,6 +14695,8 @@ private:
   }
   void calc_size()
   {
+
+    
     size_x = fabs(end_x-start_x);
     size_y = fabs(end_y-start_y);
     size_z = fabs(end_z-start_z);
@@ -14721,7 +14733,20 @@ public:
 class GLastResizePipelineToGltfAnimation : public Pipeline
 {
 public:
-  void add_matrix(int id, Matrix m) { ids.push_back(id); matrices.push_back(m); }
+  void add_matrix(int id, Matrix m) {
+    int s = std::min(ids.size(),matrices.size());
+    for(int i=0;i<s;i++)
+      {
+	if (ids[i]==id) {
+	  ids.erase(ids.begin()+i);
+	  matrices.erase(matrices.begin()+i);
+	  i--; s--;
+	}
+      }
+
+    
+    ids.push_back(id); matrices.push_back(m);
+  }
   void clear() { ids.clear(); matrices.clear(); }
   Matrix get_matrix(int id) const {
     int s= std::min(ids.size(),matrices.size());
@@ -14839,15 +14864,148 @@ private:
   }
   void calc_center()
   {
-    center_x = start_x+(end_x-start_x)/2.0;
-    center_y = start_y+(end_y-start_y)/2.0;
-    center_z = start_z+(end_z-start_z)/2.0;
+
+    Point p1(start_x,start_y,start_z);
+    Point p2(end_x,start_y,start_z);
+    Point p3(start_x,end_y,start_z);
+    Point p4(end_x,end_y,start_z);
+    Point p5(start_x,start_y,end_z);
+    Point p6(end_x,start_y,end_z);
+    Point p7(start_x,end_y,end_z);
+    Point p8(end_x,end_y,end_z);
+
+    Matrix m = g_last_resize_pipeline->get_matrix(resize_transfer_id.id*400000);
+    p1 = p1*m;
+    p2 = p2*m;
+    p3 = p3*m;
+    p4 = p4*m;
+    p5 = p5*m;
+    p6 = p6*m;
+    p7 = p7*m;
+
+    float mx = std::min(p1.x,p2.x);
+      mx=std::min(mx,p3.x);
+      mx=std::min(mx,p4.x);
+      mx=std::min(mx,p5.x);
+      mx=std::min(mx,p6.x);
+      mx=std::min(mx,p7.x);
+
+      float px = std::max(p1.x,p2.x);
+      px=std::max(px,p3.x);
+      px=std::max(px,p4.x);
+      px=std::max(px,p5.x);
+      px=std::max(px,p6.x);
+      px=std::max(px,p7.x);
+
+
+      float my = std::min(p1.y,p2.y);
+      my=std::min(my,p3.y);
+      my=std::min(my,p4.y);
+      my=std::min(my,p5.y);
+      my=std::min(my,p6.y);
+      my=std::min(my,p7.y);
+
+      float py = std::max(p1.y,p2.y);
+      py=std::max(py,p3.y);
+      py=std::max(py,p4.y);
+      py=std::max(py,p5.y);
+      py=std::max(py,p6.y);
+      py=std::max(py,p7.y);
+
+      float mz = std::min(p1.z,p2.z);
+      mz=std::min(mz,p3.z);
+      mz=std::min(mz,p4.z);
+      mz=std::min(mz,p5.z);
+      mz=std::min(mz,p6.z);
+      mz=std::min(mz,p7.z);
+
+      float pz = std::max(p1.z,p2.z);
+      pz=std::max(pz,p3.z);
+      pz=std::max(pz,p4.z);
+      pz=std::max(pz,p5.z);
+      pz=std::max(pz,p6.z);
+      pz=std::max(pz,p7.z);
+
+      
+    center_x = mx+(px-mx)/2.0;
+    center_y = my+(py-my)/2.0;
+    center_z = mz+(pz-mz)/2.0;
+
+   // center_x = start_x+(end_x-start_x)/2.0;
+   // center_y = start_y+(end_y-start_y)/2.0;
+   // center_z = start_z+(end_z-start_z)/2.0;
   }
   void calc_size()
   {
-    size_x = fabs(end_x-start_x);
-    size_y = fabs(end_y-start_y);
-    size_z = fabs(end_z-start_z);
+    Point p1(start_x,start_y,start_z);
+    Point p2(end_x,start_y,start_z);
+    Point p3(start_x,end_y,start_z);
+    Point p4(end_x,end_y,start_z);
+    Point p5(start_x,start_y,end_z);
+    Point p6(end_x,start_y,end_z);
+    Point p7(start_x,end_y,end_z);
+    Point p8(end_x,end_y,end_z);
+
+    Matrix m = g_last_resize_pipeline->get_matrix(resize_transfer_id.id*400000);
+    p1 = p1*m;
+    p2 = p2*m;
+    p3 = p3*m;
+    p4 = p4*m;
+    p5 = p5*m;
+    p6 = p6*m;
+    p7 = p7*m;
+
+
+    float mx = std::min(p1.x,p2.x);
+      mx=std::min(mx,p3.x);
+      mx=std::min(mx,p4.x);
+      mx=std::min(mx,p5.x);
+      mx=std::min(mx,p6.x);
+      mx=std::min(mx,p7.x);
+
+      float px = std::max(p1.x,p2.x);
+      px=std::max(px,p3.x);
+      px=std::max(px,p4.x);
+      px=std::max(px,p5.x);
+      px=std::max(px,p6.x);
+      px=std::max(px,p7.x);
+
+
+      float my = std::min(p1.y,p2.y);
+      my=std::min(my,p3.y);
+      my=std::min(my,p4.y);
+      my=std::min(my,p5.y);
+      my=std::min(my,p6.y);
+      my=std::min(my,p7.y);
+
+      float py = std::max(p1.y,p2.y);
+      py=std::max(py,p3.y);
+      py=std::max(py,p4.y);
+      py=std::max(py,p5.y);
+      py=std::max(py,p6.y);
+      py=std::max(py,p7.y);
+
+      float mz = std::min(p1.z,p2.z);
+      mz=std::min(mz,p3.z);
+      mz=std::min(mz,p4.z);
+      mz=std::min(mz,p5.z);
+      mz=std::min(mz,p6.z);
+      mz=std::min(mz,p7.z);
+
+      float pz = std::max(p1.z,p2.z);
+      pz=std::max(pz,p3.z);
+      pz=std::max(pz,p4.z);
+      pz=std::max(pz,p5.z);
+      pz=std::max(pz,p6.z);
+      pz=std::max(pz,p7.z);
+
+    size_x = fabs(px-mx);
+    size_y = fabs(py-my);
+    size_z = fabs(pz-mz);
+    
+    //size_x = fabs(end_x-start_x);
+    //size_y = fabs(end_y-start_y);
+    //size_z = fabs(end_z-start_z);
   }
   void calc_matrix()
   {
@@ -27880,7 +28038,7 @@ GameApi::ML GameApi::PolygonApi::fade_pic(GameApi::EveryApi &ev, BM bm1, float s
 #include <opencv2/videoio.hpp>
 
 void *writer(void*);
-
+void writer_task_done(void*);
 class VideoSource : public TextureID, public CollectInterface
 {
 public:
@@ -27903,7 +28061,7 @@ public:
   virtual void HeavyPrepare() {
     preparing_async = true;
       tasks_add(111,&writer,(void*)this);
-      tasks_join(111);
+      tasks_async_join(111, &writer_task_done,(void*)this);
       preparing_async = false;
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glGenTextures(1,&tex);
@@ -27943,17 +28101,24 @@ public:
     cap = cv::VideoCapture(path + "video"+id+".mp4");
     }
   }
-  
+  void Prepare2Done() {
+    cap_ready = true;
+  }
   virtual void render(MainLoopEnv &e)
   {
     OpenglLowApi *ogl = g_low->ogl;
+    bool frame_available=false;
+    bool ref_available=false;
     cv::Mat frame;
+    bool done=false;
+    if (cap_ready) {
     if (cap.grab())
       {
 	cap.retrieve(frame);
+	done=true;
+	frame_available=true;
       }
-    else
-      {
+    if (!done) {
    std::string home = getenv("HOME");
 
   const char *dd = getenv("BUILDER_DOCKER_DIR");
@@ -27964,8 +28129,9 @@ public:
 	
 	cap.grab();
 	cap.retrieve(frame);
+	frame_available=true;
       }
-
+      if (frame_available) {
     int channels = frame.channels();
     int nRows = frame.rows;
     int nCols = frame.cols;
@@ -28021,13 +28187,15 @@ public:
 	{
 	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
 	}
+    ref_available=true;
+      }
     //for(int y=0;y<sy;y++)
     //  for(int x=0;x<sx/2;x++)
     //	{
     //	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
     //	}
 
-    
+      if (ref_available) {
 #ifndef EMSCRIPTEN
   ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
@@ -28041,6 +28209,8 @@ public:
     ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
 
     ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
+      }
+    }
   }
   virtual int texture() const
       {
@@ -28058,6 +28228,7 @@ private:
   GameApi::Env &e;
   int sx,sy;
   std::string filename;
+  bool cap_ready=false;
   cv::VideoCapture cap;
   unsigned int tex;
   BufferRef ref;
@@ -28070,6 +28241,11 @@ void *writer(void* ptr)
   VideoSource *src = (VideoSource*)ptr;
   src->Prepare2();
   return 0;
+}
+void writer_task_done(void* ptr)
+{
+  VideoSource *src = (VideoSource*)ptr;
+  src->Prepare2Done();
 }
 #endif
 
@@ -29891,11 +30067,19 @@ public:
   DecimateTF(GLTFModelInterface *next, float val) : ForwardGLTF(next), next(next), val(val),b(false) { firsttime = true; }
   DecimateTF(GLTFModelInterface *next) : ForwardGLTF(next), next(next), b(true) { firsttime=true; }
   std::string name() const { return "DecimateTF"; }
+
+  LoadGltf *get_load() const
+  {
+    if (next) return next->get_load();
+    return 0;
+  }
   
   void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
-    vis.register_obj(this);
+    if (!next->IsSketchFabZipASyncJoinImplementation()) {
+      vis.register_obj(this);
+    }
   }
 
   void do_one(int i, int j) const
@@ -30140,37 +30324,43 @@ public:
   void Prepare()
   {
     next->Prepare();
-    HeavyPrepare();
+    if (!next->IsSketchFabZipASyncJoinImplementation()) {
+      HeavyPrepare();
+    }
   }
 
-  virtual int accessors_size() const { if (firsttime) return 0; return next->accessors_size()+new_accessors.size(); }
+  virtual int accessors_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->accessors_size()+new_accessors.size(); }
   virtual const tinygltf::Accessor &get_accessor(int i) const
   {
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
     if (i>=0 && i<next->accessors_size())
       return next->get_accessor(i);
     //std::cout << "get new acc:" << i << " " << start_accessors << " " << new_accessors.size() << std::endl;
     return new_accessors[i-start_accessors];
   }
-  virtual int bufferviews_size() const { if (firsttime) return 0; return next->bufferviews_size() + new_bufviews.size(); }
+  virtual int bufferviews_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->bufferviews_size() + new_bufviews.size(); }
   virtual const tinygltf::BufferView &get_bufferview(int i) const
   {
-    if (i>=0 && i<next->bufferviews_size())
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
+ if (i>=0 && i<next->bufferviews_size())
       return next->get_bufferview(i);
     return new_bufviews[i-start_bufview];
   }
 
 
-  virtual int buffers_size() const { if (firsttime) return 0; return next->buffers_size() + new_buffer.size(); }
+  virtual int buffers_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->buffers_size() + new_buffer.size(); }
   virtual const tinygltf::Buffer &get_buffer(int i) const
   {
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
     if (i>=0 && i<next->buffers_size())
       return next->get_buffer(i);
     return new_buffer[i-start_buffer];
   }
 
-  virtual int meshes_size() const { if (firsttime) return 0; return next->meshes_size(); }
+  virtual int meshes_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->meshes_size(); }
   virtual const tinygltf::Mesh &get_mesh(int i) const
   {
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
     if (m_enabled.size()<=i)
       {
 	m_enabled.resize(i+1);
@@ -31072,3 +31262,4 @@ GameApi::ARR GameApi::PolygonApi::interpolate_mesh_pair_arr(std::vector<P> start
     }
   return add_array(e,t);
 }
+

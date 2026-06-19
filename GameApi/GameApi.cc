@@ -15,6 +15,8 @@
 
 #include "GameApi_h.hh"
 #include "FreeType2.hh"
+#include "Tasks.hh"
+#include "MaterialI.hh"
 
 #include <cstring>
 #include <iomanip>
@@ -200,98 +202,6 @@ public:
     
   }
   virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad, GameApi::TXID position, GameApi::TXID normal) const=0;
-};
-
-class MaterialForward : public Material
-{
-public:
-  GameApi::ML call(GameApi::P p) const
-  {
-    GameApi::ML ml;
-    ml.id = mat(p.id);
-    return ml;
-  }
-  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst(p.id,pts.id);
-    return ml;
-  }
-  GameApi::ML call_inst_matrix(GameApi::P p, GameApi::MS ms)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst_matrix(p.id,ms.id);
-    return ml;
-  }
-  int mat(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::ML ml = mat2(p2);
-    return ml.id;
-  }
-  int mat_inst(int p, int pts) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst(p2,p3);
-    return ml.id;
-  }
-  int mat_inst_va_prepare(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::VA va = mat2_inst_va_prepare(p2);
-    return va.id;
-  }
-  int mat_inst_va(int va, int pts) const
-  {
-    GameApi::VA p2;
-    p2.id = va;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst_va(p2,p3);
-    return ml.id;
-  }
-  int mat_inst_matrix(int p, int ms) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::MS p3;
-    p3.id = ms;
-    GameApi::ML ml = mat2_inst_matrix(p2,p3);
-    return ml.id;
-  }
-
-  int mat_inst2(int p, int pta) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTA p3;
-    p3.id = pta;
-    GameApi::ML ml = mat2_inst2(p2,p3);
-    return ml.id;
-
-  }
-  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
-    return ml.id;
-
-  }
-  virtual GameApi::ML mat2(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
-  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const=0;
-  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const=0;
-  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
-  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
 };
 
 
@@ -9303,7 +9213,8 @@ public:
     //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
     GameApi::ML ml;
     ml.id = next->mat(p0.id);
-    GameApi::ML sh;
+    GameApi::ML sh = ml;
+    
     if (background_included) {
       sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     } else {
@@ -18206,6 +18117,158 @@ extern int g_async_pending_count_failures;
 
 extern double g_dpr;
 
+struct MLGuiWidget_cb
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+std::vector<MLGuiWidget_cb> g_mlguiwidget_logo;
+
+int mlguiwidget_cb_count() { return g_mlguiwidget_logo.size(); }
+
+
+void call_mlguiwidget_cb(int i) {
+  g_mlguiwidget_logo[i].fptr(g_mlguiwidget_logo[i].data);
+}
+
+void call_all_mlguiwidget_cbs()
+{
+  int s = mlguiwidget_cb_count();
+  for(int i=0;i<s;i++)
+    {
+      call_mlguiwidget_cb(i);
+    }
+}
+
+
+int add_mlguiwidget_logo_callback(void (*fptr)(void*), void *data)
+{
+  static int id = 555;
+  id++;
+  MLGuiWidget_cb cb;
+  cb.id = id;
+  cb.fptr = fptr;
+  cb.data = data;
+  g_mlguiwidget_logo.push_back(cb);
+  return id;
+}
+void remove_mlguiwidget_logo_callback(int id)
+{
+  int s = g_mlguiwidget_logo.size();
+  for(int i=0;i<s;i++)
+    {
+      MLGuiWidget_cb &ref = g_mlguiwidget_logo[i];
+      if (ref.id == id)
+	{
+	  g_mlguiwidget_logo.erase(g_mlguiwidget_logo.begin()+i);
+	  s--;
+	  i--;
+	}
+    }
+}
+
+
+
+CollectData collect(CollectInterface *i)
+{
+  CollectData d;
+  d.vis = new CollectInterfaceImpl;
+  d.vis_counter=0;
+  d.vis_counter_before=0;
+  d.has_vis=true;
+  i->Collect(*d.vis);
+  return d;
+}
+void collect_repeat(CollectData &d)
+{
+
+  if (d.has_vis)
+    {
+	int counter = 0;
+	int s = d.vis->vec.size();
+	for(int i=0;i<s;i++) counter+=d.vis->count(i);
+	
+      int num2 = (counter/30)+1;
+      if (num2<1) num2=1;
+      for(int i=0;i<num2;i++) {
+	d.vis->execute(d.vis_counter);
+	d.vis_counter_before++;
+	//real_counter++;
+	if (d.vis_counter_before>=d.vis->count(d.vis_counter)) {
+	  d.vis_counter_before=0;
+	  d.vis_counter++;
+	}
+      }
+
+      if (d.vis_counter>=d.vis->vec.size())
+	{
+	  d.has_vis = false;
+	}
+
+    } else {
+    if (d.vis) {
+      delete d.vis;
+      d.vis=0;
+    }
+  }      
+}
+
+
+
+
+struct Splitter_cb
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+std::vector<Splitter_cb> g_splitter_logo;
+
+int splitter_cb_count() { return g_splitter_logo.size(); }
+
+
+void call_splitter_cb(int i) {
+  g_splitter_logo[i].fptr(g_splitter_logo[i].data);
+}
+
+void call_all_splitter_cbs()
+{
+  int s = splitter_cb_count();
+  for(int i=0;i<s;i++)
+    {
+      call_splitter_cb(i);
+    }
+}
+
+
+int add_splitter_logo_callback(void (*fptr)(void*), void *data)
+{
+  static int id = 555;
+  id++;
+  Splitter_cb cb;
+  cb.id = id;
+  cb.fptr = fptr;
+  cb.data = data;
+  g_splitter_logo.push_back(cb);
+  return id;
+}
+void remove_splitter_logo_callback(int id)
+{
+  int s = g_splitter_logo.size();
+  for(int i=0;i<s;i++)
+    {
+      Splitter_cb &ref = g_splitter_logo[i];
+      if (ref.id == id)
+	{
+	  g_splitter_logo.erase(g_splitter_logo.begin()+i);
+	  s--;
+	  i--;
+	}
+    }
+}
+
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -18419,9 +18482,11 @@ public:
 
 	if (gameapi_seamless_url=="") {
 	  logo_frame_count++;
+	  call_all_splitter_cbs();
 	  b = env->ev->mainloop_api.logo_iter();
 	  if (debug_enabled) status += "LOGO_ITER ";
 	} else {
+	  call_all_splitter_cbs();
 	  if (debug_enabled) status += "LOGO_SEAMLESS ";
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
@@ -18440,12 +18505,17 @@ public:
 	  bool pass_through=false;
 	  static int async_old = -1;
 	  static int count=600;
+	  static float drift_timer=0.0;
 	  if (async_pending_count!=async_old) {
 	    async_old=async_pending_count;
 	    count=600;
+	    drift_timer = env->ev->mainloop_api.get_time();
 	  } else {
 	    //std::cout << "TICK " << count << std::endl;
-	    count--; if (count<0) { 
+	    // count--; if (count<0) {
+	    float time_since_pending = env->ev->mainloop_api.get_time()-drift_timer;
+	    //std::cout << "DriftTimer: " << time_since_pending << std::endl;
+	    if (time_since_pending/10.0 > 3000.0) {
 	      std::cout << "ASyncPendingCountDrift:" << async_pending_count << std::endl;
 	      int s = async_labels.size();
 	      for(int i=0;i<s;i++)
@@ -18703,9 +18773,13 @@ public:
 
 
 
-	
-	
+	//std::cout << "splitter_cbs" << std::endl;
+	  call_all_splitter_cbs();
+	  //std::cout << "splitter_cbs end" << std::endl;
+
+	  //std::cout << "execute_ml start" << std::endl;
 	if (!g_disable_draws) env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+	//std::cout << "execute_ml end" << std::endl;
 
 	
 
@@ -28361,6 +28435,14 @@ GameApi::ML GameApi::MainLoopApi::save_deploy(HML h, std::string filename)
   return add_main_loop(e, new SaveDeploy(e,h2,filename));
 }
 
+GameApi::ML GameApi::MainLoopApi::save_deploy2(EveryApi &ev, RUN r, std::string homepage, bool is_in_envparams_arr, std::string filename)
+{
+  // This doesnt work for some reason. deploy doesnt work with this
+  HML hml = emscripten_frame2(ev,r,homepage,is_in_envparams_arr);
+  ML ml = save_deploy(hml,filename);
+  return ml;
+}
+
 std::string fix_script(std::string code, std::string rettype)
 {
   int res_line = 0;
@@ -30082,6 +30164,13 @@ public:
 #endif
     //std::cout << "STABLE DIFF tasks_add" << std::endl;
   }
+  LoadGltf *get_load() const {
+    if (done) {
+      GLTFModelInterface *i = find_gltf(env,ref);
+      return i->get_load();
+    }
+    return 0;
+  }
   std::string get_filename() const
   {
     int s = filename.size();
@@ -30733,6 +30822,16 @@ public:
 
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
 
+  LoadGltf *get_load() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_load();
+      }
+    return 0;
+  }
+  
   void Prepare2()
   {
     //std::cout << "Prepare2" << success << std::endl;
@@ -39796,7 +39895,7 @@ void run_callback(void *ptr)
   // LOOKS LIKE non-pthread version JAMS badly in view.php if this is enabled.
   //std::cout << "Clearing block:" << g_id << std::endl;
   //std::cout << "Current_block:" << get_current_block() << std::endl;
-  //if (g_id!=-1 && g_id!=-2 && g_id!=0) clear_block(g_id);
+  if (g_id!=-1 && g_id!=-2) clear_block(g_id);
   //std::cout << "Clear ok" << std::endl;
   // END OF TODO.
   clear_shader_cache();
@@ -39890,6 +39989,31 @@ extern float g_progress_bar_mult_ems1;
 extern float g_progress_bar_mult_ems2;
 extern float g_progress_bar_mult_builder;
 
+std::string get_new_script_to_end(std::string val, int pos,
+				  std::string allowed_chars)
+{
+  int s = val.size();
+  int s2 = allowed_chars.size();
+  int i=pos;
+  for(;i<s;i++)
+    {
+      bool found = false;
+      for(int j=0;j<s2;j++) {
+	if (val[i]==allowed_chars[j])
+	  {
+	    found=true;
+	    break;
+	  }
+      }
+      if (!found) break;
+    }
+  return val.substr(pos,i-pos);
+}
+
+//TMP extern int g_async_progress_counter;
+//TMP extern bool g_async_progress_counter_firsttime;
+extern Pipeline *g_last_resize_pipeline;
+
 void ClearProgress();
 KP extern "C" void set_new_script(const char *script2_)
 {
@@ -39904,6 +40028,10 @@ KP extern "C" void set_new_script(const char *script2_)
   
   const char *script2 = ptr;
   
+
+  tasks_done_queue_clear();
+  if (g_last_resize_pipeline)
+    g_last_resize_pipeline->clear();
   
   //std::cout << "set_new_script::" << script2 << std::endl;
   g_progress_bar_config = 0;
@@ -39912,6 +40040,49 @@ KP extern "C" void set_new_script(const char *script2_)
   g_progress_bar_mult_ems1=1.0;
   g_progress_bar_mult_ems2=1.0;
   ClearProgress();
+  //TMPg_async_progress_counter=0;
+
+  
+  std::string script = script2_a;
+
+  int s2 = script.size();
+  int counter =0;
+  std::vector<std::string> urls;
+  for(int i=0;i<s2-4;i++)
+    {
+      if (script[i]=='h'&&
+	  script[i+1]=='t'&&
+	  script[i+2]=='t'&&
+	  script[i+3]=='p')
+	{
+	  counter++;
+	  std::string u = get_new_script_to_end(script,i,"abcdefghijklmnopqrstuvwxyz./\\ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:_");
+	  //std::cout << "UU:" << u << std::endl;
+	  urls.push_back(u);
+	}
+      if (script[i]=='f'&&
+	  script[i+1]=='i'&&
+	  script[i+2]=='l'&&
+	  script[i+3]=='e')
+	{
+	  counter++;
+	  std::string u = get_new_script_to_end(script,i,"abcdefghijklmnopqrstuvwxyz./\\ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:_");
+	  //std::cout << "UU:" << u << std::endl;
+	  urls.push_back(u);
+	}
+    }
+  std::sort(urls.begin(),urls.end());
+  auto it = std::unique(urls.begin(),urls.end());
+  urls.erase(it,urls.end());
+  
+  //TMPg_async_progress_counter+=urls.size();
+  //TMPif (g_async_progress_counter_firsttime) {
+  //TMP  InstallProgress(111,"file count", g_async_progress_counter);
+  //TMP}
+
+
+  // PROGRESS BAR end
+  
   g_last_resize=Matrix::Identity();
   g_mainloop_ptr = (void*)script2;
     g_mainloop_callback = &run_callback;
@@ -43878,7 +44049,7 @@ float lod_x_4 = 8600.0;
 
 float lod_delta = 0.0f;
 
-GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq, bool emissive)
+GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq, bool emissive, int frame_skip)
 {
   // NOT WORKING YET, CLOSE BUT NO CICAR
   TF p1 = ev.polygon_api.decimate_tf(tf,level1);
@@ -43890,10 +44061,10 @@ GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf
   PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
   PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
   // gltf_mesh_all_anim generates unique id's for lod levels.
-  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive);
-  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive);
-  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive);
-  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive);
+  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip);
+  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip);
+  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip);
+  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
   ML I15 = ev.move_api.local_move(ev,I16,I612);
   ML I151 = ev.move_api.local_move(ev,I161,I613);
   ML I152 = ev.move_api.local_move(ev,I162,I614);
@@ -43902,7 +44073,7 @@ GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf
   ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
   return I154;
 }
-GameApi::ML GameApi::MainLoopApi::lod_anim_matrix(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4,  float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq, bool emissive)
+GameApi::ML GameApi::MainLoopApi::lod_anim_matrix(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4,  float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq, bool emissive, int frame_skip)
 {
   TF p1 = ev.polygon_api.decimate_tf(tf,level1);
   TF p2 = ev.polygon_api.decimate_tf(tf,level2);
@@ -43913,10 +44084,10 @@ GameApi::ML GameApi::MainLoopApi::lod_anim_matrix(GameApi::EveryApi &ev, GameApi
   MS I614=ev.points_api.block_ms_lod(ms,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
   MS I615=ev.points_api.block_ms_lod(ms,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
   // NOTE, gltf_mesh_all_anim is unique id boxes, so they generate separate id's.
-  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive);
-  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive);
-  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive);
-  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive);
+  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
+  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
+  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
+  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
   ML I15 = ev.move_api.local_move_matrix(ev,I16,I612);
   ML I151 = ev.move_api.local_move_matrix(ev,I161,I613);
   ML I152 = ev.move_api.local_move_matrix(ev,I162,I614);
@@ -45024,7 +45195,8 @@ GameApi::ML GameApi::MainLoopApi::cmb_glb_3d_interpolate(GameApi::EveryApi &ev, 
     {
       bool emissive=false;
       GameApi::MT mat = ev.materials_api.gltf_material(ev,tf_arr[i], material_id, mix, self_mult, rest_mult, light_dir_x, light_dir_y, light_dir_z, emissive);
-      GameApi::MT mat2 = ev.materials_api.gltf_anim_material2(ev,tf_arr[i], skin_num, num_timeindexes, mat, keys, mode, anim_transfer_id);
+      int frame_skip=1;
+      GameApi::MT mat2 = ev.materials_api.gltf_anim_material2(ev,tf_arr[i], skin_num, num_timeindexes, mat, keys, mode, anim_transfer_id, frame_skip);
       mat_vec.push_back(mat2);
     }
 
@@ -45260,3 +45432,114 @@ GameApi::ML GameApi::MainLoopApi::progress_bar_config(GameApi::ML ml,
   g_progress_bar_mult_builder = builder_mult;
   return ml;
 }
+
+#if 0
+
+HeavyWorkThread::HeavyWorkThread(HeavyWork *work, bool get_execute_from_eventloop, int id) : work(work), slot(0), ogl(0), eloop(get_execute_from_eventloop),id(id)
+{
+  create_mutex();
+}
+HeavyWorkThread::HeavyWorkThread(HeavyWork *work, HeavyWorkSlot *slot, bool get_execute_from_eventloop, int id) : work(work), slot(slot), ogl(0), eloop(get_execute_from_eventloop),id(id)
+{
+  create_mutex();
+}
+HeavyWorkThread::HeavyWorkThread(HeavyWork *work, HeavyWorkSlot *slot, HeavyWorkOpenGL *ogl, bool get_execute_from_eventloop, int id) : work(work), slot(slot), ogl(ogl), eloop(get_execute_from_eventloop), id(id) {
+
+  create_mutex();
+}
+HeavyWorkThread::~HeavyWorkThread()
+{
+  destroy_mutex();
+}
+
+void heavy_work_thread_cb(void *thr)
+{
+  HeavyWorkThread *thread = (HeavyWorkThread*)thr;
+  thread->cb();
+}
+void heavy_work_thread_task(void *hw)
+{
+  HeavyWorkData *dt = (HeavyWorkData*)hw;
+  HeavyWorkThread *thread = dt->thread;
+  thread->heavy(dt->num);
+}
+
+void HeavyWorkThread::heavy(int num)
+{
+  work->heavy(thread_data[num]);
+  int s = work->num_slots();
+  for(int i=0;i<s;i++)
+    {
+      void *data = work->get_data_for_slots(i);
+      slot->heavy(i,thread_data[num],data);
+    }
+}
+void HeavyWorkThread::run()
+{
+  join();
+}
+void HeavyWorkThread::join()
+{
+  tasks_async_join_m(id, &heavy_work_thread_cb, (void*)this);
+}
+struct SlotCB
+{
+  int idx;
+  HeavyWorkThread *m_this;
+};
+void heavy_work_thread_cb2(void *cb)
+{
+  SlotCB *slotcb = (SlotCB*)cb;
+  slotcb->m_this->slot_cb(slotcb->idx);
+}
+void HeavyWorkThread::slot_cb(int slot_idx)
+{
+  assert(slot_idx==slot_num);
+  slot_num++;
+}
+void HeavyWorkThread::join_slot(int slot_idx)
+{
+  SlotCB *cb = new SlotCB;
+  cb->idx = slot_idx;
+  cb->m_this = this;
+  tasks_async_join_m(id, &heavy_work_thread_cb2, (void*)cb);
+}
+struct HeavyWorkData
+{
+  HeavyWorkThread *thread;
+  int num;
+};
+
+
+void HeavyWorkThread::add_thread(void *thread_data)
+{
+  HeavyWorkData *dt = new HeavyWorkData;
+  dt->thread = this;
+  dt->num = thread_data.size()-1;
+  lock_mutex();
+  thread_data.push_back(thread_data);
+  data.push_back(dt);
+  unlock_mutex();
+  tasks_add(id,&heavy_work_thread_task,(void*)dt);
+}
+void HeavyWorkThread::cb()
+{
+  flipped = true;
+}
+void HeavyWorkThread::execute()
+{  
+  if (ogl && work) {
+    if (!flipped)
+      {
+	void *p = work->get_data_initial();
+	ogl->set_data(true,p);
+      }
+    if (flipped)
+      {
+	void *p = work->get_data_from_heavy_op();
+	ogl->set_data(false,p);
+      }
+    ogl->Render();
+  }
+}
+#endif
