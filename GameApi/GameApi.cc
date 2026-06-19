@@ -26800,14 +26800,14 @@ std::string fetch_more_data(GameApi::Env &env, std::string url)
   url = deploy_replace_string(url,"$(instdir)",cd2);
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   if (find_str(url,"$(tempdir)") != -1) {
-    std::string s = g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace0));
+    std::string s = g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace0));
     s = replace_deploy_url(s);
     url = deploy_replace_string(url,"$(tempdir)",s);
   } else {
-    url = deploy_replace_string(url,"$(tempdir)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace1)));
+    url = deploy_replace_string(url,"$(tempdir)",g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace1)));
   }
   //url = deploy_replace_string(url,"$(tempdir)",gameapi_temp_dir);
-  url = deploy_replace_string(url,"$(TEMPDIR)",g_path_handler->use_path(e,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace2)));
+  url = deploy_replace_string(url,"$(TEMPDIR)",g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::ETempDirReplace2)));
 #endif
 
 
