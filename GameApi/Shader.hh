@@ -110,10 +110,12 @@ public: // uniform variable
   Attrib find_attr(const std::string &attr_name, int id);
   Attrib find_attr_int(const std::string &attr_name, int id);
   void attr_loc(std::string s, int index);
-  uint64_t unique_id(const char *name);
+  uint32_t unique_id(const char *name);
+  void print_locs();
+  void clean_map();
 public:
   ProgramPriv *priv;
-  std::map<uint64_t, int> locs;
+  std::map<uint32_t, int> locs;
   std::map<Low_GLint, Matrix> cache;
 std::map<Low_GLint,float> g_setvar_cache;
   std::map<Low_GLint,int> g_intvar_cache;
