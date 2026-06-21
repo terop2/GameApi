@@ -65,6 +65,8 @@ extern std::string g_gpu_vendor;
 IMPORT extern Low_SDL_Window *sdl_window;
 extern Low_SDL_GLContext g_context;
 extern int g_progress_script_num;
+extern int g_browser_mode;
+int g_old_browser_mode;
 
 extern std::string g_mod_path;
 std::string convert_spaces_to_url_encoding(std::string url);
@@ -18371,6 +18373,35 @@ public:
      //#endif
      g_logo_shown = 0;
   }
+  virtual void RejectedIter()
+  {
+    Envi_2 *env = (Envi_2*)&envi;
+
+    GameApi::MainLoopApi::Event e;
+    int counter=0;
+    while((e = env->ev->mainloop_api.get_event()).last==true)
+      {
+	counter++;
+	bool ignore = false;
+       
+	if (e.repeat!=0) ignore=true;
+	if (!ignore && (counter<5|| (e.type==0x300||e.type==0x301))) {
+	//std::cout << e.ch << " " << e.type << std::endl;
+#ifndef EMSCRIPTEN
+	if (e.ch==27 && e.type==0x300) { /*std::cout << "Esc pressed2!" << std::endl;*/ env->exit = true; return 0; }
+#endif
+
+#ifdef ANDROID
+	if (e.ch==1073742094 && e.type==0x300) { env->exit=true; return 0; }
+#endif
+	
+	if (g_prepare_done)
+	  env->ev->mainloop_api.event_ml(env->mainloop, e);
+	}
+      }
+
+    env->ev->mainloop_api.swapbuffers();
+  }
   virtual int Iter()
   {
     if (async_pending_count < 0) {
@@ -18384,8 +18415,14 @@ public:
     static std::string old_status = "";
     
 #ifdef EMSCRIPTEN
+    if (g_old_browser_mode != g_browser_mode) { need_change2 = true; }
     if (need_change2) {
-      //emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
+      //if (g_browser_mode < 2)
+      //emscripten_set_main_loop_timing(EM_TIMING_RAF, std::min(20,std::max(1,g_browser_mode-1)));
+	//else
+	g_old_browser_mode = g_browser_mode;
+	//	emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 16);
+
       //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
       need_change=true;
       need_change2=false;
@@ -18632,11 +18669,15 @@ public:
 			
     if (!g_prepare_done) return -1;
 #ifdef EMSCRIPTEN
+    if (g_old_browser_mode != g_browser_mode) { need_change = true; }
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
-      //emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
+      //if (g_browser_mode < 2)
+      //emscripten_set_main_loop_timing(EM_TIMING_RAF, std::min(20,std::max(g_browser_mode-1,1)));
+	g_old_browser_mode = g_browser_mode;
+      //else
       //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
-      //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
+	  //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 16);
     }
  #endif
     
@@ -19256,27 +19297,52 @@ void start_render_thread()
 
 int detect_browser_render_mode()
 {
+  static int old_mode=0;
+  static int mode_time = 10;
+  mode_time--;
+  
   static int old_time = 0.0;
   float time = g_low->sdl->SDL_GetTicks();
   float delta_time = time-old_time;
   old_time = time;
+  int new_mode = delta_time/16.7;
+  static int average=0;
+  static int maximum=0;
+  static int average_count=0;
+  average+=new_mode;
+  average_count++;
+  maximum=std::max(maximum,new_mode);
+  
   //std::cout << "Delta_time:" << delta_time << std::endl;
-  return delta_time/16.7;
+  if (mode_time>0) { return old_mode; }
+  old_mode = maximum;
+  //std::cout << "mode:" << old_mode << " " << maximum << std::endl;
+  average=0;
+  average_count=0;
+  maximum=0;
+  mode_time=10;
+  return maximum;
 }
 
 int g_splitter_fps = 0;
+
+int g_browser_mode=0;
 
 Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
 //bool splitter_iter2(double time, void *arg)
 {
   int mode=detect_browser_render_mode();
+  g_browser_mode = mode;
   
+  bool rejected_iter=false;
   static int bb=0;
   bb++;
   if (bb>=mode) { bb=0; }
-  else return;
-
+  else {
+    rejected_iter=true;
+  }
+  //std::cout << "Mode:" << bb << " " << mode << " " << rejected_iter << std::endl;
 
   
   
@@ -19296,6 +19362,11 @@ void splitter_iter2(void *arg)
     return;
   }
   if (!blk2) { std::cout << "FAIL: no blk2" << std::endl; return; }  
+  //if (rejected_iter)
+  //  {
+  //    blk2->RejectedIter();
+  //    return;
+  //  }
   int blocker_exit_code = blk2->Iter();
   if (blocker_exit_code!=-1) 
     {
