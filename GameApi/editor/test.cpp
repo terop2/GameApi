@@ -1794,12 +1794,12 @@ public:
 			  ML ml2;
 			  if (is_animated)
 			    {
-			      ml2 = env->ev->mainloop_api.gltf_mesh_all_anim(*env->ev, tf, 1.0, 3.0, 0.0, 0, "cvbnmfghjklertyuiop", 400.0,-400.0,300.0, 0, 0xff000000, true, true,0,true,1);
+			      ml2 = env->ev->mainloop_api.gltf_mesh_all_anim(*env->ev, tf, 1.0, 3.0, 0.0, 0, "cvbnmfghjklertyuiop", 400.0,-400.0,300.0, 0, 0xff000000, true, true,0,true,1,-1);
 			      //ml2 = env->ev->mainloop_api.send_key_at_time(ml2,0.01,99);
 			      //ml2 = env->ev->mainloop_api.send_key_at_time(ml2,0.03,99);
 			    }
 			  else {
-			    ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,1,3.0,1.0,0,400.0,-400.0,300.0,0,0xff00000,true,true,true);
+			    ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,1,3.0,1.0,0,400.0,-400.0,300.0,0,0xff00000,true,true,true,-1);
 			  }
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			  

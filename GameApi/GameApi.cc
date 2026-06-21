@@ -11022,7 +11022,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P
   P I4=shadow_p; //ev.polygon_api.cube(-300,300,-220,-200,-300,300);
   MT I5=shadow_mt; //ev.materials_api.colour_material(ev,0.5);
   ML I6=ev.materials_api.newshadow2_phong(ev,I2,I3,I4,I5,light_dir_x,light_dir_y,light_dir_z,dark_level,light_level,ambient_color, dark_color,light_color,scale,size,false,shadow2_mt);
-  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,1.0,1.0,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000,true,true,emissive);
+  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,1.0,1.0,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000,true,true,emissive,-1);
   ML I8=ev.mainloop_api.or_elem_ml(ev,I6,I7);
   return I8;
 #endif
@@ -44061,10 +44061,10 @@ GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf
   PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
   PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
   // gltf_mesh_all_anim generates unique id's for lod levels.
-  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip);
-  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip);
-  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip);
-  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
+  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip,3);
+  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip,2);
+  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq,emissive, frame_skip,1);
+  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip,0);
   ML I15 = ev.move_api.local_move(ev,I16,I612);
   ML I151 = ev.move_api.local_move(ev,I161,I613);
   ML I152 = ev.move_api.local_move(ev,I162,I614);
@@ -44084,10 +44084,10 @@ GameApi::ML GameApi::MainLoopApi::lod_anim_matrix(GameApi::EveryApi &ev, GameApi
   MS I614=ev.points_api.block_ms_lod(ms,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
   MS I615=ev.points_api.block_ms_lod(ms,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
   // NOTE, gltf_mesh_all_anim is unique id boxes, so they generate separate id's.
-  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
-  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
-  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
-  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip);
+  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip,3);
+  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip,2);
+  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip,1);
+  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq,emissive, frame_skip,0);
   ML I15 = ev.move_api.local_move_matrix(ev,I16,I612);
   ML I151 = ev.move_api.local_move_matrix(ev,I161,I613);
   ML I152 = ev.move_api.local_move_matrix(ev,I162,I614);
@@ -44205,10 +44205,10 @@ GameApi::ML GameApi::MainLoopApi::lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF 
   float b3 = end_brightness;
   
   
-  ML I15=ev.mainloop_api.gltf_mesh_all_inst2(ev,p4,p,I612,mix,self_mult*b3, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive);
-  ML I151=ev.mainloop_api.gltf_mesh_all_inst2(ev,p3,p,I613,mix,self_mult*b2, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive);
-  ML I152=ev.mainloop_api.gltf_mesh_all_inst2(ev,p2,p,I614,mix,self_mult*b1, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive);
-  ML I153=ev.mainloop_api.gltf_mesh_all_inst2(ev,p1,p,I615,mix,self_mult*b0, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive);
+  ML I15=ev.mainloop_api.gltf_mesh_all_inst2(ev,p4,p,I612,mix,self_mult*b3, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,3);
+  ML I151=ev.mainloop_api.gltf_mesh_all_inst2(ev,p3,p,I613,mix,self_mult*b2, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,2);
+  ML I152=ev.mainloop_api.gltf_mesh_all_inst2(ev,p2,p,I614,mix,self_mult*b1, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,1);
+  ML I153=ev.mainloop_api.gltf_mesh_all_inst2(ev,p1,p,I615,mix,self_mult*b0, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,0);
 
   ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
   return I154;
@@ -44242,10 +44242,10 @@ public:
     float b3 = end_brightness;
     
     
-    GameApi::ML I15=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p4,p,I612,mix,self_mult*b3, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive);
-    GameApi::ML I151=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p3,p,I613,mix,self_mult*b2, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive);
-    GameApi::ML I152=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p2,p,I614,mix,self_mult*b1, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive);
-    GameApi::ML I153=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p1,p,I615,mix,self_mult*b0, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive);
+    GameApi::ML I15=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p4,p,I612,mix,self_mult*b3, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,3);
+    GameApi::ML I151=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p3,p,I613,mix,self_mult*b2, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,2);
+    GameApi::ML I152=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p2,p,I614,mix,self_mult*b1, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,1);
+    GameApi::ML I153=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p1,p,I615,mix,self_mult*b0, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,0);
 
     I154=ev.mainloop_api.array_ml(ev,std::vector<GameApi::ML>{I15,I151,I152,I153});
     MainLoopItem *item = find_main_loop(env,I154);
