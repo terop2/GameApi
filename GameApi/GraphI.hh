@@ -176,6 +176,114 @@ public:
   virtual bool insert_label_to_string(std::string *str, char ch) const=0;
 };
 
+class GltfMaterialParams
+{
+public:
+  virtual GltfMaterialParams *clone() const=0;
+  virtual void set_prim_i(int i)=0;
+  virtual int prim_i() const=0;
+  virtual void set_material_id(int id)=0;
+  virtual int material_id() const=0;
+  virtual float mix() const=0;
+  virtual float self_mult() const=0;
+  virtual float rest_mult() const=0;
+  virtual Vector light_dir() const=0;
+  virtual bool emissive() const=0;
+  virtual int lod_level() const=0;
+  virtual bool transparent() const=0;
+  virtual bool acesfilm() const=0;
+  virtual int animation() const=0;
+  virtual int border_width() const=0;
+  virtual unsigned int border_color() const=0;
+  virtual int frame_skip() const=0;
+  virtual int mode() const=0;
+};
+class GltfMaterialParams_impl : public GltfMaterialParams
+{
+public:
+  GltfMaterialParams_impl(int prim_i,
+			  int material_id,
+			  float mix,
+			  float self_mult,
+			  float rest_mult,
+			  Vector light_dir,
+			  bool emissive,
+			  int lod_level,
+			  bool transparent,
+			  bool acesfilm,
+			  int animation,
+			  float border_width,
+			  unsigned int border_color,
+			  int frame_skip,
+			  int mode)
+    : m_prim_i(prim_i),
+      m_material_id(material_id),
+      m_mix(mix),
+      m_self_mult(self_mult),
+      m_rest_mult(rest_mult),
+      m_light_dir(light_dir),
+      m_emissive(emissive),
+      m_lod_level(lod_level),
+      m_transparent(transparent),
+      m_acesfilm(acesfilm),
+      m_animation(animation),
+      m_border_width(border_width),
+      m_border_color(border_color),
+      m_frame_skip(frame_skip),
+      m_mode(mode) { }
+  virtual void set_prim_i(int i) { m_prim_i=i; }
+  virtual int prim_i() const { return m_prim_i; }
+  virtual void set_material_id(int id) { m_material_id=id; }
+  virtual int material_id() const { return m_material_id; }
+  virtual float mix() const { return m_mix; }
+  virtual float self_mult() const { return m_self_mult; }
+  virtual float rest_mult() const { return m_rest_mult; }
+  virtual Vector light_dir() const { return m_light_dir; }
+  virtual bool emissive() const { return m_emissive; }
+  virtual int lod_level() const { return m_lod_level; }
+  virtual bool transparent() const { return m_transparent; }
+  virtual bool acesfilm() const { return m_acesfilm; }
+  virtual int animation() const { return m_animation; }
+  virtual int border_width() const { return m_border_width; }
+  virtual unsigned int border_color() const { return m_border_color; }
+  virtual int frame_skip() const { return m_frame_skip; }
+  virtual int mode() const { return m_mode; }
+  virtual GltfMaterialParams *clone() const
+  {
+    return new GltfMaterialParams_impl(m_prim_i,
+				       m_material_id,
+				       m_mix,
+				       m_self_mult,
+				       m_rest_mult,
+				       m_light_dir,
+				       m_emissive,
+				       m_lod_level,
+				       m_transparent,
+				       m_acesfilm,
+				       m_animation,
+				       m_border_width,
+				       m_border_color,
+				       m_frame_skip,
+				       m_mode);
+  }
+private:
+  int m_prim_i;
+  int m_material_id;
+  float m_mix;
+  float m_self_mult;
+  float m_rest_mult;
+  Vector m_light_dir;
+  bool m_emissive;
+  int m_lod_level;
+  bool m_transparent;
+  bool m_acesfilm;
+  int m_animation;
+  int m_border_width;
+  unsigned int m_border_color;
+  int m_frame_skip;
+  int m_mode;
+};
+
 class Path // PAT -id.
 {
 public:
