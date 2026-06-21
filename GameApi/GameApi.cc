@@ -19253,12 +19253,33 @@ void start_render_thread()
 #endif
 #endif
 
+
+int detect_browser_render_mode()
+{
+  static int old_time = 0.0;
+  float time = g_low->sdl->SDL_GetTicks();
+  float delta_time = time-old_time;
+  old_time = time;
+  //std::cout << "Delta_time:" << delta_time << std::endl;
+  return delta_time/16.7;
+}
+
 int g_splitter_fps = 0;
 
 Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
 //bool splitter_iter2(double time, void *arg)
 {
+  int mode=detect_browser_render_mode();
+  
+  static int bb=0;
+  bb++;
+  if (bb>=mode) { bb=0; }
+  else return;
+
+
+  
+  
   //if (!arg) { std::cout << "FAIL: Splitter_iter2 NULL" << std::endl; return; }
   Splitter *blk2 = 0;
   if (arg)
