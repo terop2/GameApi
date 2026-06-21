@@ -70,8 +70,8 @@ FILE * my_popen(const char *cmd, const char *c)
   //std::cout << "POPEN CMD:" << cmd3.c_str() << std::endl;
  FILE *f = popen(cmd3.c_str(),c);
 #endif
- if (!f) { std::cout << "popen returned NULL in my_popen() for " << cmd3 << std::endl; }
 #ifndef EMSCRIPTEN
+ if (!f) { std::cout << "popen returned NULL in my_popen() for " << cmd3 << std::endl; }
   return f;
 #endif
 }

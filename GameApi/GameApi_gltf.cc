@@ -6505,6 +6505,9 @@ public:
       } else if (param->lod_level()==3)
       {
 	while (sx2>64 || sy2>64) { sx2/=2; sy2/=2; }	
+      } else
+      {
+    while (sx2>512 || sy2>512) { sx2/=2; sy2/=2; }	
       }
     if (sx!=sx2 || sy!=sy2)
       {
