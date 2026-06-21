@@ -2088,6 +2088,7 @@ public:
   virtual ~Splitter() { }
   virtual void Init()=0;
   virtual int Iter()=0;
+  virtual void RejectedIter() { }
   virtual void Destroy()=0;
   virtual bool NoMainLoop() const { return false; }
   virtual Splitter* NextState(int code) { return this; }
