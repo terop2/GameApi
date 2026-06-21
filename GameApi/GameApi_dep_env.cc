@@ -501,14 +501,14 @@ IMPORT void tasks_join_property(bool (*fptr)(void*), void *data)
     if (!b) break;
 
 #ifdef EMSCRIPTEN
-  g_low->sdl->SDL_Delay(3);
+  g_low->sdl->SDL_Delay(300);
    //emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    Sleep(3);
+    Sleep(300);
     //std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
 
@@ -671,14 +671,14 @@ void *multiple_async_joins(void *data)
       }
     
 #ifdef EMSCRIPTEN
-  g_low->sdl->SDL_Delay(3);
+  g_low->sdl->SDL_Delay(300);
    //emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    Sleep(3);
+    Sleep(300);
     //  std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
     
@@ -756,14 +756,14 @@ bool async_join_internal(ASyncJoinProcessData2 *dt, int id)
     }
    pthread_mutex_unlock(g_queue_mutex);
 #ifdef EMSCRIPTEN
-  g_low->sdl->SDL_Delay(3);
+  g_low->sdl->SDL_Delay(300);
    //emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    Sleep(3);
+    Sleep(300);
     //std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
     return false;
@@ -813,14 +813,14 @@ void *async_join_process(void *data)
     }
    pthread_mutex_unlock(g_queue_mutex);
 #ifdef EMSCRIPTEN
-  g_low->sdl->SDL_Delay(3);
+  g_low->sdl->SDL_Delay(300);
    //emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    Sleep(3);
+    Sleep(300);
     //    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
   }
