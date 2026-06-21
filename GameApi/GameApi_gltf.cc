@@ -26,6 +26,8 @@ int hhhh_gggg=1;
 
 //#define RELOAD_TEST 1
 
+//#define LOD_LEVEL_TEXTURE_REDUCTION_TEST 1
+
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
 //#define GLTF_ANIM_RESIZE_TEST 1
@@ -6486,13 +6488,17 @@ public:
   }
   GameApi::BM reduce_size(GameApi::BM bm) const
   {
-#if 1
+#ifndef LOD_LEVEL_TEXTURE_REDUCTION_TEST
+    return bm;
+#endif
+#ifdef LOD_LEVEL_TEXTURE_REDUCTION_TEST
     BitmapHandle *handle = find_bitmap(e, bm);
     Bitmap<Color> *bbm = find_color_bitmap(handle);
     int sx = bbm->SizeX();
     int sy = bbm->SizeY();
     int sx2 = sx;
     int sy2 = sy;
+#ifdef LOD_LEVEL_TEXTURE_REDUCTION_TEST
     if (param->lod_level()==0)
       {
 	while (sx2>512 || sy2>512) { sx2/=2; sy2/=2; }	
@@ -6506,6 +6512,7 @@ public:
       {
 	while (sx2>64 || sy2>64) { sx2/=2; sy2/=2; }	
       } else
+#endif
       {
     while (sx2>512 || sy2>512) { sx2/=2; sy2/=2; }	
       }
