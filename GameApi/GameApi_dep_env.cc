@@ -698,13 +698,13 @@ void *multiple_async_joins(void *data)
 	    int s = g_async_join_m_ids.size();
 	    for(int j=0;j<s;j++)
 	      {
-		if (g_async_join_m_ids[i]==id)
+		if (g_async_join_m_ids[j]==id)
 		  {
-		    g_async_join_m_ids.erase(g_async_join_m_ids.begin()+i);
-		    delete g_async_join_m_data[i];
-		    g_async_join_m_data.erase(g_async_join_m_data.begin()+i);
+		    g_async_join_m_ids.erase(g_async_join_m_ids.begin()+j);
+		    delete g_async_join_m_data[j];
+		    g_async_join_m_data.erase(g_async_join_m_data.begin()+j);
 		    s--;
-		    i--;
+		    j--;
 		  }
 	      }
 	  }
