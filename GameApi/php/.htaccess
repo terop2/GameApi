@@ -113,13 +113,13 @@ ErrorDocument 503 /error.php
 #</IfModule>
 
 <IfModule mod_headers.c>
-    <FilesMatch "\.(js|css|webp|glb|gltf|wasm)$">
+    <FilesMatch "\.(js|css|webp|glb|gltf|wasm|html|webp|jpg|jpeg|png|gif)$">
         Header set Cache-Control "no-store, must-revalidate, max-age=0, post-check=0, pre-check=0"
     </FilesMatch>
-    <FilesMatch "\.(webp|jpg|jpeg|png|gif)$">
-    	Header set Cache-Control "public, max-age=31536000, immutable"
-    </FilesMatch>
-    <FilesMatch "^(vue.js|bootstrap.bundle.min.js|bootstrap_flatly.min.css)$">
-    	Header set Cache-Control "public, max-age=31536000, immutable"
-    </FilesMatch>
+#    <FilesMatch "\.(webp|jpg|jpeg|png|gif)$">
+#    	Header set Cache-Control "public, max-age=31536000, immutable"
+#    </FilesMatch>
+#    <FilesMatch "^(vue.js|bootstrap.bundle.min.js|bootstrap_flatly.min.css)$">
+#    	Header set Cache-Control "public, max-age=31536000, immutable"
+#    </FilesMatch>
 </IfModule>
