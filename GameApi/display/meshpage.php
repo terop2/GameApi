@@ -3184,6 +3184,8 @@ function show_emscripten(str,hide,indicator,is_async)
 		if (e.decodedBodySize > e.encodedBodySize * 1.2) {
 		} else {
 		    if (!warn_brotli) {
+		        console.warn("while loading" + name + ":");
+			console.warn("decodedBodySize:" + e.decodedBodySize.toString() + ", encodedBodySize:" + e.encodedBodySize.toString() + "..");
 		        console.warn("Brotli might not be enabled => loading 3d engine will be slower than what would be possible if brotli is enabled.");
 			warn_brotli = true;
 			}
