@@ -1739,7 +1739,8 @@ function load_anim_pic_reset(num,file_id)
    });
 </script>
 
-<script>
+<!--script>
+
   const MAX_RELOADS = 3;
 
   let reloads =
@@ -1786,7 +1787,7 @@ window.addEventListener("unhandledrejection", e => {
     
   }
 });
-</script>
+</script-->
 
 </body>
 <style>
