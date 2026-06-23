@@ -359,7 +359,7 @@ void Program::set_var(const char *name, float val)
 {
   //std::cout << "set_var float:" << name << ":" << val << std::endl;
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -385,7 +385,7 @@ void Program::set_var(const char *name, float val1, float val2)
 {
   // Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -407,7 +407,7 @@ void Program::set_var(const char *name, const Point &p)
 {
   // Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -430,7 +430,7 @@ void Program::set_var(const char *name, const Vector &v)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -470,7 +470,7 @@ void Program::set_var(const char *name, const Color &c)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -485,7 +485,7 @@ void Program::set_var(const char *name, const Color &c)
 int Program::get_loc(std::string name)
 {
   Low_GLint loc;
-  uint64_t id = unique_id(name.c_str());
+  uint32_t id = unique_id(name.c_str());
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
     locs[id]=loc;
@@ -505,7 +505,7 @@ void Program::set_var(const char *name, float val1, float val2, float val3, floa
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -536,7 +536,7 @@ void Program::set_var(const char *name, float *array, int count)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -555,7 +555,7 @@ void Program::set_var(const char *name, int *array, int count)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -570,7 +570,7 @@ void Program::set_var(const char *name, int val)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -591,7 +591,7 @@ Matrix Program::get_matrix_var(const std::string &name)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name.c_str());
+  uint32_t id = unique_id(name.c_str());
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
     locs[id]=loc;
@@ -643,7 +643,7 @@ void Program::set_var_matrix2(const char *name, const std::vector<float> &v, int
   //std::cout << s << std::endl;
   
   Low_GLint loc;
-  uint64_t id = unique_id(s.c_str());
+  uint32_t id = unique_id(s.c_str());
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, s.c_str());
     locs[id]=loc;
@@ -659,7 +659,7 @@ void Program::set_var_matrix(const char *name, const std::vector<float> &v)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -685,7 +685,7 @@ void Program::set_var(const char *name, const std::vector<Point> &v)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;
@@ -695,8 +695,42 @@ void Program::set_var(const char *name, const std::vector<Point> &v)
 
   g_low->ogl->glUniform3fv(loc, v.size(), (float*)&v[0]);
 }
-uint64_t Program::unique_id(const char *name)
+void Program::print_locs()
 {
+  std::map<uint32_t, int>::iterator i = locs.begin();
+  int ii =0;
+  for(;i!=locs.end();i++)
+    {
+      
+      std::pair<uint32_t,int> p = *i;
+      std::cout << "locs:" << ii << "::" << p.first << "=" << p.second << std::endl;
+	ii++;
+    }
+}
+void Program::clean_map()
+{
+  std::map<uint32_t, int>::iterator i = locs.begin();
+  for(;i!=locs.end();)
+    {
+      std::pair<uint32_t,int> p = *i;
+      if (p.second == -1)
+	{
+	  i=locs.erase(i);
+	} else
+	{
+	  i++;
+	}
+    }
+}
+uint32_t Program::unique_id(const char *name)
+{
+  static int lab=0;
+  lab++;
+  if (lab>40) {
+    clean_map();
+    lab=0;
+  }
+  //print_locs();
   const uint64_t fnv_prime = 1099511628211u;
   uint64_t hash = 14695981039346656037u;
   while(*name) {
@@ -704,13 +738,13 @@ uint64_t Program::unique_id(const char *name)
     hash *= fnv_prime;
     name++;
   }
-  return hash;
+  return (uint32_t)hash;
 }
 void Program::set_var(const char *name, Matrix m)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
   Low_GLint loc;
-  uint64_t id = unique_id(name);
+  uint32_t id = unique_id(name);
   if (locs.find(id)==locs.end()) {
     loc = g_low->ogl->glGetUniformLocation(priv->program, name);
     locs[id]=loc;

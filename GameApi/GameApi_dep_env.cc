@@ -70,8 +70,8 @@ FILE * my_popen(const char *cmd, const char *c)
   //std::cout << "POPEN CMD:" << cmd3.c_str() << std::endl;
  FILE *f = popen(cmd3.c_str(),c);
 #endif
- if (!f) { std::cout << "popen returned NULL in my_popen() for " << cmd3 << std::endl; }
 #ifndef EMSCRIPTEN
+ if (!f) { std::cout << "popen returned NULL in my_popen() for " << cmd3 << std::endl; }
   return f;
 #endif
 }
@@ -501,14 +501,14 @@ IMPORT void tasks_join_property(bool (*fptr)(void*), void *data)
     if (!b) break;
 
 #ifdef EMSCRIPTEN
-  g_low->sdl->SDL_Delay(3);
+  g_low->sdl->SDL_Delay(300);
    //emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    Sleep(3);
+    Sleep(300);
     //std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
 
@@ -671,14 +671,14 @@ void *multiple_async_joins(void *data)
       }
     
 #ifdef EMSCRIPTEN
-  g_low->sdl->SDL_Delay(3);
+  g_low->sdl->SDL_Delay(300);
    //emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    Sleep(3);
+    Sleep(300);
     //  std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
     
@@ -698,13 +698,13 @@ void *multiple_async_joins(void *data)
 	    int s = g_async_join_m_ids.size();
 	    for(int j=0;j<s;j++)
 	      {
-		if (g_async_join_m_ids[i]==id)
+		if (g_async_join_m_ids[j]==id)
 		  {
-		    g_async_join_m_ids.erase(g_async_join_m_ids.begin()+i);
-		    delete g_async_join_m_data[i];
-		    g_async_join_m_data.erase(g_async_join_m_data.begin()+i);
+		    g_async_join_m_ids.erase(g_async_join_m_ids.begin()+j);
+		    delete g_async_join_m_data[j];
+		    g_async_join_m_data.erase(g_async_join_m_data.begin()+j);
 		    s--;
-		    i--;
+		    j--;
 		  }
 	      }
 	  }
@@ -756,14 +756,14 @@ bool async_join_internal(ASyncJoinProcessData2 *dt, int id)
     }
    pthread_mutex_unlock(g_queue_mutex);
 #ifdef EMSCRIPTEN
-  g_low->sdl->SDL_Delay(3);
+  g_low->sdl->SDL_Delay(300);
    //emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    Sleep(3);
+    Sleep(300);
     //std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
     return false;
@@ -813,14 +813,14 @@ void *async_join_process(void *data)
     }
    pthread_mutex_unlock(g_queue_mutex);
 #ifdef EMSCRIPTEN
-  g_low->sdl->SDL_Delay(3);
+  g_low->sdl->SDL_Delay(300);
    //emscripten_sleep(3);
 #endif
 #ifdef LINUX
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
 #ifdef WINDOWS
-    Sleep(3);
+    Sleep(300);
     //    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
   }
