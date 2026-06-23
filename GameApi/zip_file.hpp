@@ -4938,7 +4938,6 @@ void *mz_zip_extract_archive_file_to_heap(const char *pZip_filename, const char 
 }
 #endif
 
-#endif // MINIZ_HEADER_FILE_ONLY
 
 /*
   This is free and unencumbered software released into the public domain.
@@ -5707,3 +5706,4 @@ private:
 };
 
 } // namespace miniz_cpp
+#endif // MINIZ_HEADER_FILE_ONLY

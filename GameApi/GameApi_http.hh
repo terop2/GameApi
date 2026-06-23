@@ -3,24 +3,27 @@
 
 #include <string>
 #include <vector>
-#include "GameApi_h.hh"
+#include "GameApi.hh"
 
-void start_http_listening(std::vector<std::string> filenames,
+IMPORT void start_http_listening(std::vector<std::string> filenames,
 			  std::vector<std::string> contents,
 			  std::string homepage,
 			  std::string script,
-			  std::string date);
+			  std::string date,
+			  bool transparent);
 
-void join_http();
-void send_http_server_shutdown();
-bool choose_http_port();
-std::string choose_type(std::string filename);
-void http_server(std::vector<std::string> filenames,
+IMPORT std::string http_server_address();
+IMPORT void http_sleep();
+IMPORT void join_http();
+IMPORT void send_http_server_shutdown();
+IMPORT bool choose_http_port();
+IMPORT const char * choose_type(std::string filename);
+IMPORT void http_server(std::vector<std::string> filenames,
 		 std::vector<std::string> contents,
 		 std::string homepage,
 		 std::string script,
-		 std::string date);
-void *http_server_process(void *ptr);
+		 std::string date, bool transparent);
+IMPORT void *http_server_process(void *ptr);
 
 struct HttpDeployResult
 {
@@ -29,14 +32,25 @@ struct HttpDeployResult
   std::vector<std::string> contents;
 };
 
-std::string replace_urls_from_script(std::string script,
+IMPORT std::string replace_urls_from_script(std::string script,
 				     const HttpDeployResult &data);
 
-HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script);
+IMPORT HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script);
 
 void set_http_server_htmlfile(std::string file);
 
-std::string gameapi_example(std::string homepage, std::string script, std::string date);
+std::string gameapi_example(std::string homepage, std::string script, std::string date, bool transparent);
+
+struct HttpFileFromZip
+{
+  std::string filename;
+  std::string contents;
+};
+
+IMPORT std::vector<unsigned char> find_display_zip_file();
+IMPORT std::vector<HttpFileFromZip> decompress_zip_file(std::vector<unsigned char> zip_contents);
+
+
 
 
 #endif

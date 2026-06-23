@@ -4,15 +4,26 @@
 #define CPPHTTPLIB_NO_EXCEPTIONS
 #include "httplib.h"
 #include "GraphI.hh"
+#define MINIZ_HEADER_FILE_ONLY 1
+#include "zip_file.hpp"
 
 bool file_exists(std::string url);
 std::string remove_quotes(std::string str);
-extern std::string g_http_server_ip;
-extern int g_http_server_port;
+IMPORT extern std::string g_http_server_ip;
+IMPORT extern int g_http_server_port;
 std::string GetContentInstallDir(bool b);
 
+EXPORT std::string g_http_server_ip = "127.0.0.1";
+EXPORT int g_http_server_port=50000;
 
-void *http_server_process(void *);
+EXPORT std::string http_server_address() {
+  std::stringstream ss;
+  ss << g_http_server_port;
+  return g_http_server_ip + ":" + ss.str();
+}
+
+
+IMPORT void *http_server_process(void *);
 IMPORT void send_post_request(std::string url, std::string headers, std::string data);
 std::string remove_str_after_char(std::string s, char ch);
 std::string deploy_truncate(std::string s);
@@ -53,13 +64,20 @@ struct HTTP_files
   std::string homepage;
   std::string script;
   std::string date;
+  bool transparent;
 };
 
-void start_http_listening(std::vector<std::string> filenames,
+void set_cors_headers(httplib::Response &res)
+{
+  res.set_header("Access-Control-Allow-Headers", "Range");
+}
+
+EXPORT void start_http_listening(std::vector<std::string> filenames,
 			  std::vector<std::string> contents,
 			  std::string homepage,
 			  std::string script,
-			  std::string date)
+			  std::string date,
+			  bool transparent)
 {
   HTTP_files *files = new HTTP_files;
   files->filenames = filenames;
@@ -67,13 +85,30 @@ void start_http_listening(std::vector<std::string> filenames,
   files->homepage = homepage;
   files->script = script;
   files->date = date;
+  files->transparent = transparent;
   tasks_add(9898, &http_server_process, (void*)files);
 }
-void join_http()
+EXPORT void join_http()
 {
   tasks_join(9898);
 }
-void send_http_server_shutdown()
+
+bool g_http_up_and_running=false;
+
+EXPORT void http_sleep()
+{
+
+  while(g_http_up_and_running==false) {
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+#endif
+#ifdef WINDOWS
+    Sleep(100);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+  }
+}
+EXPORT void send_http_server_shutdown()
 {
   std::cout << "Note: shutting down http server at " << g_http_server_ip << ":" << g_http_server_port << std::endl;
   std::stringstream ss;
@@ -84,7 +119,7 @@ void send_http_server_shutdown()
   send_post_request(url,headers,data);
 }
 
-bool choose_http_port()
+EXPORT bool choose_http_port()
 {
   httplib::Server svr;
   int counter=0;
@@ -103,8 +138,16 @@ bool choose_http_port()
   return !error;
 }
 
-std::string choose_type(std::string filename)
+const char *choose_type(std::string filename)
 {
+  if (filename.substr(filename.size()-4,4)=="wasm")
+    {
+      return "application/wasm";
+    }
+  if (filename.substr(filename.size()-2,2)=="js")
+    {
+      return "text/javascript";
+    }
   if (filename.substr(filename.size()-3,3)=="txt")
     {
       return "text/plain";
@@ -152,60 +195,92 @@ std::string g_http_htmlfile;
 
 httplib::Server *g_http_server = 0;
 
-void http_server(std::vector<std::string> filenames,
+EXPORT void http_server(std::vector<std::string> filenames,
 		 std::vector<std::string> contents,
 		 std::string homepage,
 		 std::string script,
-		 std::string date)
+		 std::string date, bool transparent)
 {
-  httplib::Server svr;
-  g_http_server = &svr;
+  static std::vector<std::string> g_filenames;
+  g_filenames = filenames;
+  static std::vector<std::string> g_contents;
+  g_contents = contents;
+  static std::string g_homepage;
+  g_homepage = homepage;
+  static std::string g_script;
+  g_script = script;
+  static std::string g_date;
+  g_date = date;
+  static bool g_transparent;
+  g_transparent = transparent;
+
+  
+
+  
+  httplib::Server *svr = new httplib::Server;
+  g_http_server = svr;
   
   int s = std::min(filenames.size(),contents.size());
 
-  svr.Post("/stop", [&](const httplib::Request &req,
+  svr->Post("/stop", [&](const httplib::Request &req,
 		      httplib::Response &res)
   {
     res.set_content("ok","text/plain");
-    svr.stop();
+    svr->stop();
   });
     
 
-  svr.Get(std::string("/user_data/temp/tmp0.txt").c_str(),
+  svr->Get("/user_data/temp/tmp0.txt",
 	   [&](const httplib::Request &req,
 	       httplib::Response &res)
 	   {
+		std::cout << "Fetching3: /user_data/temp/tmp0.txt"<< std::endl;
+		set_cors_headers(res);
 	     res.set_content(g_http_htmlfile,"text/plain");
 	   });
-  svr.Get(std::string("/gameapi_example.php").c_str(),
+  svr->Get("/gameapi_example.html",
 	   [&](const httplib::Request &req,
 	       httplib::Response &res)
 	   {
-	     res.set_content(gameapi_example(homepage,script,date),"application/x-httpd-php");
+		std::cout << "Fetching2: /gameapi_example.html"<< std::endl;
+		static std::string s;
+		set_cors_headers(res);
+		s = gameapi_example(homepage,script,date,transparent);
+	     res.set_content(s,"text/html");
 	   });
-  
+
+  std::vector<std::string> *fn = new std::vector<std::string>;
   for(int i=0;i<s;i++)
     {
-      svr.Get((std::string("/") + filenames[i]).c_str(),
+      fn->push_back((std::string("/") + filenames[i]));
+      svr->Get(fn->operator[](fn->size()-1).c_str(),
 	      [&](const httplib::Request &req,
 		 httplib::Response &res)
 	      {
-		res.set_content(contents[i],choose_type(filenames[i]));
+		std::cout << "path:" << req.path << std::endl;
+		for (int j=0;j<g_filenames.size();j++)
+		  {
+		    if ((std::string("/")+g_filenames[j])==req.path) {
+		      set_cors_headers(res);
+		      res.set_content(g_contents[j],choose_type(g_filenames[j]));
+		    }
+		  }
 	      });
     }
-  svr.listen(g_http_server_ip, g_http_server_port);
+  g_http_up_and_running = true;
+  svr->listen(g_http_server_ip, g_http_server_port);
   g_http_server = 0;
 }
 
-void *http_server_process(void *ptr)
+EXPORT void *http_server_process(void *ptr)
 {
   HTTP_files *files = (HTTP_files*)ptr;
-  http_server(files->filenames,files->contents, files->homepage, files->script, files->date);
+  http_server(files->filenames,files->contents, files->homepage, files->script, files->date, files->transparent);
   return 0;
 }
 
 
-std::string replace_urls_from_script(std::string script,
+EXPORT std::string replace_urls_from_script(std::string script,
 				     const HttpDeployResult &data)
 {
   int s = std::min(data.orig_urls.size(),data.filenames.size());
@@ -221,7 +296,7 @@ std::string replace_urls_from_script(std::string script,
 }
 
 
-HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
+EXPORT HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
 {
 #ifndef EMSCRIPTEN
 
@@ -505,6 +580,13 @@ HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
       res.orig_urls = http_orig_urls;
       res.filenames = http_filenames;
       res.contents = http_contents;
+
+      int s5 = res.filenames.size();
+      for(int i=0;i<s5;i++)
+	{
+	  std::cout << "DeployRes:" << res.filenames[i] << std::endl;
+	}
+      
       return res;
 #endif
 }
@@ -514,7 +596,7 @@ void set_http_server_htmlfile(std::string file)
   g_http_htmlfile = file;
 }
 
-std::string gameapi_example(std::string homepage, std::string script, std::string date)
+std::string gameapi_example(std::string homepage, std::string script, std::string date, bool transparent)
 {
   std::string example=
 "<?php\n"
@@ -558,11 +640,14 @@ std::string gameapi_example(std::string homepage, std::string script, std::strin
 "    </div>\n"
 "    <style>\n"
 "      #container { display: inline-block;  width: 400px; height: 300px; }\n"
-"      #canvas { position: absolute;\n"
-"		border-width:0px;\n"
+    "      #canvas { position: absolute;\n";
+  if (!transparent) {
+example += "		border-width:0px;\n"
 "		border: 5px solid black;\n"
 "		border-radius: 10px;\n"
-"		background-color: #000000;\n"
+  "		background-color: #000000;\n";
+  }
+  example +=
 "		margin:0;\n"
 "		padding:0;\n"
 "		width: 820px;\n"
@@ -660,7 +745,10 @@ std::string gameapi_example(std::string homepage, std::string script, std::strin
 "<?php echo $date ?>\n"
 "    </pre>\n"
 "    <div class=\"center\">\n"
-"    <canvas id=\"canvas\" style=\"border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;\"></canvas>\n"
+    "    <canvas id=\"canvas\" style=\"border-width:0px; ";
+  if (!transparent)
+    example += "border: 5px solid black; border-radius: 10px; background-color: #000000; ";
+example += "margin:0; padding:0; width: 820px; height: 620px;\"></canvas>\n"
 "    </div>\n"
 "    <style>\n"
 "    .center {\n"
@@ -681,4 +769,96 @@ std::string gameapi_example(std::string homepage, std::string script, std::strin
  example= deploy_replace_string(example,"<?php echo $new_script ?>", script);
  example= deploy_replace_string(example,"<?php echo $date ?>", date);
  return example;
+}
+
+
+EXPORT std::vector<unsigned char> find_display_zip_file()
+{
+#ifdef WINDOWS
+  std::string filename = GetInstallDir2(false) + "/gameapi_display.zip"; 
+#endif
+#ifdef LINUX
+  char path[PATH_MAX];
+  ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+  if (count != -1) {
+    path[count] = '\0';
+  }
+  int s = strlen(path);
+  int pos = -1;
+  for(int i=0;i<s;i++)
+    {
+      if (path[i]=='/') pos=i;
+    }
+  std::string filename;
+  if (pos!=-1) {
+    std::string path2 = path;
+    filename = path2.substr(0,pos) + "/gameapi_display.zip";
+    if (!file_exists(filename))
+      {
+	filename = path2.substr(0,pos) + "/../display/gameapi_display.zip";
+      }
+  }
+#endif
+  std::vector<unsigned char> res;
+  std::ifstream ss(filename.c_str(),std::ios::binary);
+  char ch;
+  while(ss.get(ch)) { res.push_back(ch); }
+  return res;
+}
+
+
+EXPORT std::vector<HttpFileFromZip> decompress_zip_file(std::vector<unsigned char> zip_contents)
+{
+  std::vector<HttpFileFromZip> result;
+
+  mz_zip_archive pZip;
+  std::memset(&pZip,0,sizeof(mz_zip_archive));
+  mz_bool b2 = mz_zip_reader_init_mem(&pZip, &zip_contents[0], zip_contents.size(),0);
+  mz_uint num = mz_zip_reader_get_num_files(&pZip);
+  for(int i=0;i<num;i++)
+    {
+      mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip,i);
+      if (is_dir) {
+	char *filename = new char[256];
+	for(int j=0;j<256;j++)
+	  filename[j]=0;
+	mz_uint err = mz_zip_reader_get_filename(&pZip,i,filename,256);
+	// TODO, DIRECTORIES
+      } else {
+	// normal file
+	char *filename = new char[256];
+	for(int j=0;j<256;j++)
+	  filename[j]=0;
+	mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	if (strlen(filename)==0) { delete [] filename; continue; }
+
+	std::vector<unsigned char> *data = new std::vector<unsigned char>;
+	mz_zip_archive_file_stat file_stat;
+	size_t uncompressed_size = 0;
+	if (mz_zip_reader_file_stat(&pZip, i, &file_stat))
+	  {
+	    uncompressed_size = (size_t)file_stat.m_uncomp_size;
+	    data->resize(uncompressed_size);
+	  }
+	else
+	  {
+	    std::cout << "error at resize";
+	    continue;
+	  }
+	mz_bool b = mz_zip_reader_extract_to_mem(&pZip, i, (void*)&data->operator[](0), uncompressed_size, 0);
+	if (!b) { std::cout << "error at extract" << std::endl; continue; }
+
+	HttpFileFromZip file;
+	std::cout << "Zip:'" << filename << "'" << std::endl;
+	if (std::string(filename)==std::string("gameapi.js"))
+	  file.filename = filename;
+	else
+	  file.filename = std::string("engine/") + filename;
+	file.contents = std::string(data->begin(),data->end());
+	result.push_back(file);
+	delete [] filename;
+	delete data;
+      }
+    }
+  return result;
 }
