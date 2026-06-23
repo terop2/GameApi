@@ -14,7 +14,10 @@ IMPORT extern int g_http_server_port;
 std::string GetContentInstallDir(bool b);
 
 EXPORT std::string g_http_server_ip = "127.0.0.1";
-EXPORT int g_http_server_port=50000;
+EXPORT int g_http_server_port=50200;
+
+bool g_wait_ongoing = true;
+void *http_server_wait_process(void*);
 
 EXPORT std::string http_server_address() {
   std::stringstream ss;
@@ -69,7 +72,70 @@ struct HTTP_files
 
 void set_cors_headers(httplib::Response &res)
 {
-  res.set_header("Access-Control-Allow-Headers", "Range");
+  //res.set_header("Access-Control-Allow-Headers", "Range");
+}
+bool handle_range_request(const httplib::Request &req, httplib::Response &res, const std::vector<std::string> &filenames, const std::vector<std::string> &contents, std::string filename)
+{
+  std::string range = req.get_header_value("Range");
+  bool done = false;
+
+  int s = filenames.size();
+  int pos = -1;
+  for(int i=0;i<s;i++)
+    {
+      if (filename == filenames[i]) { pos=i; break; }
+    }
+  if (pos==-1) return false;
+  size_t filesize = contents[pos].size();
+  
+    if (!range.empty())
+    {
+        // Example: "bytes=100-199"
+        size_t start = 0;
+        size_t end = filesize - 1;
+
+	//std::cout << "RANGE is:" << range << std::endl;
+	
+        if (sscanf(range.c_str(), "bytes=%zu-%zu", &start, &end) < 1)
+        {
+	  //std::cout << "RETURNING 416:" << start << " " << end << std::endl;
+            res.status = 416;
+            return true;
+        }
+
+        if (end >= (size_t)filesize)
+            end = filesize - 1;
+	
+        size_t len = end - start + 1;
+
+        //std::string data(len, '\0');
+	std::vector<unsigned char> data;
+	data.resize(len-1);
+	
+	std::copy(contents[pos].begin()+start,contents[pos].begin()+start+len-1,&data[0]);
+	
+        //file.seekg(start);
+        //file.read(data.data(), len);
+
+        res.status = 206;
+        res.set_header("Accept-Ranges", "bytes");
+        res.set_header(
+            "Content-Range",
+            ("bytes " + std::to_string(start) + "-" +
+             std::to_string(end) + "/" +
+             std::to_string(filesize)).c_str());
+	res.set_header( "Content-Length", std::to_string(len));
+
+	//std::cout << "Content-Range header set to: bytes " + std::to_string(start) + "-" + std::to_string(end) + "/" + std::to_string(filesize) << std::endl;
+
+	std::string data2(data.begin(),data.end());
+	
+        res.set_content(data2,
+                        choose_type(filename) /*"application/octet-stream"*/);
+	done = true;
+	//std::cout << "Range request handled!" << std::endl;
+    }
+    return done;
 }
 
 EXPORT void start_http_listening(std::vector<std::string> filenames,
@@ -87,10 +153,19 @@ EXPORT void start_http_listening(std::vector<std::string> filenames,
   files->date = date;
   files->transparent = transparent;
   tasks_add(9898, &http_server_process, (void*)files);
+  tasks_add(9899, &http_server_wait_process, (void*)0);
 }
 EXPORT void join_http()
 {
   tasks_join(9898);
+}
+
+extern httplib::Server *g_http_server;
+
+EXPORT void start_server_shutdown()
+{
+  if (g_http_server)
+    g_http_server->stop();
 }
 
 bool g_http_up_and_running=false;
@@ -107,6 +182,7 @@ EXPORT void http_sleep()
     //std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
   }
+  g_http_up_and_running = false;
 }
 EXPORT void send_http_server_shutdown()
 {
@@ -124,7 +200,7 @@ EXPORT bool choose_http_port()
   httplib::Server svr;
   int counter=0;
   bool error = false;
-  while (!svr.bind_to_port(g_http_server_ip,g_http_server_port))
+  while (!svr.bind_to_port("0.0.0.0",g_http_server_port))
     {
       counter++;
       g_http_server_port++;
@@ -135,6 +211,7 @@ EXPORT bool choose_http_port()
   } else {
     std::cout << "NOTE: setting up http server at: " << g_http_server_ip << ":" << g_http_server_port << std::endl;
   }
+  svr.stop();
   return !error;
 }
 
@@ -225,8 +302,14 @@ EXPORT void http_server(std::vector<std::string> filenames,
   svr->Post("/stop", [&](const httplib::Request &req,
 		      httplib::Response &res)
   {
+    std::cout << "Server shutdown..." << std::endl;
     res.set_content("ok","text/plain");
-    svr->stop();
+    res.set_header("Connection", "close");
+    res.status = 200;
+    std::thread([&]() {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      svr->stop();
+    }).detach();
   });
     
 
@@ -234,19 +317,23 @@ EXPORT void http_server(std::vector<std::string> filenames,
 	   [&](const httplib::Request &req,
 	       httplib::Response &res)
 	   {
+		g_wait_ongoing = false;
 		std::cout << "Fetching3: /user_data/temp/tmp0.txt"<< std::endl;
 		set_cors_headers(res);
 	     res.set_content(g_http_htmlfile,"text/plain");
+	     res.status = 200;
 	   });
   svr->Get("/gameapi_example.html",
 	   [&](const httplib::Request &req,
 	       httplib::Response &res)
 	   {
+		g_wait_ongoing = false;
 		std::cout << "Fetching2: /gameapi_example.html"<< std::endl;
 		static std::string s;
 		set_cors_headers(res);
 		s = gameapi_example(homepage,script,date,transparent);
 	     res.set_content(s,"text/html");
+	     res.status = 200;
 	   });
 
   std::vector<std::string> *fn = new std::vector<std::string>;
@@ -257,19 +344,51 @@ EXPORT void http_server(std::vector<std::string> filenames,
 	      [&](const httplib::Request &req,
 		 httplib::Response &res)
 	      {
-		std::cout << "path:" << req.path << std::endl;
+		g_wait_ongoing = false;
+		//std::cout << "path:" << req.path << std::endl;
 		for (int j=0;j<g_filenames.size();j++)
 		  {
 		    if ((std::string("/")+g_filenames[j])==req.path) {
 		      set_cors_headers(res);
-		      res.set_content(g_contents[j],choose_type(g_filenames[j]));
+		      bool b = handle_range_request(req,res,g_filenames,g_contents,req.path.substr(1));
+		      if (!b) {
+			res.set_content(g_contents[j],choose_type(g_filenames[j]));
+			res.status = 200;
+
+		      }
 		    }
 		  }
 	      });
     }
   g_http_up_and_running = true;
-  svr->listen(g_http_server_ip, g_http_server_port);
+  svr->listen(g_http_server_ip, g_http_server_port, SO_REUSEADDR);
   g_http_server = 0;
+}
+
+
+void *http_server_wait_process(void *ptr)
+{
+  while(g_wait_ongoing) {
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+#endif
+#ifdef WINDOWS
+    Sleep(100);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+  }
+  
+#ifdef LINUX
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000000));
+#endif
+#ifdef WINDOWS
+    Sleep(3000000);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(3));
+#endif
+    g_wait_ongoing = true;
+    std::cout << "Trying to shutdown http server.." << std::endl;
+    start_server_shutdown();
+    return 0;
 }
 
 EXPORT void *http_server_process(void *ptr)
@@ -580,13 +699,13 @@ EXPORT HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
       res.orig_urls = http_orig_urls;
       res.filenames = http_filenames;
       res.contents = http_contents;
-
+      /*
       int s5 = res.filenames.size();
       for(int i=0;i<s5;i++)
 	{
 	  std::cout << "DeployRes:" << res.filenames[i] << std::endl;
 	}
-      
+      */
       return res;
 #endif
 }
@@ -774,6 +893,9 @@ example += "margin:0; padding:0; width: 820px; height: 620px;\"></canvas>\n"
 
 EXPORT std::vector<unsigned char> find_display_zip_file()
 {
+#ifdef EMSCRIPTEN
+  std::string filename;
+#endif
 #ifdef WINDOWS
   std::string filename = GetInstallDir2(false) + "/gameapi_display.zip"; 
 #endif
@@ -849,7 +971,7 @@ EXPORT std::vector<HttpFileFromZip> decompress_zip_file(std::vector<unsigned cha
 	if (!b) { std::cout << "error at extract" << std::endl; continue; }
 
 	HttpFileFromZip file;
-	std::cout << "Zip:'" << filename << "'" << std::endl;
+	//std::cout << "Zip:'" << filename << "'" << std::endl;
 	if (std::string(filename)==std::string("gameapi.js"))
 	  file.filename = filename;
 	else

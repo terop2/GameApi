@@ -16,6 +16,7 @@ IMPORT std::string http_server_address();
 IMPORT void http_sleep();
 IMPORT void join_http();
 IMPORT void send_http_server_shutdown();
+IMPORT void start_server_shutdown();
 IMPORT bool choose_http_port();
 IMPORT const char * choose_type(std::string filename);
 IMPORT void http_server(std::vector<std::string> filenames,
