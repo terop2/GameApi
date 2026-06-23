@@ -6897,6 +6897,7 @@ struct CodeGenLine {
   std::vector<std::string> params_linkage;
   std::vector<int> j; // -1 = check array
   GameApiItem *item;
+  int x,y;
 };
 void CodeGenLineErrorCheck(CodeGenLine &line, std::vector<GameApiItem*> functions)
 {
@@ -6994,13 +6995,36 @@ CodeGenLine parse_codegen_line(std::string line)
     end2 = end3;
     if (line[end3]==')') { break; }
   }
+  int x=-1;
+  int y=-1;
+  if (line[end2]!=')') end2++;
+  if (line[end2]==')' &&
+      line[end2+1]==';' &&
+      line[end2+2]==' ' &&
+      line[end2+3]=='/' &&
+      line[end2+4]=='/' &&
+      line[end2+5]==' ')
+    {
+      int end4 = find_one(line,end2+6,",\n\0");
+      if (end4!=-1) {
+	  std::string sx = line.substr(end2+6,end4-end2-6);
+	  std::string sy = line.substr(end4+1,line.size()-end4-1);
+	  std::stringstream ssx(sx);
+	  ssx >> x;
+	  std::stringstream ssy(sy);
+	  ssy >> y;
+      }
+    }
+      
   CodeGenLine line2;
   line2.return_type = return_type;
   line2.label_num = "I" + num;
   line2.api_name = api_name;
   line2.func_name = func_name;
   line2.params = params;
-
+  line2.x = x;
+  line2.y = y;
+  
   //std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
   return line2;
 }
@@ -7184,8 +7208,8 @@ GameApiLine convert_line(GameApi::EveryApi &ev, std::vector<CodeGenLine> &lines,
 
   
   GameApiLine res;
-  res.x = start_x + pos_x*delta_x;
-  res.y = start_y + pos_y*delta_y;
+  res.x = l.x != -1 ? l.x : start_x + pos_x*delta_x;
+  res.y = l.y != -1 ? l.y : start_y + pos_y*delta_y;
   res.module_name = module_name;
   res.uid = ss.str();
   res.j = i<vecs.size()&&vecs[i].j.size()>0?vecs[i].j[0]:0;

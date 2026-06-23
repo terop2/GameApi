@@ -432,17 +432,17 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 #if (ALL==1)||(GLTF_MATERIAL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material,
 			 "m_gltf",
-			 { "ev", "tf", "material_id", "mix", "self_mult", "rest_mult", "light_x", "light_y", "light_z", "emissive" },
-			 { "EveryApi&", "TF", "int", "float", "float", "float", "float" ,"float", "float", "bool" }, 
-			 { "ev", "", "0", "1.0", "3.0", "1.0", "400.0", "-400.0", "300.0", "true" },
+			 { "ev", "tf", "material_id", "mix", "self_mult", "rest_mult", "light_x", "light_y", "light_z", "emissive", "lod_level" },
+			 { "EveryApi&", "TF", "int", "float", "float", "float", "float" ,"float", "float", "bool", "int" }, 
+			 { "ev", "", "0", "1.0", "3.0", "1.0", "400.0", "-400.0", "300.0", "true", "-1" },
 			 "MT", "materials_api", "gltf_material"));
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL_MT_ARR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_mt_arr,
 			 "m_gltf_arr",
-			 { "ev", "tf", "mix", "self_mult", "rest_mult","light_dir_x", "light_dir_y", "light_dir_z", "is_transparent", "emissive" },
-			 { "EveryApi&", "TF", "float", "float", "float","float", "float", "float", "bool", "bool" },
-			 { "ev", "", "1.0", "3.0", "1.0", "400.0", "-400.0", "300.0","true", "true" },
+			 { "ev", "tf", "mix", "self_mult", "rest_mult","light_dir_x", "light_dir_y", "light_dir_z", "is_transparent", "emissive", "lod_level" },
+			 { "EveryApi&", "TF", "float", "float", "float","float", "float", "float", "bool", "bool", "int" },
+			 { "ev", "", "1.0", "3.0", "1.0", "400.0", "-400.0", "300.0","true", "true", "-1" },
 			 "[MT]", "materials_api", "gltf_mesh_all_mt_arr"));
 #endif
 #if (ALL==1)||(GLTF_MATERIAL_ENV==1)
