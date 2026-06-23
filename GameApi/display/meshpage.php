@@ -195,8 +195,8 @@ $highmem = js_highmem();
 </head>
 <!-- https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js -->
 <body id="body" class="preload-hidden" style="overflow:hidden;">
-<script src="bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
-<script src="vue.js" async></script>
+<script src="bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="vue.js"></script>
 <script>
 </script>
 <script type="application/ld+json">{
