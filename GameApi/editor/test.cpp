@@ -44,6 +44,10 @@ using namespace GameApi;
 #include <unistd.h>
 #include <fcntl.h> 
 #endif
+#include "GameApi_http.hh"
+
+#define HTML_RUN_HTTP_SERVER_IMPL 1
+
 
 IMPORT extern GameApi::PAT gameapi_temp_dir;
 
@@ -2068,6 +2072,86 @@ public:
 					      htmlfile = replace_str(htmlfile, "<", "&lt;");
 					      htmlfile = replace_str(htmlfile, "\"", "&quot;");
 					      htmlfile = replace_str(htmlfile, "\'", "&apos;");
+
+#ifdef HTML_RUN_HTTP_SERVER_IMPL
+					      std::vector<std::string> filenames;
+					      std::vector<std::string> contents;
+
+
+					      std::vector<unsigned char> zip_file = find_display_zip_file();
+					      std::vector<HttpFileFromZip> zip_content = decompress_zip_file(zip_file);
+					      int s = zip_content.size();
+					      for(int i=0;i<s;i++)
+						{
+						  std::cout << "FILENAME:" << i << "::" << zip_content[i].filename << std::endl;
+						  filenames.push_back(zip_content[i].filename);
+						  contents.push_back(zip_content[i].contents);
+						}
+					      
+
+					      std::string name = "gameapi_example.html";
+					      bool transparent = false;
+					      int pos = find_str(htmlfile,"scene_transparency");
+					      if (pos!=-1)
+						{
+						  transparent=true;
+						}
+					      
+					      HttpDeployResult res = http_deploy(*env->env,htmlfile);
+					      int s1 = res.filenames.size();
+					      for(int i=0;i<s1;i++)
+						{
+						  std::string filename = res.filenames[i];
+						  std::string c = res.contents[i];
+						  filenames.push_back(filename);
+						  contents.push_back(c);
+						}
+					      
+					      
+					      htmlfile = replace_urls_from_script(htmlfile, res);
+
+					      //std::string example = gameapi_example(homepage,htmlfile,ss.str(),transparent);
+					      //set_http_server_htmlfile(example);
+					      
+					      bool b = choose_http_port();
+					      if (!b) goto END;
+					      start_http_listening(filenames,contents,homepage,htmlfile,ss.str(),transparent);
+
+					      http_sleep();
+					      
+#ifdef WINDOWS
+					      htmlfile = replace_string(htmlfile,'\n','@');
+					      homepage = replace_string(homepage,'\n','@');
+					      std::string cmd = std::string("explorer \"https://") + http_server_address() + std::string("/gameapi_example.html\"");
+		std::cout << "PTHREAD_SYSTEM explorer" << std::endl;
+
+					      pthread_system(cmd.c_str());
+
+					      
+#endif
+#ifdef LINUX
+					      {
+					      
+					      const char *doc = getenv("BUILDER_DOCKER_DIR");
+					      std::string dockerdir = doc?doc:"";
+					      std::string cmd;
+					      if (dockerdir!="") {
+						cmd = std::string("/usr/share/chromium \"http://") + http_server_address() + "/" + name + "\"";
+					      } else {
+						cmd = std::string("chromium \"http://") + http_server_address() + "/" + name + "\"";
+					      }
+		std::cout << "PTHREAD_SYSTEM chromium" << std::endl;
+					      pthread_system(cmd.c_str());
+					      }
+					      
+#endif
+
+					      ///  join_http();
+					      
+					      
+					    END:
+#endif					      
+#ifndef HTML_RUN_HTTP_SERVER_IMPL
 #ifdef WINDOWS
 
 					      int s = htmlfile.size()/3000+1;
@@ -2102,8 +2186,9 @@ public:
 						{
 						  name = "gameapi_example_transparent.php";
 						}
+
 					      
-					      
+										      
 			
 					      const char *doc = getenv("BUILDER_DOCKER_DIR");
 					      std::string dockerdir = doc?doc:"";
@@ -2117,6 +2202,8 @@ public:
 					      pthread_system(cmd.c_str());
 			
 #endif
+#endif
+					      
 					    }
 					  else if (type=="WV")
 					    {
@@ -4417,9 +4504,8 @@ void save_mod_txt_from_script_file2(GameApi::EveryApi &ev, std::string input_scr
 IMPORT extern const char * g_html_dir;
 IMPORT const char * get_html_directory2();
 
-std::string g_http_server_ip = "127.0.0.1";
-int g_http_server_port = 50000;
-
+IMPORT extern std::string g_http_server_ip;
+IMPORT extern int g_http_server_port;
 
 int main(int argc, char *argv[]) {
   gameapi_temp_dir = g_path_handler->default_path();
