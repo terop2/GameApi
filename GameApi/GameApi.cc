@@ -113,6 +113,7 @@ std::string replace_deploy_url(std::string home)
 
 
 IMPORT extern GameApi::EveryApi *g_everyapi;
+IMPORT extern GameApi::EveryApi *g_everyapi2;
 std::string deploy_replace_string(std::string data, std::string subst, std::string repl);
 
 
@@ -45212,7 +45213,7 @@ private:
 
 std::string use_path4(GameApi::PAT pat)
 {
-  GameApi::Env &env = g_everyapi->get_env();
+  GameApi::Env &env = g_everyapi2->get_env();
   return use_path3(env,pat,PathHandler::ESituationGeneric);
 }
 

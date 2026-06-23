@@ -40,10 +40,10 @@ using namespace GameApi;
 
 #ifdef STEAM
 #include <steam/steam_api.h>
+#endif
 #include <cstdlib>
 #include <unistd.h>
 #include <fcntl.h> 
-#endif
 #include "GameApi_http.hh"
 
 #define HTML_RUN_HTTP_SERVER_IMPL 1
@@ -2037,7 +2037,13 @@ public:
 					      std::stringstream ss(lastline);
 					      ss >> label >> id;
 					      int ii=id.size();
-					      for(int i=0;i<ii;i++) { if (id[i]=='=') id=id.substr(0,i); }
+					      for(int i=0;i<ii;i++)
+						{
+						  if (id[i]=='=') {
+						    id=id.substr(0,i);
+						    break;
+						  }
+						}
 					      if (label=="ML")
 						{
 						  htmlfile+=std::string("RUN I888=ev.blocker_api.game_window2(ev,") + id + ",false,false,0.0,1000000.0);\n";
@@ -2147,7 +2153,7 @@ public:
 #ifdef WINDOWS
 					      htmlfile = replace_string(htmlfile,'\n','@');
 					      homepage = replace_string(homepage,'\n','@');
-					      std::string cmd = std::string("explorer \"https://") + http_server_address() + std::string("/gameapi_example.html\"");
+					      std::string cmd = std::string("explorer \"http://") + http_server_address() + std::string("/gameapi_example.html\"");
 		std::cout << "PTHREAD_SYSTEM explorer" << std::endl;
 
 					      pthread_system(cmd.c_str());
@@ -4591,7 +4597,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
   Env &e = *e2;
   EveryApi ev(*e2);
 
-#ifdef STEAM
+  //#ifdef STEAM
 #ifdef WINDOWS
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
@@ -4600,7 +4606,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
     gameapi_temp_dir=g_path_handler->create_path_from_source(e,cd,g_path_handler->conf_windows(false));
   }
 #endif
-#endif
+  //#endif
 
 
   

@@ -7,6 +7,10 @@
 #define MINIZ_HEADER_FILE_ONLY 1
 #include "zip_file.hpp"
 
+#ifdef WINDOWS
+std::string GetInstallDir2(bool pathfix);
+#endif
+
 bool file_exists(std::string url);
 std::string remove_quotes(std::string str);
 IMPORT extern std::string g_http_server_ip;
@@ -83,12 +87,14 @@ bool handle_range_request(const httplib::Request &req, httplib::Response &res, c
   int pos = -1;
   for(int i=0;i<s;i++)
     {
+      //std::cout << i << "::" << filenames[i] << std::endl;
       if (filename == filenames[i]) { pos=i; break; }
     }
   if (pos==-1) return false;
   size_t filesize = contents[pos].size();
-  
-    if (!range.empty())
+
+  //std::cout << "FILESIZE:" << filesize << " " << filename << std::endl;
+    if (!range.empty() &&  filesize >0)
     {
         // Example: "bytes=100-199"
         size_t start = 0;
@@ -108,6 +114,7 @@ bool handle_range_request(const httplib::Request &req, httplib::Response &res, c
 	
         size_t len = end - start + 1;
 
+	
         //std::string data(len, '\0');
 	std::vector<unsigned char> data;
 	data.resize(len-1);
@@ -318,7 +325,7 @@ EXPORT void http_server(std::vector<std::string> filenames,
 	       httplib::Response &res)
 	   {
 		g_wait_ongoing = false;
-		std::cout << "Fetching3: /user_data/temp/tmp0.txt"<< std::endl;
+		//std::cout << "Fetching3: /user_data/temp/tmp0.txt"<< std::endl;
 		set_cors_headers(res);
 	     res.set_content(g_http_htmlfile,"text/plain");
 	     res.status = 200;
@@ -328,7 +335,7 @@ EXPORT void http_server(std::vector<std::string> filenames,
 	       httplib::Response &res)
 	   {
 		g_wait_ongoing = false;
-		std::cout << "Fetching2: /gameapi_example.html"<< std::endl;
+		//std::cout << "Fetching2: /gameapi_example.html"<< std::endl;
 		static std::string s;
 		set_cors_headers(res);
 		s = gameapi_example(homepage,script,date,transparent);
@@ -386,7 +393,7 @@ void *http_server_wait_process(void *ptr)
     //std::this_thread::sleep_for(std::chrono::milliseconds(3));
 #endif
     g_wait_ongoing = true;
-    std::cout << "Trying to shutdown http server.." << std::endl;
+    //std::cout << "Trying to shutdown http server.." << std::endl;
     start_server_shutdown();
     return 0;
 }
@@ -546,7 +553,12 @@ EXPORT HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
 	      if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
 
 	      std::string filename = "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?')));
-	      std::ifstream file(filename.c_str(), std::ios_base::binary);
+
+	  filename = deploy_replace_string(filename,"%TEMP%",use_path3(env,gameapi_temp_dir,PathHandler::ETempDirReplace32));
+
+	  //std::cout << "Opening " << filename << " via ifstream" << std::endl;
+	  filename = deploy_replace_string(filename,"\"","");
+	  std::ifstream file(filename.c_str(), std::ios_base::in|std::ios_base::binary);
 	      std::string contents;
 	      char ch;
 	      while(file.get(ch)) {
@@ -668,7 +680,6 @@ EXPORT HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
 	  if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
 	  
 	  std::string fn = home + "/.gameapi_builder/deploy/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?')));
-
 	  std::string filename = fn;
 	  std::ifstream file(filename.c_str());
 	  std::string contents;
@@ -692,6 +703,7 @@ EXPORT HttpDeployResult http_deploy(GameApi::Env &env, std::string h2_script)
 	    
 	  http_filenames.push_back(short_filename);
 	  http_contents.push_back(contents);
+
 	}
 #endif
 
@@ -897,7 +909,14 @@ EXPORT std::vector<unsigned char> find_display_zip_file()
   std::string filename;
 #endif
 #ifdef WINDOWS
-  std::string filename = GetInstallDir2(false) + "/gameapi_display.zip"; 
+  std::string filename = GetInstallDir2(false) + "\\gameapi_display.zip"; 
+    if (!file_exists(filename))
+      {
+	filename = GetInstallDir2(false) + "\\..\\display\\gameapi_display.zip";
+      }
+    //std::cout << "ZIP FILENAME:" << filename << std::endl;
+
+
 #endif
 #ifdef LINUX
   char path[PATH_MAX];
