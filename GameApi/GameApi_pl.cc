@@ -16692,13 +16692,13 @@ public:
 
   std::string BaseUrl() const {
     unsigned char *ptr = get_header();
-    if (!ptr) return 0;
+    if (!ptr) return "";
     DSGLTFHeader *head = (DSGLTFHeader*)ptr;
     return std::string(head->base_url);    
   }
   std::string Url() const {
     unsigned char *ptr = get_header();
-    if (!ptr) return 0;
+    if (!ptr) return "";
     DSGLTFHeader *head = (DSGLTFHeader*)ptr;
     return std::string(head->url);    
   }
