@@ -288,6 +288,7 @@ IMPORT std::string find_html2(GameApi::HML ml, GameApi::Env &env);
 IMPORT std::string find_homepage2(GameApi::HML ml, GameApi::Env &env);
 IMPORT std::vector<unsigned char> load_from_url(std::string url);
 
+IMPORT std::string remove_last_line(std::string s);
 IMPORT std::string get_last_line(std::string file, char ch);
 
 std::string hexify2(std::string s)
@@ -2074,6 +2075,31 @@ public:
 					      htmlfile = replace_str(htmlfile, "\'", "&apos;");
 
 #ifdef HTML_RUN_HTTP_SERVER_IMPL
+					      htmlfile = remove_last_line(htmlfile);
+					      std::string lastline3 = get_last_line(htmlfile,'\n');
+					      int s7 = lastline3.size();
+					      int pos1 = -1;
+					      int pos2 = -1;
+					      for(int i=0;i<s7;i++)
+						{
+						  if (lastline3[i]==' ') { pos1=i; }
+						  if (lastline3[i]=='=') { pos2=i; break; }
+						}
+					      std::string id3 = pos1!=-1 && pos2!=-1 ? lastline3.substr(pos1+1,pos2-pos1-1) : "";
+					      
+					      htmlfile+="ML I868=ev.mainloop_api.no_concurrent_download(" + id3 + ");\n";
+					      htmlfile+="RUN I878=ev.blocker_api.game_window2(ev,I868,false,false,0.0,1000000.0);\n";
+					      
+					      
+					      
+					      //htmlfile += "RUN I8888=ev.mainloop_api.no_concurrent_download_run(" + id + ");\n";
+
+					      
+					      bool b = choose_http_port();
+					      if (!b) { std::cout << "ERROR" << std::endl; }
+
+					      start_server_shutdown();
+					      
 					      std::vector<std::string> filenames;
 					      std::vector<std::string> contents;
 
@@ -2083,7 +2109,7 @@ public:
 					      int s = zip_content.size();
 					      for(int i=0;i<s;i++)
 						{
-						  std::cout << "FILENAME:" << i << "::" << zip_content[i].filename << std::endl;
+						  //std::cout << "FILENAME:" << i << "::" << zip_content[i].filename << std::endl;
 						  filenames.push_back(zip_content[i].filename);
 						  contents.push_back(zip_content[i].contents);
 						}
@@ -2113,8 +2139,6 @@ public:
 					      //std::string example = gameapi_example(homepage,htmlfile,ss.str(),transparent);
 					      //set_http_server_htmlfile(example);
 					      
-					      bool b = choose_http_port();
-					      if (!b) goto END;
 					      start_http_listening(filenames,contents,homepage,htmlfile,ss.str(),transparent);
 
 					      http_sleep();
@@ -2149,7 +2173,6 @@ public:
 					      ///  join_http();
 					      
 					      
-					    END:
 #endif					      
 #ifndef HTML_RUN_HTTP_SERVER_IMPL
 #ifdef WINDOWS

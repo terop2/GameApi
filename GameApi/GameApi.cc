@@ -26557,6 +26557,20 @@ GameApi::ML GameApi::MainLoopApi::save_script(HML h, std::string filename)
 }
 
 IMPORT bool file_exists(std::string file);
+IMPORT std::string remove_last_line(std::string s)
+{
+  std::stringstream ss(s);
+  std::string prev_line;
+  std::string line;
+  std::string res;
+  while(std::getline(ss,line))
+    {
+      if (prev_line!="")
+	res+=prev_line + "\n";
+      prev_line=line;
+    }
+  return res;
+}
 IMPORT std::string get_last_line(std::string s, char ch)
 {
   int ss = s.size();

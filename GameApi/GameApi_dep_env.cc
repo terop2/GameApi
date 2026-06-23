@@ -1367,6 +1367,7 @@ EM_JS(void, get_header, (const char *filename, void *data), {
     const url = UTF8ToString(filename);
     fetch(url, { method: "GET", headers: { "Range": "bytes=0-0" } } )
       .then(r => {
+	  console.log(r.headers);
 	  Module.ccall('head_result',null,['string','number'],[r.headers.get("Content-Range"),data]);
 		       //head_result(,data);
       })
@@ -1447,7 +1448,9 @@ public:
     async_pending_count--;
 
     std::string res(s);
+    std::cout << "HEAD_RESULT:" << res << std::endl;
 
+    
     int s5 = res.size();
     int pos = 0;
     for(int i=0;i<s5;i++)
@@ -1461,7 +1464,7 @@ public:
     chunkSize = 1024*300; //1048576;
     ss >> totalSize;
 
-    //std::cout << res << " " << totalSize << std::endl;
+    //std::cout << "TOTALSIZE:" << res << " " << totalSize << std::endl;
     //ss >> chunkSize;
 
     
