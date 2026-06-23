@@ -41,6 +41,7 @@
 #include <fstream>
 #ifndef HAS_PTHREAD
 #define HAS_PTHREAD 1
+#undef HAVE_STRUCT_TIMESPEC
 #include <pthread.h>
 #undef PTW32_LEVEL
 #undef PTW32_SCHED_LEVEL

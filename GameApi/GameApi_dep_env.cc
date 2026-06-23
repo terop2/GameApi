@@ -6049,6 +6049,7 @@ std::string PathHandler::use_path(GameApi::Env &e, GameApi::PAT val, const Situa
   if (val.id==-1) return "@";
   
   Path *pt = find_path(e,val);
+  if (!pt) return "@";
   // here we can do decisions using convertpath() and pt->is_*() functions.
   
   
