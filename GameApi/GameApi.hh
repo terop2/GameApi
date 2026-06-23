@@ -19,7 +19,7 @@ void clear_block(int id);
 
 template<class T, class K> class Array;
 
-
+class CodeGenPositions;
 struct ASyncData;
 struct BufferRef;
 struct MainLoopEnv;
@@ -2425,7 +2425,7 @@ public:
 
   IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
   IMPORT void codegen_reset_counter();
-  IMPORT std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j);
+  IMPORT std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j, CodeGenPositions *pos=0);
   IMPORT std::string return_type(GameApi::EveryApi &ev, WM mod2, int id, std::string line_uid);
   IMPORT void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:

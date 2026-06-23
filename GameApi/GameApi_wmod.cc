@@ -1135,10 +1135,86 @@ bool has_envparams_markers(std::string s)
     }
   return false;
 }
-
-
-EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j)
+class CodeGenPositions
 {
+public:
+  void clear_positions()
+  {
+    pos.clear();
+  }
+  void add_position(int id, std::string line_uid, int x, int y)
+  {
+    Posi pp;
+    pp.id = id;
+    pp.line_uid = line_uid;
+    pp.x = x;
+    pp.y = y;
+    pos.push_back(pp);
+  }
+  void calc_bounding_box()
+  {
+    min_x = 9999999;
+    min_y = 9999999;
+    max_x = 0;
+    max_y = 0;
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+      {
+	Posi p = pos[i];
+	min_x = std::min(min_x,p.x);
+	min_y = std::min(min_y,p.y);
+	max_x = std::max(max_x,p.x);
+	max_y = std::max(max_y,p.y);
+      }
+  }
+  int get_min_x() const { return min_x; }
+  int get_min_y() const { return min_y; }
+  int get_pos_x(int id, std::string line_uid) const
+  {
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+      {
+	if (pos[i].id==id && pos[i].line_uid==line_uid)
+	  return pos[i].x;
+      }
+    return -1;
+  }
+  int get_pos_y(int id, std::string line_uid) const
+  {
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+      {
+	if (pos[i].id==id && pos[i].line_uid==line_uid)
+	  return pos[i].y;
+      }
+    return -1;
+  }
+private:
+  struct Posi
+  {
+    int id;
+    std::string line_uid;
+    int x,y;
+  };
+  std::vector<Posi> pos;
+  int min_x, min_y;
+  int max_x, max_y;
+};
+
+
+EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j, CodeGenPositions *pos)
+{
+  if (pos==0)
+    {
+      pos = new CodeGenPositions;
+      // this hack is needed so that bounding box calculation is correct.
+      std::pair<std::string,std::string> p1 = codegen(ev,mod2,id,line_uid,level,j,pos);
+      clear_codegen();
+      std::pair<std::string,std::string> p2 = codegen(ev,mod2,id,line_uid,level,j,pos);
+      
+      return p2;
+    }
+  
   static std::vector<GameApiItem*> vec = all_functions(ev);
 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1151,7 +1227,9 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
       GameApiLine *line = &func->lines[i];
       if (line->uid == line_uid)
 	{
-
+	  if (pos)
+	    pos->add_position(id,line_uid,line->x, line->y);
+	  
 	  // COLLECT PARAMS & RECURSE
 	  int ss = line->params.size();
 	  std::vector<std::string> params;
@@ -1229,7 +1307,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 		    p = "";
 		    pn = id2;
 		  } else {
-		  std::pair<std::string,std::string> val = codegen(ev, mod2, id, pn, level-1,jj);
+		    std::pair<std::string,std::string> val = codegen(ev, mod2, id, pn, level-1,jj,pos);
 		  //std::cout << "CODEGEN:" << line_uid << " " << pn << std::endl;
 		  rt = return_type(ev,mod2, id, pn);
 		  p = val.second;
@@ -1285,7 +1363,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	
 		      
 			      bool success;
-			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, pp.first /*substr*/, level-1,0);
+			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, pp.first /*substr*/, level-1,0,pos);
 			      // TODO guess no multiple return values here
 			      rt = return_type(ev,mod2, id, pp.first /*substr*/);
 
@@ -1330,6 +1408,14 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      if (name == line->module_name)
 		{
 		  std::pair<std::string,std::string> val = item->CodeGen(ev, params, param_names, param_exprs,j);
+		  if (pos) {
+		    std::string a = val.second;
+		    if (a[a.size()-1]=='\n') a=a.substr(0,a.size()-1);
+		    pos->calc_bounding_box();
+		    std::stringstream ss;
+		    ss << " // " << pos->get_pos_x(id,line_uid) - pos->get_min_x() + 10 << "," << pos->get_pos_y(id,line_uid) - pos->get_min_y() + 10 << std::endl;
+		    val.second = a + ss.str();
+		  }
 		  push_codegen(id,line_uid, val.first);
 		  return val;
 		}

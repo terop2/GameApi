@@ -18388,11 +18388,11 @@ public:
 	if (!ignore && (counter<5|| (e.type==0x300||e.type==0x301))) {
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
-	if (e.ch==27 && e.type==0x300) { /*std::cout << "Esc pressed2!" << std::endl;*/ env->exit = true; return 0; }
+	if (e.ch==27 && e.type==0x300) { /*std::cout << "Esc pressed2!" << std::endl;*/ env->exit = true; return; }
 #endif
 
 #ifdef ANDROID
-	if (e.ch==1073742094 && e.type==0x300) { env->exit=true; return 0; }
+	if (e.ch==1073742094 && e.type==0x300) { env->exit=true; return; }
 #endif
 	
 	if (g_prepare_done)
