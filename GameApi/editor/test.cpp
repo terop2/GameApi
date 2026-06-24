@@ -2155,9 +2155,9 @@ public:
 		                              //pthread_system(cmd.c_str());
 					      std::string url = std::string("http://") + http_server_address() + std::string("/gameapi_example.html");
 					      HINSTANCE res = ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-					      if (res<=32) {
-						std::cout << "opening browser failed!" << std::endl;
-					      }
+					      //if (res<=32) {
+					      //std::cout << "opening browser failed!" << std::endl;
+					      //}
 					      }
 #endif
 #ifdef LINUX
