@@ -2016,18 +2016,12 @@ public:
 					      std::string htmlfile = find_html2(ml,*env->env);
 					      htmlfile = replace_str(htmlfile, "@", "\n");
 
-#if 0
-					      int k = find_str(htmlfile,"file://");
-					      if (k!=-1)
-						{
 						  std::cout << "----------------------------------------------------------------------" << std::endl;
-						  std::cout << "ERROR: file:// -urls do not work in this HML node. " << std::endl;
-						  std::cout << "       Drag and drop fail. " << std::endl;
-						  std::cout << "       Move assets to web server/change urls to point to correct locations," << std::endl;
-						  std::cout << "       and it might work better." << std::endl;
+						  std::cout << "WARNING: HML nodes display requires opening a port for http server. " << std::endl;
+						  std::cout << "       You should adjust your firewall settings if having trouble with the display. " << std::endl;
+						  std::cout << "       it's going to open a http port at 127.0.0.1:50200 and use it to " << std::endl;
+						  std::cout << "       communicate with browser in local network." << std::endl;
 						  std::cout << "----------------------------------------------------------------------" << std::endl;
-						}
-#endif
 					      
 					      while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
 
