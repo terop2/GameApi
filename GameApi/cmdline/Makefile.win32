@@ -14,4 +14,4 @@ endif
 
 all:
 	@echo "  LD   cmdline/gameapi_cmdline"
-	@g++ $(STEAM_CFLAGS) test.cpp -o gameapi_cmdline -I.. -L.. -lGameApi $(STEAM_LIBS)
+	@g++ $(STEAM_CFLAGS) test.cpp -o gameapi_cmdline -I.. -L.. -lGameApi $(STEAM_LIBS) -lpthread -pthread
