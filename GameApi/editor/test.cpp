@@ -2152,7 +2152,7 @@ public:
 #endif
 #ifdef WINDOWS
 					      std::string url = std::string("http://") + http_server_address() + std::string("/gameapi_example.html");
-					      ShellExecuteA(NULL, "open", url, NULL,NULL, SW_SHOWNORMAL);
+					      ShellExecuteA(NULL, "open", url.c_str(), NULL,NULL, SW_SHOWNORMAL);
 #endif
 #endif					      
 #ifndef STEAM					    
