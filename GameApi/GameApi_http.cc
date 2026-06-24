@@ -1,11 +1,17 @@
+
+
 #include "GameApi_http.hh"
 #include "GameApi.hh"
 #include "Tasks.hh"
-#define CPPHTTPLIB_NO_EXCEPTIONS
-#include "httplib.h"
 #include "GraphI.hh"
 #define MINIZ_HEADER_FILE_ONLY 1
 #include "zip_file.hpp"
+
+
+#define CPPHTTPLIB_NO_EXCEPTIONS
+#include "httplib.h"
+
+
 
 #ifdef WINDOWS
 std::string GetInstallDir2(bool pathfix);
