@@ -48,7 +48,6 @@ using namespace GameApi;
 
 #define HTML_RUN_HTTP_SERVER_IMPL 1
 
-
 IMPORT extern GameApi::PAT gameapi_temp_dir;
 
 IMPORT extern bool g_reload_edit_dialog;
