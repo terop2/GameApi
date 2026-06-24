@@ -48,7 +48,6 @@ using namespace GameApi;
 
 #define HTML_RUN_HTTP_SERVER_IMPL 1
 
-
 IMPORT extern GameApi::PAT gameapi_temp_dir;
 
 IMPORT extern bool g_reload_edit_dialog;
@@ -2152,7 +2151,7 @@ public:
 #endif
 #ifdef WINDOWS
 					      std::string url = std::string("http://") + http_server_address() + std::string("/gameapi_example.html");
-					      ShellExecuteA(NULL, "open", url, NULL,NULL, SW_SHOWNORMAL);
+					      ShellExecuteA(NULL, "open", url.c_str(), NULL,NULL, SW_SHOWNORMAL);
 #endif
 #endif					      
 #ifndef STEAM					    
