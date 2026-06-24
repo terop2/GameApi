@@ -2146,7 +2146,7 @@ public:
 
 #ifdef STEAM
 #ifdef LINUX
-					      std::string url = std::string("steam://openurl/http://") + http_server_address() + std::string("/gameapi_example.html");
+					      std::string url = std::string("http://") + http_server_address() + std::string("/gameapi_example.html");
 					      std::string cmd = "xdg-open " + url;
 					      pthread_system(cmd.c_str());
 #endif
