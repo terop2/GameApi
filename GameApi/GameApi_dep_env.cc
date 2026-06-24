@@ -898,13 +898,35 @@ void timeout_getevent()
 
 }
 
+#ifdef WINDOWS
+timespec chrono_to_timespec(std::chrono::system_clock::time_point tp)
+{
+    using namespace std::chrono;
+
+    auto secs = time_point_cast<seconds>(tp);
+    auto ns = duration_cast<nanoseconds>(tp - secs);
+
+    timespec ts;
+    ts.tv_sec  = secs.time_since_epoch().count();
+    ts.tv_nsec = ns.count();
+
+    return ts;
+}
+#endif
+
+
 int wait_with_timeout(pthread_cond_t *cond, pthread_mutex_t *mutex, int timeout_ms)
 {
   struct timespec ts;
   int ret;
-  
+#ifndef WINDOWS  
   // Get current time
   clock_gettime(CLOCK_REALTIME, &ts);
+#endif
+#ifdef WINDOWS
+  auto now = std::chrono::system_clock::now();
+  ts = chrono_to_timespec(now);
+#endif
   
   // Add timeout_ms milliseconds to current time for absolute timeout
   ts.tv_sec += timeout_ms / 1000;
