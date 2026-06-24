@@ -896,7 +896,7 @@ void timeout_getevent()
   disable_opengl_from_get_event=false;
 
 }
-
+#if 0
 #ifdef WINDOWS
 timespec chrono_to_timespec(std::chrono::system_clock::time_point tp)
 {
@@ -912,20 +912,20 @@ timespec chrono_to_timespec(std::chrono::system_clock::time_point tp)
     return ts;
 }
 #endif
-
+#endif
 
 int wait_with_timeout(pthread_cond_t *cond, pthread_mutex_t *mutex, int timeout_ms)
 {
   struct timespec ts;
   int ret;
-#ifndef WINDOWS  
+  //#ifndef WINDOWS  
   // Get current time
   clock_gettime(CLOCK_REALTIME, &ts);
-#endif
-#ifdef WINDOWS
-  auto now = std::chrono::system_clock::now();
-  ts = chrono_to_timespec(now);
-#endif
+  //#endif
+  //#ifdef WINDOWS
+  // auto now = std::chrono::system_clock::now();
+  //ts = chrono_to_timespec(now);
+  //#endif
   
   // Add timeout_ms milliseconds to current time for absolute timeout
   ts.tv_sec += timeout_ms / 1000;
