@@ -23,6 +23,7 @@
 #include <fcntl.h>    
 #endif
 
+#include <pthread.h>
 
 
 Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init);
