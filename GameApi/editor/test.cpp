@@ -2143,7 +2143,41 @@ public:
 					      start_http_listening(filenames,contents,homepage,htmlfile,ss.str(),transparent);
 
 					      http_sleep();
+
+#ifdef STEAM					      
+#ifdef WINDOWS
+					      {
+					      htmlfile = replace_string(htmlfile,'\n','@');
+					      homepage = replace_string(homepage,'\n','@');
+					      //std::string cmd = std::string("explorer \"http://") + http_server_address() + std::string("/gameapi_example.html\"");
+					      //std::cout << "PTHREAD_SYSTEM explorer" << std::endl;
+
+		                              //pthread_system(cmd.c_str());
+					      std::string url = std::string("http://") + http_server_address() + std::string("/gameapi_example.html");
+					      HINSTANCE res = ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+					      if (res<=32) {
+						std::cout << "opening browser failed!" << std::endl;
+					      }
+					      }
+#endif
+#ifdef LINUX
+					      {
 					      
+					      const char *doc = getenv("BUILDER_DOCKER_DIR");
+					      std::string dockerdir = doc?doc:"";
+					      std::string cmd;
+					      if (dockerdir!="") {
+						cmd = std::string("/usr/share/xdg-open \"http://") + http_server_address() + "/" + name + "\"";
+					      } else {
+						cmd = std::string("xdg-open \"http://") + http_server_address() + "/" + name + "\"";
+					      }
+		std::cout << "PTHREAD_SYSTEM chromium" << std::endl;
+					      pthread_system(cmd.c_str());
+					      }
+					      
+#endif					   
+#endif					      
+#ifndef STEAM					    
 #ifdef WINDOWS
 					      htmlfile = replace_string(htmlfile,'\n','@');
 					      homepage = replace_string(homepage,'\n','@');
@@ -2170,7 +2204,7 @@ public:
 					      }
 					      
 #endif
-
+#endif
 					      ///  join_http();
 					      
 					      
