@@ -79,7 +79,7 @@ std::string deploy_replace_string(std::string val, std::string repl, std::string
 
 std::string replace_deploy_url(std::string home)
 {
-  std::cout << "REPLACE BEGIN:" << home << std::endl;
+  // std::cout << "REPLACE BEGIN:" << home << std::endl;
   
   int s = home.size();
   for(int i=0;i<s;i++)
@@ -106,7 +106,7 @@ std::string replace_deploy_url(std::string home)
   home = deploy_replace_string(home, "\"", "");
   home = deploy_replace_string(home, "\"", "");
 
-  std::cout << "REPLACE END:" << home << std::endl;
+  // std::cout << "REPLACE END:" << home << std::endl;
 
   return home;
 }
