@@ -894,10 +894,11 @@ std::string create_tmp_filename(std::string prefix, std::string suffix)
 
 #ifdef STEAM
 #ifdef WINDOWS
-void shell_exec_url_open(void *data)
+void *shell_exec_url_open(void *data)
 {
   std::string *url = (std::string*)data;
   ShellExecuteA(NULL, "open", url->c_str(), NULL, NULL, SW_SHOWNORMAL);
+  return 0;
 }
 #endif
 #endif
@@ -2160,7 +2161,7 @@ public:
 					      pthread_system(cmd.c_str());
 #endif
 #ifdef WINDOWS
-					      std::string url = std::string("http://") + http_server_address() + std::string("/gameapi_example.html");
+					      std::string *url = new std::string(std::string("http://") + http_server_address() + std::string("/gameapi_example.html"));
 					      tasks_add(9999, &shell_exec_url_open, (void*)url);
 #endif
 #endif					      
