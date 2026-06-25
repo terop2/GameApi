@@ -2179,8 +2179,8 @@ public:
 									     "/org/freedesktop/portal/desktop",
 									     "org.freedesktop.portal.OpenURI",
 									     "OpenURI");
-					      const char *parrent = "";
-					      const char *url = url.c_str();
+					      const char *parent = "";
+					      const char *uri = url.c_str();
 					      DBusMessageIter iter;
 					      dbus_message_iter_init_append(msg, &iter);
 					      dbus_message_iter_append_basic(&iter,DBUS_TYPE_STRING, &parent);
