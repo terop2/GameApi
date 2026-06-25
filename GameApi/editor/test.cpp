@@ -897,7 +897,6 @@ std::string create_tmp_filename(std::string prefix, std::string suffix)
   return ss3.str();
 }
 
-#ifdef STEAM
 #ifdef WINDOWS
 void *shell_exec_url_open(void *data)
 {
@@ -905,7 +904,6 @@ void *shell_exec_url_open(void *data)
   ShellExecuteA(NULL, "open", url->c_str(), NULL, NULL, SW_SHOWNORMAL);
   return 0;
 }
-#endif
 #endif
 
 class MainIter : public BuilderIter
