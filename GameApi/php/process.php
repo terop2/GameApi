@@ -770,6 +770,10 @@ echo "</div>";
 echo "<script>(function () {var sc=document.createElement('script');sc.async=true;sc.src='https://b.sf-syn.com/badge_js?sf_id=3771512&variant_id=sf';var p=document.getElementsByTagName('script')[0];p.parentNode.insertBefore(sc, p);})();";
 echo "</script>";
 echo "<!-- End SF Tag -->";
+echo "<a href=\"https://sellwithboost.com\" target=\"_blank\" rel=\"noopener noreferrer\">";
+echo "  <img src=\"https://sellwithboost.com/badge/listing.svg\" alt=\"Listed on Sell With boost\" style=\"height: 40px; width: auto;\" />";
+echo "</a>";
+
 echo "<footer style=\"position: static; margin-left: 27px;\" class=\"customfont\" id=\"gnomeauthor\">";
 echo "*) \"Mesh Garden Gnome\" (<a href=\"https://skfb.ly/D9Fq\">https://skfb.ly/D9Fq</a>) by Seth Berrier is licensed under Creative Commons Attribution (<a href=\"https://creativecommons.org/licenses/by/4.0/\" rel=\"nofollow\">https://creativecommons.org/licenses/by/4.0/</a>).";
 echo "</footer>";
@@ -843,7 +847,6 @@ echo "     reloadPage(\"unhandledrejection\");";
 echo "  }";
 echo "});";
 echo "</script>";
-
 
 
 echo "</body>\n";
