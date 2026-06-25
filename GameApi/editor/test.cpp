@@ -2159,7 +2159,6 @@ public:
 
 					      http_sleep();
 
-#ifdef STEAM
 #ifdef LINUX
 					      std::string url = std::string("http://") + http_server_address() + std::string("/gameapi_example.html");
 
@@ -2206,8 +2205,7 @@ public:
 					      std::string *url = new std::string(std::string("http://") + http_server_address() + std::string("/gameapi_example.html"));
 					      tasks_add(9999, &shell_exec_url_open, (void*)url);
 #endif
-#endif					      
-#ifndef STEAM					    
+#if 0
 #ifdef WINDOWS
 					      htmlfile = replace_string(htmlfile,'\n','@');
 					      homepage = replace_string(homepage,'\n','@');
