@@ -41,6 +41,13 @@ window.Module = {
 };
 window.Module.locateFile = function(path) { return "engine/" + path+"?"+data2; }
 
+canv.addEventListener("webglcontextlost", (event) => {
+    event.preventDefault();
+});
+canv.addEventListener("webglcontextrestored", (event) => {
+    location.replace(location.href);
+});
+
 var g_emscripten_running = false;
 function load_file()
 {
@@ -132,6 +139,7 @@ function load_emscripten()
     if (mobile) src="engine/engine_nothreads_highmem.js?"+data2;
     if (!crossOriginIsolated && !mobile) src="engine/engine_nothreads_highmem.js?"+data2;
     var script = document.createElement("script");
+    script.setAttribute("id","ourscript");
     script.setAttribute("src", src);
     document.getElementsByTagName("head")[0].appendChild(script);
 }
