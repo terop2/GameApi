@@ -157,7 +157,7 @@ function visit_counter_inc( $label )
    if (file_exists($filename)) {
       $data = file_get_contents($filename);
       $num = intval($data);
-   }
+   } else { return; }
    $num = $num + 1;
    $num_str = strval( $num );
    file_put_contents( $filename, $num_str );   

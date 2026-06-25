@@ -26,7 +26,7 @@ int hhhh_gggg=1;
 
 //#define RELOAD_TEST 1
 
-//#define LOD_LEVEL_TEXTURE_REDUCTION_TEST 1
+#define LOD_LEVEL_TEXTURE_REDUCTION_TEST 1
 
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1

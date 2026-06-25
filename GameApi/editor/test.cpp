@@ -46,6 +46,11 @@ using namespace GameApi;
 #include <fcntl.h> 
 #include "GameApi_http.hh"
 
+#ifdef LINUX
+#include <dbus/dbus.h>
+#endif
+
+
 #define HTML_RUN_HTTP_SERVER_IMPL 1
 
 IMPORT extern GameApi::PAT gameapi_temp_dir;
@@ -2157,8 +2162,45 @@ public:
 #ifdef STEAM
 #ifdef LINUX
 					      std::string url = std::string("http://") + http_server_address() + std::string("/gameapi_example.html");
-					      std::string cmd = "xdg-open " + url;
-					      pthread_system(cmd.c_str());
+
+
+					      DBusError err;
+					      dbus_error_init(&err);
+
+					      DBusConnection *conn =
+						dbus_bus_get(DBUS_BUS_SESSION, &err);
+					      if (!conn) {
+						std::cout << "DBus connection failed!" << std::endl;
+						return;
+					      }
+					      DBusMessage *msg =
+						dbus_message_new_method_call(
+									     "org.freedesktop.portal.Desktop",
+									     "/org/freedesktop/portal/desktop",
+									     "org.freedesktop.portal.OpenURI",
+									     "OpenURI");
+					      const char *parrent = "";
+					      const char *url = url.c_str();
+					      DBusMessageIter iter;
+					      dbus_message_iter_init_append(msg, &iter);
+					      dbus_message_iter_append_basic(&iter,DBUS_TYPE_STRING, &parent);
+					      dbus_message_iter_append_basic(&iter,DBUS_TYPE_STRING, &uri);
+					      DBusMessageIter dict;
+					      dbus_message_iter_open_container(&iter,DBUS_TYPE_ARRAY,"{sv}", &dict);
+					      dbus_message_iter_close_container(&iter, &dict);
+					      DBusMessage *reply =
+						dbus_connection_send_with_reply_and_block(conn,msg,-1,&err);
+					      dbus_message_unref(msg);
+					      if (!reply)
+						{
+						  std::cout << "Error sending dbus message!" << std::endl;
+						  return;
+						}
+					      
+
+					      
+					      //std::string cmd = "xdg-open " + url;
+					      //pthread_system(cmd.c_str());
 #endif
 #ifdef WINDOWS
 					      std::string *url = new std::string(std::string("http://") + http_server_address() + std::string("/gameapi_example.html"));
