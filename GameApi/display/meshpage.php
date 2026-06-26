@@ -935,7 +935,6 @@ echo "Terms and conditions:<p>";
 echo "<ul>";
 echo "<li>You have explicit permission to use gameapi builder and <?php echo $sitename ?> for creating 3d model, the node graph, and deploy the end result to a web site of your choice. From builder tool you also have our permission to take screengrabs and videos using external screen grabbing software.";
 echo "<li>You are not allowed to add copyright infringing content to any url slots inside builder tool. While builder can filter out some of that usage, the checks are not perfect and if that happens, we basically cannot do anything to protect our end users from the content owner's legal actions";
-echo "<li>For children at ages 10-18 years old, gameapi builder provides safe learning environment where it is difficult to do large mistakes like publishing sexual material, copyright infringements or racist brainwashing.";
 echo "<li>GameApi builder and <?php echo $sitename ?> web site does not create additional communication channels for human communication. This is to ensure that our end users do not suffer communication overload";
 echo "<li><?php echo $sitename ?> is not a social media platform. Correct designation is \"Content Creation Tool Provider\" and  \"Web Publishing Enabler\" and also \"Content Publisher\"";
 echo "<li>Standard disclaimers apply, no warranty or ability to return purchased material";
