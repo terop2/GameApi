@@ -4113,7 +4113,9 @@ EXPORT GameApi::W GameApi::GuiApi::license_dialog(std::vector<std::string> filen
   W but_2 = center_align(but_1, size_x(bm_4)/2);
   W but_3 = center_y(but_2, 60.0);
   W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
-  W but_41 = highlight(but_4);
+  W insert = empty();
+  W but_40 = tooltip(but_4,insert,"Fill in license information first",atlas,atlas_bm);
+  W but_41 = highlight(but_40);
   W but_5 = layer(but_41, but_3);
   W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
   next_button = but_6;
