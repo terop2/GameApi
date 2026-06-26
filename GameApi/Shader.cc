@@ -327,7 +327,7 @@ void Program::print_log()
   }
 }
 Program *current_program=0;
-extern std::map<Program*,Program*> program_map;
+extern std::unordered_map<Program*,Program*> program_map;
 void Program::use()
 {
   /*
@@ -697,7 +697,7 @@ void Program::set_var(const char *name, const std::vector<Point> &v)
 }
 void Program::print_locs()
 {
-  std::map<uint32_t, int>::iterator i = locs.begin();
+  std::unordered_map<uint32_t, int>::iterator i = locs.begin();
   int ii =0;
   for(;i!=locs.end();i++)
     {
@@ -709,7 +709,7 @@ void Program::print_locs()
 }
 void Program::clean_map()
 {
-  std::map<uint32_t, int>::iterator i = locs.begin();
+  std::unordered_map<uint32_t, int>::iterator i = locs.begin();
   for(;i!=locs.end();)
     {
       std::pair<uint32_t,int> p = *i;
@@ -6564,7 +6564,7 @@ bool g_shader_cache_disable=false;
 
 bool g_shader_from_cache = false;
 
-std::map<Program*,Program*> program_map;
+std::unordered_map<Program*,Program*> program_map;
 
 int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {

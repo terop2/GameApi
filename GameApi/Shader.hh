@@ -26,7 +26,7 @@
 #include <sstream>
 #include "VectorTools.hh"
 #include <algorithm>
-#include <map>
+#include <unordered_map>
 #include "GraphI.hh"
 
 struct Attrib
@@ -115,10 +115,10 @@ public: // uniform variable
   void clean_map();
 public:
   ProgramPriv *priv;
-  std::map<uint32_t, int> locs;
-  std::map<Low_GLint, Matrix> cache;
-std::map<Low_GLint,float> g_setvar_cache;
-  std::map<Low_GLint,int> g_intvar_cache;
+  std::unordered_map<uint32_t, int> locs;
+  std::unordered_map<Low_GLint, Matrix> cache;
+std::unordered_map<Low_GLint,float> g_setvar_cache;
+  std::unordered_map<Low_GLint,int> g_intvar_cache;
 };
 
 class TestVertexShader : public ShaderSpec

@@ -19345,6 +19345,7 @@ void splitter_iter2(void *arg)
 
   bool rejected_iter=false;
 
+#ifdef EMSCRIPTEN
   double t = emscripten_get_now();
   if (t!=last_time) {
     last_time = t;
@@ -19356,7 +19357,7 @@ void splitter_iter2(void *arg)
 	rejected_iter = true;
       }
   }
-  
+#endif  
   
   //static int bb=0;
   //bb++;
