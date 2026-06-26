@@ -23050,16 +23050,15 @@ bool ComparePTSObj_y_matrix(int a, int b)
   Matrix m1 = g_pts_matrix->Index(a); //*ggg_in_MV*ggg_in_T;
   Matrix m2 = g_pts_matrix->Index(b); //*ggg_in_MV*ggg_in_T;
 
-  Point local(0.0f,0.0f,0.0f);
-  Point world1 = local * m1;
-  Point world2 = local * m2;
-
+  Point world1 = m1.get_translate();
+  Point world2 = m2.get_translate(); 
+  
   static Matrix m;
   if (g_needs_update) {
     m = ggg_in_MV * ggg_in_T;
     g_needs_update=false;
   }
-    
+  
   Point view1 = world1 * m;
   Point view2 = world2 * m; 
 
@@ -23292,6 +23291,18 @@ bool compare_matrix(Matrix m1, Matrix m2)
   return false;
 }
 
+void insertion_sort(std::vector<int>& a, bool (*Compare)(int a, int b)) {
+    for (int i = 1; i < (int)a.size(); i++) {
+        int key = a[i];
+        int j = i - 1;
+        while (j >= 0 && Compare(key,a[j])) {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = key;
+    }
+}
+
 class BlockPTS2 : public PointsApiPoints
 {
 public:
@@ -23320,7 +23331,8 @@ public:
 	allpoints.push_back(i);
       }
     g_pts = points;
-    std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y);
+    //std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y);
+    insertion_sort(allpoints,ComparePTSObj_y);
   }
 
   float calc_pos(int p) const
@@ -23480,7 +23492,8 @@ public:
 	allpoints.push_back(i);
       }
     g_pts_matrix = points;
-    std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y_matrix);
+    //std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y_matrix);
+    insertion_sort(allpoints,ComparePTSObj_y_matrix);
   }
   
   virtual void Prepare() {

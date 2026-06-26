@@ -132,7 +132,7 @@ all:
 #-s MAXIMUM_MEMORY=4GB -s ALLOW_MEMORY_GROWTH=1  // doesnt work in firefox.
 #-fsanitize=address (causes slowness/fps broken)
 
-PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=8 -pthread
+PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=12 -pthread
 
 memsanitizer = -s SAFE_HEAP=1 -s MALLOC=emmalloc
 memsanitizer2 =

@@ -1499,7 +1499,7 @@ public:
 	  s2=std::min(std::min(int(g_license_urls.size()),int(g_license_authors.size())),s2);
 	  for(int i=0;i<s2;i++) {
 	    if (g_license_urls[i]=="")
-	      g_license_urls[i] = "https://tpgames.org/NO_LICENSE.txt";
+	      g_license_urls[i] = "https://meshpage.org/assets/NO_LICENSE.txt";
 	    if (g_license_authors[i]=="")
 	      g_license_authors[i]= "LoremIpsum";
 	  }

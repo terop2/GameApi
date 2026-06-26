@@ -427,6 +427,16 @@ Matrix operator*(const Matrix &m1, const Matrix &m2)
 
 bool Matrix::has_nan(const Matrix &m)
 {
+  const float* x = m.matrix;
+
+  for (int i = 0; i < 16; i++)
+  {
+    if (x[i] != x[i])
+      return true;
+  }
+
+  return false;
+#if 0  
   if (std::isnan(m.matrix[0])) return true;
   if (std::isnan(m.matrix[1])) return true;
   if (std::isnan(m.matrix[2])) return true;
@@ -460,6 +470,7 @@ bool Matrix::has_nan(const Matrix &m)
   if (std::isnan(-m.matrix[14])) return true;
   if (std::isnan(-m.matrix[15])) return true;
   return false;
+#endif
 }
 
 Matrix Matrix::Zero()
