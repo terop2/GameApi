@@ -724,12 +724,12 @@ void Program::clean_map()
 }
 uint32_t Program::unique_id(const char *name)
 {
-  static int lab=0;
-  lab++;
-  if (lab>40) {
-    clean_map();
-    lab=0;
-  }
+  //static int lab=0;
+  //lab++;
+  //if (lab>40) {
+  //  clean_map();
+  //  lab=0;
+  //}
   //print_locs();
   const uint64_t fnv_prime = 1099511628211u;
   uint64_t hash = 14695981039346656037u;
