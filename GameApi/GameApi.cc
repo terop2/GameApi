@@ -18376,6 +18376,7 @@ public:
   }
   virtual void RejectedIter()
   {
+#if 0
     Envi_2 *env = (Envi_2*)&envi;
 
     GameApi::MainLoopApi::Event e;
@@ -18402,6 +18403,7 @@ public:
       }
 
     env->ev->mainloop_api.swapbuffers();
+#endif
   }
   virtual int Iter()
   {
@@ -19084,9 +19086,11 @@ public:
       //ev.mainloop_api.delay(10);
     }
 #else
-    if (!g_new_blocker_block)
+    if (!g_new_blocker_block) {
+      std::cout << "SetMainLoop: blocker_iter(env)" << std::endl;
       emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,1); // 0,1
       //emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
+    }
     else
       g_pending_blocker_env = env;
 #endif
@@ -19329,20 +19333,34 @@ int g_splitter_fps = 0;
 
 int g_browser_mode=0;
 
+double last_time = -1.0;
+int calls_this_frame = 0;
+
 Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
 //bool splitter_iter2(double time, void *arg)
 {
   int mode=detect_browser_render_mode();
   g_browser_mode = mode;
-  
+
   bool rejected_iter=false;
-  static int bb=0;
-  bb++;
-  if (bb>=mode) { bb=0; }
-  else {
-    rejected_iter=true;
+
+  double t = emscripten_get_now();
+  if (t!=last_time) {
+    last_time = t;
+    calls_this_frame = 1;
+  } else {
+    calls_this_frame++;
+    if (calls_this_frame>1)
+      {
+	rejected_iter = true;
+      }
   }
+  
+  
+  //static int bb=0;
+  //bb++;
+  //if (bb % 2==0) rejected_iter=true;
   //std::cout << "Mode:" << bb << " " << mode << " " << rejected_iter << std::endl;
 
   
@@ -19363,11 +19381,11 @@ void splitter_iter2(void *arg)
     return;
   }
   if (!blk2) { std::cout << "FAIL: no blk2" << std::endl; return; }  
-  //if (rejected_iter)
-  //  {
-  //    blk2->RejectedIter();
-  //    return;
-  //  }
+  if (rejected_iter)
+    {
+      blk2->RejectedIter();
+      return;
+    }
   int blocker_exit_code = blk2->Iter();
   if (blocker_exit_code!=-1) 
     {
@@ -19382,6 +19400,7 @@ void splitter_iter2(void *arg)
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
       if (!next->NoMainLoop()) {
+	std::cout << "SetMainLoop: splitter_iter2(next)" << std::endl;
 	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1); // 0,1
 	//emscripten_request_animation_frame_loop(splitter_iter3, (void*)next);
       }
@@ -19413,6 +19432,7 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
 #else
   if (spl2->NoMainLoop()) { } else {
     //emscripten_request_animation_frame_loop(splitter_iter2,(void*)spl2);
+      std::cout << "SetMainLoop: splitter_iter2(spl2)" << std::endl;
     emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1); // 0.1
     //emscripten_request_animation_frame_loop(splitter_iter3, (void*)spl2);
   }
