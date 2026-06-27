@@ -531,6 +531,10 @@ public:
     float val0 = f->Field(p);
     return val0 < val;
   }
+  Color ColorValue(Point p) const
+  {
+    return Color(f->BaseColor(p));
+  }
 private:
   FloatScene *f;
   float val;
@@ -598,6 +602,129 @@ GameApi::VX GameApi::FloatSceneApi::fs_to_vx(EveryApi &ev,int sx, int sy, int sz
   //FloatScene *scene = find_float_scene(e,obj);
   //return add_int_voxel(e, new InverseImage3D(sx,sy,sz,ssx,ssy,ssz,scene,pos));
 }
+
+class SplitByColorVoxel : public Voxel<int>
+{
+public:
+  SplitByColorVoxel(Voxel<int> &vx) : vx(vx) { }
+  virtual int SizeX() const { return vx.SizeX(); }
+  virtual int SizeY() const { return vx.SizeY(); }
+  virtual int SizeZ() const { return vx.SizeZ(); }
+  virtual int Map(int x, int y, int z) const
+  {
+    int vox = vx.Map(x,y,z);
+    if (vox<0) return vox;
+    unsigned int color = vx.Color(x,y,z);
+    //std::cout << "Color:" << std::hex << color << " " << std::dec << myvec_inv[color] << std::endl;
+    return myvec_inv[color];
+    //int s = myvec.size();
+    //for(int i=0;i<s;i++)
+    //  {
+    //if (myvec[i]==color) return i;
+    // }
+    //return -1;
+  }
+  virtual unsigned int Color(int x, int y, int z) const { return 0xffffffff; }
+  virtual Vector Normal(int x, int y, int z) const { Vector v{0.0,0.0,-400.0}; return v; }
+  void Collect(CollectVisitor &vis)
+  {
+    vx.Collect(vis);
+    vis.register_obj(this);
+  }
+  void CleanPrepare() { }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+  
+  void Prepare()
+  {
+    vx.Prepare();
+    int sx = vx.SizeX();
+    int sy = vx.SizeY();
+    int sz = vx.SizeZ();
+    myvec.push_back(0xff000000);
+    for(int z=0;z<sz;z++)
+      for(int y=0;y<sy;y++)
+	for(int x=0;x<sx;x++)
+	  {
+	    int vox = vx.Map(x,y,z);
+	    if (vox<0) continue;
+	    unsigned int color = vx.Color(x,y,z);
+	    int s = myvec.size();
+	    bool found = false;
+	    for(int i=0;i<s;i++)
+	      {
+		if (myvec[i]==color) { found=true; break; }
+	      }
+	    if (!found) { myvec.push_back(color); myvec_inv[color]=myvec.size()-1; }
+	  }
+  }
+  
+public:
+  Voxel<int> &vx;
+  std::vector<unsigned int> myvec;
+  mutable std::map<unsigned int,int> myvec_inv;
+};
+
+
+GameApi::ML GameApi::FloatSceneApi::fs_to_ml4(EveryApi &ev, int sx, int sy, int sz,
+					      float ssx, float ssy, float ssz,
+					      FS obj,
+					      float pos,
+					      float sx1, float sy1, float sz1,
+					      float border_width, unsigned int border_color)
+{
+  GameApi::MT mat = ev.materials_api.colour_material(ev,1.0,true);
+  return fs_to_ml3(ev,sx,sy,sz,ssx,ssy,ssz,obj,pos,mat,sx1,sy1,sz1,border_width,border_color);
+}
+
+GameApi::ML GameApi::FloatSceneApi::fs_to_ml3(EveryApi &ev, int sx, int sy, int sz,
+					      float ssx, float ssy, float ssz,
+					      FS obj,
+					      float pos,
+					      MT mat,
+					      float sx1, float sy1, float sz1,
+					      float border_width, unsigned int border_color)
+{
+  std::vector<GameApi::P> vec;
+  float start_x = 0.0;
+  float end_x = ssx/float(sx);
+  start_x=-end_x/2.0;
+  end_x/=2.0;
+
+  float start_y = 0.0;
+  float end_y = ssy/float(sy);
+  start_y=-end_y/2.0;
+  end_y/=2.0;
+
+  float start_z = 0.0;
+  float end_z = ssz/float(sz);
+  start_z=-end_z/2.0;
+  end_z/=2.0;
+
+  GameApi::P p = ev.polygon_api.cube(0.0,end_x-start_x,0.0,end_y-start_y,0.0,end_z-start_z);
+  GameApi::VX vx = fs_to_vx(ev,sx,sy,sz,ssx,ssy,ssz,obj,pos);
+  Voxel<int> *vx0 = find_int_voxel(e,vx);
+  SplitByColorVoxel *vx1 = new SplitByColorVoxel(*vx0);
+  vx1->Prepare();
+  std::vector<unsigned int> &myvec = vx1->myvec;
+  int s = myvec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p2 = ev.polygon_api.color(p,myvec[i]);
+      vec.push_back(p2);
+      //std::cout << "Color:" << std::hex << myvec[i] << std::dec << std::endl;
+    }
+  GameApi::VX vx2 = add_int_voxel(e,vx1);
+  GameApi::OVX I3=ev.voxel_api.vx_to_ovx(vx2,vec);
+  GameApi::OVX I4=ev.voxel_api.remove_not_enabled(I3);
+  GameApi::OVX I40=ev.voxel_api.remove_colours(I4);
+  //GameApi::OVX I41=ev.voxel_api.resize_voxels(I40,vx2);
+  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I40,mat,5.0,5.0,5.0,border_width*100.0, border_color);
+
+  return I6;
+}
 GameApi::ML GameApi::FloatSceneApi::fs_to_ml(EveryApi &ev,int sx, int sy, int sz,
 					       float ssx,float ssy,float ssz,
 					       FS obj,
@@ -626,6 +753,7 @@ GameApi::ML GameApi::FloatSceneApi::fs_to_ml(EveryApi &ev,int sx, int sy, int sz
   
   vec.push_back(ev.polygon_api.cube(start_x,end_x,start_y,end_y,start_z,end_z));
   GameApi::VX vx = fs_to_vx(ev,sx,sy,sz,ssx,ssy,ssz,obj,pos);
+  
   GameApi::ARR arr = ev.voxel_api.voxel_instancing(vx,1,-sx1/2,sx1/2,-sy1/2,sy1/2,-sz1/2,sz1/2);
   ArrayType *arr2 = find_array(e,arr);
   std::vector<int> I5= arr2->vec;

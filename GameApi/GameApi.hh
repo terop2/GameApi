@@ -1393,6 +1393,27 @@ private:
 };
 #endif
 
+#if 0
+class CurvePathApi
+{
+public:
+  CD constant(float time, float val);
+  CD linear_move(CD prev, float time, float delta);
+  CD quadratic_move(CD prev, float time, float delta_pos, float end_delta_pos);
+  CD cos_circular_move(float time, float center, float radius, float start_angle, float end_angle);
+  CD sin_circular_move(float time, float center, float radius, float start_angle, float end_angle);
+  CD cd_time_seq(CD a1, CD a2);
+  CD cd_time_seq_arr(std::vector<CD> vec);
+  CD cd_repeat(CD cd);
+  
+  CP xyz_combine(CD x, CD y, CD z);  
+  CP cp_time_seq(CP a1, CP a2);
+  CP cp_time_seq_arr(std::vector<CP> vec);
+  CP cp_repeat(CP cp);
+  MN cp_to_movement(CP cp);
+};
+#endif
+
 #ifdef F_CURVE_API
 class CurveApi
 {
@@ -2777,6 +2798,20 @@ public:
 		float pos,
 	      //std::vector<P> vec,
 	      MT mat, float sx1, float sy1, float sz1);
+  ML fs_to_ml3(EveryApi &ev, int sx, int sy, int sz,
+		float ssx, float ssy, float ssz,
+		FS obj,
+		float pos,
+	      //std::vector<P> vec,
+	       MT mat, float sx1, float sy1, float sz1,
+	       float border_width, unsigned int border_color);
+  ML fs_to_ml4(EveryApi &ev, int sx, int sy, int sz,
+		float ssx, float ssy, float ssz,
+		FS obj,
+		float pos,
+	      //std::vector<P> vec,
+	       float sx1, float sy1, float sz1,
+	       float border_width, unsigned int border_color);
   ML fs_to_ml2(EveryApi &ev, int sx, int sy, int sz,
 		float ssx, float ssy, float ssz,
 		FS obj,
