@@ -2812,6 +2812,20 @@ public:
 	      //std::vector<P> vec,
 	       float sx1, float sy1, float sz1,
 	       float border_width, unsigned int border_color);
+  ML o_to_ml3(EveryApi &ev, int sx, int sy, int sz,
+		float ssx, float ssy, float ssz,
+		O obj,
+		float pos,
+	      //std::vector<P> vec,
+	       MT mat, float sx1, float sy1, float sz1,
+	       float border_width, unsigned int border_color);
+  ML o_to_ml4(EveryApi &ev, int sx, int sy, int sz,
+		float ssx, float ssy, float ssz,
+		O obj,
+		float pos,
+	      //std::vector<P> vec,
+	       float sx1, float sy1, float sz1,
+	       float border_width, unsigned int border_color);
   ML fs_to_ml2(EveryApi &ev, int sx, int sy, int sz,
 		float ssx, float ssy, float ssz,
 		FS obj,
