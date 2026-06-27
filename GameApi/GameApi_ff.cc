@@ -679,6 +679,69 @@ GameApi::ML GameApi::FloatSceneApi::fs_to_ml4(EveryApi &ev, int sx, int sy, int 
   return fs_to_ml3(ev,sx,sy,sz,ssx,ssy,ssz,obj,pos,mat,sx1,sy1,sz1,border_width,border_color);
 }
 
+GameApi::ML GameApi::FloatSceneApi::o_to_ml4(EveryApi &ev, int sx, int sy, int sz,
+					      float ssx, float ssy, float ssz,
+					      O obj,
+					      float pos,
+					      float sx1, float sy1, float sz1,
+					      float border_width, unsigned int border_color)
+{
+  GameApi::MT mat = ev.materials_api.colour_material(ev,1.0,true);
+  return o_to_ml3(ev,sx,sy,sz,ssx,ssy,ssz,obj,pos,mat,sx1,sy1,sz1,border_width,border_color);
+}
+
+
+GameApi::ML GameApi::FloatSceneApi::o_to_ml3(EveryApi &ev, int sx, int sy, int sz,
+					     float ssx, float ssy, float ssz,
+					     O obj,
+					     float pos,
+					     MT mat,
+					     float sx1, float sy1, float sz1,
+					     float border_width, unsigned int border_color)
+{
+
+  std::vector<GameApi::P> vec;
+  float start_x = 0.0;
+  float end_x = ssx/float(sx);
+  start_x=-end_x/2.0;
+  end_x/=2.0;
+
+  float start_y = 0.0;
+  float end_y = ssy/float(sy);
+  start_y=-end_y/2.0;
+  end_y/=2.0;
+
+  float start_z = 0.0;
+  float end_z = ssz/float(sz);
+  start_z=-end_z/2.0;
+  end_z/=2.0;
+
+  GameApi::P p = ev.polygon_api.cube(0.0,end_x-start_x,0.0,end_y-start_y,0.0,end_z-start_z);
+  GameApi::VX vx = ev.voxel_api.blit_voxel(obj,sx,sy,sz,-ssx/2,ssx/2,-ssy/2,ssy/2,-ssz/2,ssz/2,-1,0);
+  //GameApi::VX vx = fs_to_vx(ev,sx,sy,sz,ssx,ssy,ssz,obj,pos);
+  Voxel<int> *vx0 = find_int_voxel(e,vx);
+  SplitByColorVoxel *vx1 = new SplitByColorVoxel(*vx0);
+  vx1->Prepare();
+  std::vector<unsigned int> &myvec = vx1->myvec;
+  int s = myvec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p2 = ev.polygon_api.color(p,myvec[i]);
+      vec.push_back(p2);
+      //std::cout << "Color:" << std::hex << myvec[i] << std::dec << std::endl;
+    }
+  GameApi::VX vx2 = add_int_voxel(e,vx1);
+  GameApi::OVX I3=ev.voxel_api.vx_to_ovx(vx2,vec);
+  GameApi::OVX I4=ev.voxel_api.remove_not_enabled(I3);
+  GameApi::OVX I40=ev.voxel_api.remove_colours(I4);
+  //GameApi::OVX I41=ev.voxel_api.resize_voxels(I40,vx2);
+  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I40,mat,5.0,5.0,5.0,border_width*100.0, border_color);
+
+  return I6;
+
+}
+
+
 GameApi::ML GameApi::FloatSceneApi::fs_to_ml3(EveryApi &ev, int sx, int sy, int sz,
 					      float ssx, float ssy, float ssz,
 					      FS obj,

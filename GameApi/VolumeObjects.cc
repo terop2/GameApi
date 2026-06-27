@@ -202,6 +202,58 @@ bool VolumeEffect::Frame(float time)
   return false;
 }
 
+void hsv_to_rgb(float h, float s, float v, float &r, float &g, float &b)
+{
+    float i = floor(h * 6.0f);
+    float f = h * 6.0f - i;
+
+    float p = v * (1.0f - s);
+    float q = v * (1.0f - f * s);
+    float t = v * (1.0f - (1.0f - f) * s);
+
+    switch ((int)i % 6)
+    {
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        case 5: r = v; g = p; b = q; break;
+    }
+}
+
+Color MandelBulb::ColorValue(Point px) const
+{
+
+  
+  Point a_p = px;
+  a_p.x/=300.0; 
+  a_p.y/=300.0; 
+  a_p.z/=300.0;
+  Point a_p2 = a_p;
+  //float dz = 1.0;
+  //float m = Vector::DotProduct(a_p,a_p);
+  int i=0;
+  float sum=0.0f;
+  float dr = 1.0f;
+  float r;
+  for(;i<iterations;i++)
+    {
+      r = a_p.Dist();
+      dr = 8.0f * pow(r,7.0f)*dr+1.0f;
+      a_p = Step(a_p)+a_p2;
+      sum+=r;
+      if (r>4.0) break;
+    }
+  float dist = fabs(0.5f * log(r) * r / dr);
+  float brightness = fabs(exp(-dist*20.0f));
+  float hue = fabs(fmod(log(dist) * 0.5f,1.0f));
+  float density = fabs(1.0f/(1.0f + dist * 50.0f));
+  float rr,gg,bb;
+  hsv_to_rgb(hue*0.1,density*5.0,1.0,rr,gg,bb);
+  return Color(rr*brightness,gg*brightness,bb*brightness,1.0f);
+}
+
 bool MandelBulb::Inside(Point px) const
 {
   Point a_p = px;
@@ -213,11 +265,13 @@ bool MandelBulb::Inside(Point px) const
   //float m = Vector::DotProduct(a_p,a_p);
   for(int i=0;i<iterations;i++)
     {
+      
       a_p = Step(a_p)+a_p2;
       if (a_p.Dist()>4.0) break;
     }
   return (a_p.Dist()<4.0);
 }
+
 
 Point MandelBulb::Step(Point w)
 {
