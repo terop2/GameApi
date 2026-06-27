@@ -88,6 +88,20 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "ev", "20","20","20", "800.0", "800.0", "800.0", "", "0.0", "", "800.0", "800.0", "800.0" },
 			 "ML", "float_scene_api", "fs_to_ml"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::fs_to_ml3,
+			 "fs_ml3",
+			 { "ev", "sx", "sy", "sz", "ssx", "ssy", "ssz", "obj", "pos", "material", "sx1", "sy1", "sz1", "border_width", "border_color" },
+			 { "EveryApi&", "int","int","int", "float", "float", "float", "FS", "float", "MT", "float", "float", "float", "float", "unsigned int" },
+			 { "ev", "20","20","20", "800.0", "800.0", "800.0", "", "0.0", "", "800.0", "800.0", "800.0", "0.0", "ff000000" },
+			 "ML", "float_scene_api", "fs_to_ml3"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::fs_to_ml4,
+			 "fs_ml4",
+			 { "ev", "sx", "sy", "sz", "ssx", "ssy", "ssz", "obj", "pos", "sx1", "sy1", "sz1", "border_width", "border_color" },
+			 { "EveryApi&", "int","int","int", "float", "float", "float", "FS", "float", "float", "float", "float", "float", "unsigned int" },
+			 { "ev", "20","20","20", "800.0", "800.0", "800.0", "", "0.0", "800.0", "800.0", "800.0", "0.0", "ff000000" },
+			 "ML", "float_scene_api", "fs_to_ml4"));
+
+  
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::fs_to_ml2,
 			 "fs_ml2",

@@ -21537,6 +21537,8 @@ private:
   float start_z, end_z;
   int false_value, true_value;
 };
+
+
 class EmptyVoxel : public Voxel<int>
 {
 public:
@@ -21766,6 +21768,7 @@ GameApi::VX GameApi::VoxelApi::blit_voxel(O object,
 				       start_z, end_z,
 				       false_value, true_value));
 }
+
 
 
 class VoxelToPTS : public CollectInterface
@@ -23511,6 +23514,8 @@ public:
     for(int i=0;i<s1;i++)
       {
 	spec.shapesize.shape = vx.WorldShapeIndex(i);
+
+	
 	for(int j=0;j<s2;j++)
 	  {
 	    spec.shapesize.size = vx.WorldSizeIndex(j);

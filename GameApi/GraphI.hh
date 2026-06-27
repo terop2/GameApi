@@ -4249,6 +4249,19 @@ public:
   virtual T Map(float val) const { return T(); }
 };
 
+class CurveDim
+{
+  virtual float Size() const=0;
+  virtual float Pos(float val) const=0;
+};
+
+class CurvePath
+{
+public:
+  virtual float Size() const=0;
+  virtual Point Pos(float val) const=0;
+};
+
 
 template<class T>
 class CurveI
