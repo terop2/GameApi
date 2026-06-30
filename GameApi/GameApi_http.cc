@@ -943,6 +943,13 @@ EXPORT std::vector<unsigned char> find_display_zip_file()
     if (!file_exists(filename))
       {
 	filename = path2.substr(0,pos) + "/../display/gameapi_display.zip";
+	if (!file_exists(filename))
+	  {
+	    filename = "/usr/share/gameapi_display.zip";
+	    if (!file_exists(filename)) {
+	      std::cout << "ERROR: gameapi_display.zip not found!" << std::endl;
+	    }
+	  }
       }
   }
 #endif
