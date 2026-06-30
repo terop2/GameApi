@@ -1817,6 +1817,7 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 
 		      
 		      if (fname==ptr->func_name) {
+			//std::cout << "FNAME:" << fname << std::endl;
 			if (params[ptr->param_num]!="@") {
 			  res.push_back(params[ptr->param_num]);
 			}

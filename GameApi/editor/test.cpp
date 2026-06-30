@@ -1434,11 +1434,13 @@ public:
     static std::string license_uid;
     bool next_stage=false;
     bool next_stage2=false;
+    //std::cout << !env->display_visible << " " << !env->license_dialog_visible << " " << display_button << std::endl;
     if (!env->display_visible && !env->license_dialog_visible && display_button)
       {
 
 	std::string uid = popup_uid;
 	std::string s = env->ev->mod_api.get_funcname(env->mod,0,uid);
+	//std::cout << "S=" << s << std::endl;
 	if (s=="save_deploy") {	
 	  env->license_dialog_visible = true;
 	  license_uid=uid;
@@ -1466,13 +1468,14 @@ public:
 	  g_license_filenames = std::vector<std::string>();
 	  g_license_urls=licenses; //std::vector<std::string>();
 	  g_license_authors = authors; //std::vector<std::string>();
+	  //std::cout << "urls_size:" << urls.size() << std::endl;
 	  int s2 = urls.size();
 	  for(int i=0;i<s2;i++) {
-	    std::cout << urls[i] << std::endl;
+	    //std::cout << urls[i] << std::endl;
 	    g_license_filenames.push_back(remove_prefix(urls[i]));
 
 	    if (urls[i].substr(urls[i].size()-4,4)==".zip") {
-	      std::cout << "ZIP HANDLING" << std::endl;
+	      //std::cout << "ZIP HANDLING" << std::endl;
 	      std::string contents = get_zip_license_file(*env->env,urls[i]);
 	      std::stringstream ss(contents);
 	      std::string line;
@@ -1531,7 +1534,8 @@ public:
 		}
 	      }
 	  }
-	  
+
+	  //std::cout << g_license_filenames.size() << ">0" << std::endl;
 	  if (g_license_filenames.size()>0) {
 	    env->license_dialog = env->gui->license_dialog(g_license_filenames, g_license_urls, g_license_authors, env->atlas, env->atlas_bm, env->atlas2, env->atlas_bm2,env->atlas3, env->atlas_bm3, env->license_dialog_next, env->license_dialog_cancel, env->license_dialog_canvas, env->license_dialog_canvas_area, env->license_dialog_scrollbar);
 	    env->gui->set_pos(env->license_dialog, 200, 100);
