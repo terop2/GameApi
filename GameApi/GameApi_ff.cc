@@ -892,3 +892,162 @@ private:
   std::function<float,unsigned int> f2;
 };
 #endif
+
+
+
+
+class RandomGameSeq : public MainLoopItem
+{
+public:
+  RandomGameSeq(float time_step,
+		Movement *move,
+		std::vector<MainLoopItem*> true_vec,
+		std::vector<MainLoopItem*> false_vec,
+		float perc,
+		int num_levels) : time_step(time_step),
+			      move(move),
+			      true_vec(true_vec),
+			      false_vec(false_vec),
+			      perc(perc), num_levels(num_levels)
+  {
+  }
+  std::vector<bool> choose()
+  {
+    std::vector<bool> res;
+    int s = std::min(true_vec.size(),false_vec.size());
+    Random r;
+    for(int i=0;i<s;i++)
+      {
+	float rn = float(r.next());
+	rn /= r.maximum();
+	rn *= perc;
+	rn /= 100.0f;
+	if (rn < 0.5f) res.push_back(false);
+	else res.push_back(true);
+      }
+    return res;
+  }
+  void timestep()
+  {
+    levels.push_back(choose());
+    if (levels.size()>num_levels)
+      {
+	levels.erase(levels.begin(),levels.begin()+(levels.size()-num_levels));
+      }
+  }
+
+  virtual void Collect(CollectVisitor &vis)
+  {
+    int s = std::min(true_vec.size(),false_vec.size());
+    for(int i=0;i<s;i++)
+      {
+	true_vec[i]->Collect(vis);
+	false_vec[i]->Collect(vis);
+      }
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare()
+  {
+    int s = std::min(true_vec.size(),false_vec.size());
+    for(int i=0;i<s;i++)
+      {
+	true_vec[i]->Prepare();
+	false_vec[i]->Prepare();
+      }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float time = e.time;
+    float delta_time = fmod(time,time_step);
+    float ddtime = delta_time - prev_time;
+
+    if (ddtime < 0.0f)
+      {
+	timestep();
+      }
+    prev_time = delta_time;
+
+    int ls = levels.size();
+    Matrix mat = Matrix::Identity();
+    for(int k=0;k<ls;k++)
+      { 
+	std::vector<bool> *vec = &levels[k];
+	MainLoopEnv ee = e;
+	ee.in_MV = e.in_MV * mat;
+	int s = std::min(true_vec.size(),false_vec.size());
+	for(int i=0;i<s;i++)
+	  {
+	    if (vec->operator[](i)==true)
+	      {
+		true_vec[i]->execute(ee);
+	      } else {
+	        false_vec[i]->execute(ee);
+	      }  
+	  }
+	mat = mat * move->get_whole_matrix(e.time, e.delta_time);
+	
+      }
+
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = std::min(true_vec.size(),false_vec.size());
+    for(int i=0;i<s;i++)
+      {
+	true_vec[i]->handle_event(e);
+	false_vec[i]->handle_event(e);
+      }
+  }
+  virtual std::vector<int> shader_id() {
+    int s = std::min(false_vec.size(),true_vec.size());
+    std::vector<std::vector<int> > vec;
+    for(int i=0;i<s;i++)
+      {
+	std::vector<int> sh = true_vec[i]->shader_id();
+	vec.push_back(sh);
+	std::vector<int> sh2 = false_vec[i]->shader_id();
+	vec.push_back(sh2);
+      }
+    std::vector<int> res;
+    int s1 = vec.size();
+    for(int i=0;i<s1;i++)
+      {
+	int s2 = vec[i].size();
+	for(int j=0;j<s2;j++)
+	  {
+	    res.push_back(vec[i][j]);
+	  }
+      }
+    return res;
+  }
+private:
+  float time_step;
+  Movement *move;
+  std::vector<MainLoopItem*> true_vec;
+  std::vector<MainLoopItem*> false_vec;
+  std::vector<std::vector<bool> > levels;
+  float perc;
+  int num_levels;
+  float prev_time = 0.0f;
+};
+
+
+GameApi::ML GameApi::MainLoopApi::random_game_seq(float time_step,
+						  MN mn,
+						  std::vector<ML> true_vec,
+						  std::vector<ML> false_vec,
+						  float perc,
+						  int num_levels)
+{
+  Movement *move = find_move(e,mn);
+  int s = std::min(true_vec.size(),false_vec.size());
+  std::vector<MainLoopItem*> true_vec2;
+  std::vector<MainLoopItem*> false_vec2;
+  for(int i=0;i<s;i++)
+    {
+      true_vec2.push_back(find_main_loop(e,true_vec[i]));
+      false_vec2.push_back(find_main_loop(e,false_vec[i]));
+    }
+  return add_main_loop(e, new RandomGameSeq(time_step,move,true_vec2,false_vec2, perc,num_levels));
+}
+						  
