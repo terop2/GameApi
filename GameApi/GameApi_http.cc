@@ -736,15 +736,6 @@ void set_http_server_htmlfile(std::string file)
 std::string gameapi_example(std::string homepage, std::string script, std::string date, bool transparent)
 {
   std::string example=
-"<?php\n"
-"  //header(\"Cross-Origin-Opener-Policy: same-origin\");\n"
-"  $id = $_GET[\"id\"];\n"
-"  $filename = \"./user_data/temp/tmp\" . $id . \".txt\";\n"
-"  $script = file_get_contents($filename);\n"
-"  $homepage = $_GET[\"homepage\"];\n"
-"  $new_script = str_replace(\"@\",\"\n\",$script);\n"
-"  $date = $_GET[\"date\"];\n"
-"  ?>\n"
 "<!DOCTYPE html>\n"
 "<html>\n"
 "  <head>\n"
@@ -899,9 +890,11 @@ example += "margin:0; padding:0; width: 820px; height: 620px;\"></canvas>\n"
 "  </body>\n"
 "</html -->\n"
 "\n"
-"  \n"
-																					     "}\n";
+  "  \n";
+  //	     "}\n";
 
+ script = deploy_replace_string(script,"\n","@");
+ 
  example= deploy_replace_string(example,"<?php echo $homepage ?>", homepage);
  example= deploy_replace_string(example,"<?php echo $new_script ?>", script);
  example= deploy_replace_string(example,"<?php echo $date ?>", date);
@@ -951,6 +944,7 @@ EXPORT std::vector<unsigned char> find_display_zip_file()
 	    }
 	  }
       }
+    std::cout << "Using gameapi_display.zip from dir " << filename << std::endl;
   }
 #endif
   std::vector<unsigned char> res;
