@@ -453,7 +453,6 @@ EXPORT void GameApi::MainLoopApi::fpscounter_swapbuffersready()
   MainLoopPriv *p = (MainLoopPriv*)priv;
   unsigned long long time = g_low->sdl->SDL_GetPerformanceCounter();
   s_time = time;
-  
 }
 
 
@@ -2876,8 +2875,17 @@ extern int async_pending_count;
 bool GameApi::MainLoopApi::seamless_iter()
 {
   LogoEnv *env = logo_env;
+  if (!env) return false;
+  GameApi::MainLoopApi::Event e;
+  while((e = env->ev->mainloop_api.get_event()).last==true)
+    {
+      env->ev->mainloop_api.event_ml(env->res, e);
+    }
+  
+  
   env->ev->mainloop_api.clear_3d_transparent();
   env->ev->mainloop_api.swapbuffers();
+  
   frame_count++;
   if (frame_count>300 ||async_pending_count==0) {
     return true;

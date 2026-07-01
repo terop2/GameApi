@@ -2157,7 +2157,7 @@ public:
 					      //std::string example = gameapi_example(homepage,htmlfile,ss.str(),transparent);
 					      //set_http_server_htmlfile(example);
 					      
-					      start_http_listening(filenames,contents,homepage,htmlfile,ss.str(),transparent);
+					      start_http_listening(filenames,contents,homepage,htmlfile,ss2.str(),transparent);
 
 					      http_sleep();
 
