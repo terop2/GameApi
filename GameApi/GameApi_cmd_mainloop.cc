@@ -164,6 +164,13 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "" },
 			 "ML", "mainloop_api", "timing_exit"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::random_game_seq,
+			 "rand_game_seq",
+			 { "time_step", "move", "true_vec", "false_vec", "perc", "num_levels" },
+			 { "float", "MN", "[ML]", "[ML]", "float", "int" },
+			 { "10.0", "", "", "", "0.5", "5" },
+			 "ML", "mainloop_api", "random_game_seq"));
+
 #if (ALL==1)||(HTML_URL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::html_url,
 			 "html_url",
