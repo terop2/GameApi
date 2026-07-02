@@ -910,6 +910,10 @@ public:
 			      false_vec(false_vec),
 			      perc(perc), num_levels(num_levels)
   {
+    int s = num_levels;
+    for(int i=0;i<s;i++)
+      timestep();
+    
   }
   std::vector<bool> choose()
   {
@@ -922,9 +926,11 @@ public:
 	rn /= r.maximum();
 	rn *= perc;
 	rn /= 100.0f;
+	//std::cout << rn << " ";
 	if (rn < 0.5f) res.push_back(false);
 	else res.push_back(true);
       }
+    //std::cout << std::endl;
     return res;
   }
   void timestep()
@@ -957,10 +963,23 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
-    float time = e.time;
+    int s = 2;
+    for(int i=s;i>=0;i--)
+      {
+	time_arr[i+1]=time_arr[i];
+      }
+    time_arr[0]=e.time;
+
+    float t = time_arr[2];
+    
+    
+    //if (e.delta_time < 1.0f && start_time<0.0f) { start_time = t; }
+    float time = t - start_time;
     float delta_time = fmod(time,time_step);
     float ddtime = delta_time - prev_time;
 
+    //std::cout << t << " " << time << " " << start_time << " " << delta_time << " " << ddtime << std::endl;
+    
     if (ddtime < 0.0f)
       {
 	timestep();
@@ -1029,6 +1048,8 @@ private:
   float perc;
   int num_levels;
   float prev_time = 0.0f;
+  float start_time = 0.0f;
+  float time_arr[3];
 };
 
 
