@@ -1141,7 +1141,7 @@ public:
 	    ||((ext=="jpg"||ext=="png"||ext=="peg")&&(drag_drop_ext=="jpg"||drag_drop_ext=="png"||drag_drop_ext=="peg"))
 	    
 	    ) {
-	  label=filename;
+	  label="@" + filename;
 	  changed=true;
 	  active=true;
 	} else {
