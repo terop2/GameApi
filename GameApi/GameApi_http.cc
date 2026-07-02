@@ -7,7 +7,13 @@
 #define MINIZ_HEADER_FILE_ONLY 1
 #include "zip_file.hpp"
 
+#ifdef LINUX
+#define USE_BROTLI 1
+#endif
 
+//#if USE_BROTLI
+//#define CPPHTTPLIB_BROTLI_SUPPORT
+//#endif
 #define CPPHTTPLIB_NO_EXCEPTIONS
 #include "httplib.h"
 
@@ -309,7 +315,7 @@ EXPORT void http_server(std::vector<std::string> filenames,
   
   httplib::Server *svr = new httplib::Server;
   g_http_server = svr;
-  
+
   int s = std::min(filenames.size(),contents.size());
 
   svr->Post("/stop", [&](const httplib::Request &req,
@@ -359,6 +365,26 @@ EXPORT void http_server(std::vector<std::string> filenames,
 	      {
 		g_wait_ongoing = false;
 		//std::cout << "path:" << req.path << std::endl;
+
+		if (req.has_header("Accept-Encoding") &&
+		    req.get_header_value("Accept-Encoding").find("br") != std::string::npos) {
+		for (int j=0;j<g_filenames.size();j++)
+		  {
+		    if ((std::string("/")+g_filenames[j])==req.path + ".br") {
+		      set_cors_headers(res);
+		      //bool b = handle_range_request(req,res,g_filenames,g_contents,req.path.substr(1));
+		      //if (!b) {
+			res.set_header("Content-Encoding","br");
+			std::string filename_without_br = g_filenames[j].substr(0,g_filenames[j].size()-3);
+			res.set_content(g_contents[j],choose_type(filename_without_br));
+			res.status = 200;
+			return;
+			//}
+		    }
+		  }
+		}
+		
+
 		for (int j=0;j<g_filenames.size();j++)
 		  {
 		    if ((std::string("/")+g_filenames[j])==req.path) {
@@ -367,7 +393,7 @@ EXPORT void http_server(std::vector<std::string> filenames,
 		      if (!b) {
 			res.set_content(g_contents[j],choose_type(g_filenames[j]));
 			res.status = 200;
-
+			return;
 		      }
 		    }
 		  }
