@@ -1422,9 +1422,10 @@ public:
     }
     last_time = time;
 
-
-    if (time<start_time) { Matrix m=Matrix::Identity(); return next?next->get_whole_matrix(time, delta_time):m; }
-    if (time>=end_time) { Matrix m=Matrix::Identity(); return Matrix::Translate(dx,dy,dz)*(next?next->get_whole_matrix(time,delta_time):m); }
+    //std::cout << "TIME:" << time-time_begin << std::endl;
+    
+    if (time-time_begin<start_time) { Matrix m=Matrix::Identity(); return next?next->get_whole_matrix(time, delta_time):m; }
+    if (time-time_begin>=end_time) { Matrix m=Matrix::Identity(); return Matrix::Translate(dx,dy,dz)*(next?next->get_whole_matrix(time,delta_time):m); }
     float d = time - time_begin- start_time;
     //if (fabs(end_time-start_time)>0.01)
       d/=(end_time-start_time);
