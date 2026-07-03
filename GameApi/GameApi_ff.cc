@@ -1049,7 +1049,7 @@ private:
   int num_levels;
   float prev_time = 0.0f;
   float start_time = 0.0f;
-  float time_arr[3];
+  float time_arr[5];
 };
 
 
