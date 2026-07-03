@@ -36,10 +36,10 @@ sizeopts = -s MINIMAL_RUNTIME=1 -s DYNAMIC_EXECUTION=0 -gline-tables-only
 ifeq ($(RELEASE),true)
   releaseopts = -Oz -s ASSERTIONS=2
 else
-  releaseopts = -Oz -g3 -s ASSERTIONS=2 --profiling-funcs
+  releaseopts = -O0 -s ASSERTIONS=2 --profiling-funcs
 endif
 
-glue_opts = -O3 -DNDEBUG -s SAFE_HEAP=0 -s STACK_OVERFLOW_CHECK=0
+glue_opts = -DNDEBUG -s SAFE_HEAP=0 -s STACK_OVERFLOW_CHECK=0
 
 
 # -Oz
