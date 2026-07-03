@@ -152,7 +152,9 @@ std::string deploy_curl_cmd()
 
     size_t last_slash = full_path.find_last_of('/');
     if (last_slash != std::string::npos) {
-      return "\"" + full_path.substr(0,last_slash) + "/curl\"";
+      if (file_exists(full_path.substr(0,last_slash)+"/curl")) {
+	return "\"" + full_path.substr(0,last_slash) + "/curl\"";
+      }
     }
   }
   return "curl";
