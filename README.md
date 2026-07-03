@@ -119,6 +119,19 @@ Android cmdline: (but requires sdl2 and freetype and libcurl compilation)
   make -f Makefile.android -j 8
   (cd cmdline4; ./ammake.sh)
 
+To compile for steam:
+ 1) there's ./steam_deploy.sh script for that purpose,
+    it creates the linux steam package as GameApiBuilder_rel.zip file.
+ 2) you need builder.tar.gz from https://meshpage.org/builder.tar.gz
+    to be decompressed to ~/cvs/GameApi/GameApi/editor/builder directory
+ 3) you need steam libs to ~/cvs/steam/sdk/ directory (can get it from steam
+    after registering (can take months to get access to the libs))
+ 4) in windows side, there's copy_to_steam.bat which copies _rel.zip package
+    to steam directories
+ 5) in windows side, there's copy_to_steam_win.bat which compiles and copies
+    the steam windows package to the steam directories.
+ 6) then normally steam's steampipegui needs to be run.
+
 
 ```
 
