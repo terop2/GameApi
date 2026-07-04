@@ -45684,3 +45684,20 @@ void HeavyWorkThread::execute()
   }
 }
 #endif
+
+class TimeSyncPrint : public MainLoopItemForward
+{
+public:
+  TimeSyncPrint(MainLoopItem *next) : MainLoopItemForward(*next) { }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopItemForward::execute(e);
+    std::cout << "MainLoopItem::MainLoopEnv::e.time=" << e.time << " guitime=" << e.time*10.0 << std::endl;
+  }
+  
+};
+GameApi::ML GameApi::MainLoopApi::print_time_sync(ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new TimeSyncPrint(item));
+}
