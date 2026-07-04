@@ -45715,12 +45715,13 @@ public:
   {
     if (e.type==0x300)
       {
-	std::cout << "MainLoopItem::MainLoopEnv::e.time=" << e_time << " guitime=" << e_time*10.0 << std::endl;
-	
+	std::cout << "MainLoopItem::MainLoopEnv::e.time=" << e_time << " guitime=" << e_time*10.0 << " gui_delta_time=" << (e_time-last_key_time)*10.0 << std::endl;
+	last_key_time = e_time;
       }
   }
 private:
-  float e_time;
+  float e_time=0.0f;
+  float last_key_time=0.0f;
 };
 GameApi::ML GameApi::MainLoopApi::key_press_print_time_sync(ML ml)
 {
