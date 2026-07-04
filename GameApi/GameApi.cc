@@ -19159,12 +19159,10 @@ EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML 
 #ifdef ANDROID
   ml = ev.mainloop_api.android_landscape_scale(ev,ml);
 #endif
-  if (g_user_id && std::string(g_user_id)==std::string("TeroPulkkinen")) {
-    ml = ev.texture_api.send_screenshots_via_key_to_server(ev,ml,'g',30.0, 15);
-    }
   Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, screen_x, screen_y);
   return add_splitter(e, spl);
 }
+
 
 #if 0
 class SplitterSeq : public Splitter
