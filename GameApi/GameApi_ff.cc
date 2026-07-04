@@ -904,7 +904,7 @@ public:
 		std::vector<MainLoopItem*> true_vec,
 		std::vector<MainLoopItem*> false_vec,
 		float perc,
-		int num_levels) : time_step(time_step),
+		int num_levels) : time_step(time_step/10.0f),
 			      move(move),
 			      true_vec(true_vec),
 			      false_vec(false_vec),
