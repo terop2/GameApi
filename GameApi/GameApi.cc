@@ -45701,3 +45701,29 @@ GameApi::ML GameApi::MainLoopApi::print_time_sync(ML ml)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new TimeSyncPrint(item));
 }
+
+class KeyPressTimeSyncPrint : public MainLoopItemForward
+{
+public:
+  KeyPressTimeSyncPrint(MainLoopItem *next) : MainLoopItemForward(*next) { }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopItemForward::execute(e);
+    e_time = e.time;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    if (e.type==0x300)
+      {
+	std::cout << "MainLoopItem::MainLoopEnv::e.time=" << e_time << " guitime=" << e_time*10.0 << std::endl;
+	
+      }
+  }
+private:
+  float e_time;
+};
+GameApi::ML GameApi::MainLoopApi::key_press_print_time_sync(ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new KeyPressTimeSyncPrint(item));
+}

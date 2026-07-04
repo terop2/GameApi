@@ -1355,6 +1355,12 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			{ "ML" },
 			{ "" },
 			"ML", "mainloop_api", "print_time_sync"));
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::key_press_print_time_sync,
+			"key_print_time_sync",
+			{ "ml" },
+			{ "ML" },
+			{ "" },
+			"ML", "mainloop_api", "key_press_print_time_sync"));
 #if (ALL==1)||(JOYSTICK_PRINTER==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::joystick_printer,
 			 "joy_printer_ml",

@@ -398,6 +398,7 @@ public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
   IMPORT ML print_time_sync(ML ml);
+  IMPORT ML key_press_print_time_sync(ML ml);
   IMPORT ML random_game_seq(float time_step,MN mn,std::vector<ML> true_vec,std::vector<ML> false_vec,float perc,int num_levels);
   //IMPORT ML reload_ml(void *next, P p, std::string name, int phase, P default_p, void *default_p_material, PTS pts, MS ms);
   IMPORT ML progress_bar_config(ML ml, bool progress_impl, bool max_impl, bool install_impl, float mult_ems0, float mult_ems1, float mult_ems2, float mult_builder);
