@@ -222,11 +222,14 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info_engine2(EveryApi &ev, FI f
       int yy = y*y_delta;
       int sx = i2->SizeX(); //ev.bitmap_api.size_x(bm);
       int sy = i2->SizeY(); //ev.bitmap_api.size_y(bm);
+      int advance_x = i2->AdvanceX();
       int ascender = i2->Ascender();
       int descender = i2->Descender();
       int height = i2->Height();
       FontAtlasGlyphInfo info2;
+      x+=left;
       info2.sx = sx;
+      info2.advance_x = advance_x;
       info2.sy = sy;
       info2.x = xx;
       info2.y = yy;
@@ -236,7 +239,7 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info_engine2(EveryApi &ev, FI f
       info2.descender = descender;
       info2.height = height;
       info->char_map[ch] = info2;
-      x+=ev.bitmap_api.size_x(bm)+3;      
+      x+=sx+3; /*ev.bitmap_api.size_x(bm)+3; */     
       if (atlas_sx < x) { atlas_sx = x; }
       if (atlas_sy < y*y_delta + top + ev.bitmap_api.size_y(bm)) { atlas_sy = y*y_delta + top + ev.bitmap_api.size_y(bm); }
 
@@ -382,6 +385,7 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std
       FontAtlasGlyphInfo info2;
       info2.sx = sx;
       info2.sy = sy;
+      info2.advance_x = ev.bitmap_api.size_x(bm);
       info2.x = xx;
       info2.y = yy;
       info2.top = top;
@@ -641,14 +645,16 @@ EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA at
 	}
 	//glyph(font, ch);
       int top = ii.top; //env->fonts[font.id].bm->bitmap_top(ch);
+      int left = ii.left;
       int asc = ii.ascender;
+      int wdt = ii.sx;
       int hgt = ii.height;
-      int adv = 0; //ii.left;
+      int adv = ii.advance_x; //ii.left;
       int desc = ii.descender;
       BitmapHandle *handle = find_bitmap(e,bm);
       Bitmap<Color> *col = find_color_bitmap(handle);
-      adv +=col->SizeX();
-      array->push_back(col, top,asc,hgt,adv,desc,ii.left);
+      //adv +=wdt;
+      array->push_back(col, top,asc,hgt,adv,desc,left);
     }
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = array;
@@ -673,6 +679,7 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas_from_string(std::string data)
       int ascender=0;
       int descender=0;
       int height=0;
+      int advance_x=0;
       ss >> sx;  
       ss >> sy; 
       ss >> x;
@@ -682,6 +689,7 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas_from_string(std::string data)
       ss >> ascender;    
       ss >> descender;   
       ss >> height;
+      ss >> advance_x;
       FontAtlasGlyphInfo i;
       i.sx = sx;
       i.sy = sy;
@@ -692,6 +700,7 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas_from_string(std::string data)
       i.ascender = ascender;
       i.descender = descender;
       i.height = height;
+      i.advance_x = advance_x;
       info->char_map[num] = i;
     }
   return add_font_atlas(e, info);
@@ -716,6 +725,7 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas(std::string filename)
       int ascender=0;
       int descender=0;
       int height=0;
+      int advance_x;
       ss >> sx;  
       ss >> sy; 
       ss >> x;
@@ -725,6 +735,7 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas(std::string filename)
       ss >> ascender;    
       ss >> descender;   
       ss >> height;
+      ss >> advance_x;
       FontAtlasGlyphInfo i;
       i.sx = sx;
       i.sy = sy;
@@ -735,6 +746,7 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas(std::string filename)
       i.ascender = ascender;
       i.descender = descender;
       i.height = height;
+      i.advance_x = advance_x;
       info->char_map[num] = i;
     }
   return add_font_atlas(e, info);
@@ -756,6 +768,7 @@ EXPORT void GameApi::FontApi::save_atlas_store_file(FtA atlas, std::string filen
 	ss << p.second.ascender << std::endl;
 	ss << p.second.descender << std::endl;
 	ss << p.second.height << std::endl;
+	ss << p.second.advance_x << std::endl;
       }
     std::string s = ss.str();
     std::vector<unsigned char,GameApiAllocator<unsigned char> > vec0(s.begin(),s.end());
@@ -779,6 +792,7 @@ EXPORT void GameApi::FontApi::save_atlas(FtA atlas, std::string filename)
       ss << p.second.ascender << std::endl;
       ss << p.second.descender << std::endl;
       ss << p.second.height << std::endl;
+      ss << p.second.advance_x << std::endl;
     }
   ss.close();
 }
