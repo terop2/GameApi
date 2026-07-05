@@ -535,7 +535,7 @@ public:
     int delta = -(topt[i]);
     if (y<delta) return def;
     if (y>=delta+vec[i]->SizeY()) return def;
-    if (x-lefts[i]-oldpixels<0) return def;
+    if (x -lefts[i]-oldpixels<0) return def;
     if (x-lefts[i]-oldpixels>=vec[i]->SizeX()) return def;
     return vec[i]->Map(x-lefts[i]-oldpixels,y-delta);
   }

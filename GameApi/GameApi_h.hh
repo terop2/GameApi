@@ -614,6 +614,7 @@ struct TBuffer
 struct FontAtlasGlyphInfo
 {
   int sx, sy;
+  int advance_x;
   int x,y;
   int top;
   int left=0;
