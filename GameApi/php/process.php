@@ -157,6 +157,7 @@ function visit_counter_inc( $label )
    if (file_exists($filename)) {
       $data = file_get_contents($filename);
       $num = intval($data);
+      if ($num<10000) { return; }
    } else { return; }
    $num = $num + 1;
    $num_str = strval( $num );
@@ -269,7 +270,7 @@ echo "<li><b>Combining multiple 3d models</b> to the same scene\n";
 echo "<li><b>Moving and animating</b> 3d models\n";
 echo "<li><b>Changing colours</b> and materials of the 3d models\n";
 echo "<li>Node graph based <b>builder tool</b> for editing codegen scripts\n";
-echo "<li>Drag and Drop support for assets in builder tool.\n";
+echo "<li><b>Drag and Drop support</b> for assets in builder tool.\n";
 echo "<li><b>Zoom/Rotate controls</b>, quake movements, wasd movement etc...\n";
 echo "</ul>\n";
 echo "</div>\n";
