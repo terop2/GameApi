@@ -10,16 +10,16 @@ public:
   FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, std::string homepage, int sx, int sy);
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
-  virtual int Left(long idx) const;
-  virtual int Top(long idx) const;
-  virtual int SizeX(long idx) const;
-  virtual int SizeY(long idx) const;
-  virtual unsigned int Map(long idx, int x, int y) const;
-  virtual int AdvanceX(long idx) const;
-  virtual int Ascender(long idx) const;
-  virtual int Descender(long idx) const;
-  virtual int Height(long idx) const;
-  void gen_glyph_data(long idx);
+  virtual int Left(long idx, bool is_outline=false) const;
+  virtual int Top(long idx, bool is_outline=false) const;
+  virtual int SizeX(long idx, bool is_outline=false) const;
+  virtual int SizeY(long idx, bool is_outline=false) const;
+  virtual unsigned int Map(long idx, int x, int y, bool is_outline=false) const;
+  virtual int AdvanceX(long idx, bool is_outline=false) const;
+  virtual int Ascender(long idx, bool is_outline=false) const;
+  virtual int Descender(long idx, bool is_outline=false) const;
+  virtual int Height(long idx, bool is_outline=false) const;
+  void gen_glyph_data(long idx, bool is_outline=false);
   struct Bezier2d {
     Point2d p1,p2,p3;
   };

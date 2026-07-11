@@ -20973,8 +20973,18 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() { Prepare(); }
-  virtual int SizeX() const { g_is_outline=true; int sx = impl->SizeX(idx); g_is_outline=false; return sx; }
-  virtual int SizeY() const { g_is_outline=true; int sy = impl->SizeY(idx) + impl->Descender(idx); g_is_outline=false; return sy; }
+  virtual int SizeX() const {
+    if (has_sx) return sx;
+    sx = impl->SizeX(idx,true);
+    has_sx = true;
+    return sx;
+  }
+  virtual int SizeY() const {
+    if (has_sy) return sy;
+    sy = impl->SizeY(idx,true) + impl->Descender(idx,true);
+    has_sy = true;
+    return sy;
+  }
   virtual Color Map(int x, int y) const
   {
     //std::cout << "outline::Map" << x << " " << y << std::endl;
@@ -20984,13 +20994,18 @@ public:
 #endif
     //#endif
     //std::cout << "outline::Map (mutex pass)" << x << " " << y << std::endl;
-    g_is_outline = true;
-    y-=impl->Descender(idx);
-    
+    if (has_descender)
+      {
+	y-=descender;
+      } else
+      {
+	descender = impl->Descender(idx,true);
+	has_descender=true;
+	y-=descender;
+      }
     if (y+0.5f>=curr_y && y<=curr_y+0.5f)
       {
 	int c = impl->IsPixelInside(outline_respair,x+0.5f,idx);
-    g_is_outline = false;
 //#ifndef EMSCRIPTEN
 #ifdef THREADS
     pthread_mutex_unlock(&mutex);
@@ -20998,7 +21013,6 @@ public:
 //#endif
     return Color(255,255,255,c);
 	//if (impl->IsPixelInside(outline_respair,x+0.5f,idx)) return Color(0xffffffff);
-    g_is_outline = false;
 //#ifndef EMSCRIPTEN
 #ifdef THREADS
     pthread_mutex_unlock(&mutex);
@@ -21015,7 +21029,6 @@ public:
     outline_respair = impl->ScanLineXCoord(active,outline_events,outline_monotonic,y+0.5f,idx);
     curr_y = y;
     int c = impl->IsPixelInside(outline_respair,x+0.5f,idx);
-    g_is_outline = false;
     //#ifndef EMSCRIPTEN
 #ifdef THREADS
     pthread_mutex_unlock(&mutex);
@@ -21032,13 +21045,11 @@ public:
     pthread_mutex_lock(&mutex);
 #endif
     //#endif
-    g_is_outline = true;
     outline = impl->outlines(idx);
     outline_monotonic = impl->make_monotonic(outline);
     outline_events = impl->convert_to_events(outline_monotonic);
     active=std::vector<int>();
     ctx = impl->ScanLineContextCreate();
-    g_is_outline = false;
     //#ifndef EMSCRIPTEN
 #ifdef THREADS
     pthread_mutex_unlock(&mutex);
@@ -21057,6 +21068,14 @@ private:
   FontInterfaceImpl *impl;
   long idx;
   mutable pthread_mutex_t mutex;
+  mutable bool has_sx=false;
+  mutable int sx;
+  mutable bool has_sy=false;
+  mutable int sy;
+  mutable bool has_descender=false;
+  mutable int descender;
+  mutable bool has_left=false;
+  mutable int left;
 };
 GameApi::BM GameApi::FontApi::outline_bm(FI font, std::string label)
 {
@@ -38174,7 +38193,7 @@ public:
       //std::cout << std::endl;
     }
   }
-  virtual int Left(long idx) const
+  virtual int Left(long idx, bool is_outline) const
   {
     int index = find_index(idx);
     if (index!=-1) {
@@ -38183,14 +38202,14 @@ public:
     return 0;
 
   }
-  virtual int Top(long idx) const { 
+  virtual int Top(long idx, bool is_outline) const { 
     int index = find_index(idx);
     if (index!=-1) {
       return m_top[index];
     }
     return 0;
   }
-  virtual int SizeX(long idx) const
+  virtual int SizeX(long idx, bool is_outline) const
   {
     int index = find_index(idx);
     if (index!=-1) {
@@ -38198,7 +38217,7 @@ public:
     }
     return 0;
   }
-  virtual int SizeY(long idx) const
+  virtual int SizeY(long idx, bool is_outline) const
   {
     int index = find_index(idx);
     if (index!=-1) {
@@ -38206,7 +38225,7 @@ public:
     }
     return 0;
   }
-  virtual int AdvanceX(long idx) const 
+  virtual int AdvanceX(long idx, bool is_outline) const 
   {
     int index = find_index(idx);
     if (index!=-1) {
@@ -38214,7 +38233,7 @@ public:
     }
     return 0;
   }
-  virtual int Ascender(long idx) const
+  virtual int Ascender(long idx, bool is_outline) const
   {
     int index = find_index(idx);
     if (index!=-1) {
@@ -38223,7 +38242,7 @@ public:
     return 0;
 
   }
-  virtual int Descender(long idx) const
+  virtual int Descender(long idx, bool is_outline) const
   {
     int index = find_index(idx);
     if (index!=-1) {
@@ -38232,7 +38251,7 @@ public:
     return 0;
 
   }
-  virtual int Height(long idx) const
+  virtual int Height(long idx, bool is_outline) const
   {
     int index = find_index(idx);
     if (index!=-1) {
@@ -38241,10 +38260,10 @@ public:
     return 0;
 
   }
-  virtual unsigned int Map(long idx, int x, int y) const
+  virtual unsigned int Map(long idx, int x, int y, bool is_outline) const
   {
-    int sx = SizeX(idx);
-    int sy = SizeY(idx);
+    int sx = SizeX(idx,false);
+    int sy = SizeY(idx,false);
     int index = find_index(idx);
     if (index==-1) return 0;
     unsigned int *ptr = m_data[index];
