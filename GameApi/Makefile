@@ -396,7 +396,11 @@ libGameApi.so: $(OFiles) $(CMDOFiles) Makefile
 #TAGS: $(CFiles)
 #	etags -o TAGS -l c++ $(CFiles)
 
-CC = $(CROSS_COMPILE)g++
+ifeq ($(wildcard /opt/gcc-16.1/bin/g++),)
+CC := /opt/gcc-16.1/bin/g++
+else
+CC := $(CROSS_COMPILE)g++
+endif
 CCWIN = i586-mingw32msvc-g++
 
 #$(DFiles): objs/%.d: %.cc

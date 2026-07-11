@@ -20,6 +20,33 @@ public:
   virtual int Descender(long idx) const;
   virtual int Height(long idx) const;
   void gen_glyph_data(long idx);
+  struct Bezier2d {
+    Point2d p1,p2,p3;
+  };
+  virtual std::vector<Bezier2d> outlines(char idx) const;
+  virtual std::vector<Bezier2d> make_monotonic(std::vector<Bezier2d> vec);
+  std::vector<Bezier2d> gen_outline_data(long idx);
+  struct OutlineEvent
+  {
+    float ymin;
+    float ymax;
+    int curve;
+  };
+  struct ScanLineContext
+  {
+    int curr;
+  };
+  struct ResPair
+  {
+    float x;
+    int winding;
+  };
+
+  virtual std::vector<OutlineEvent> convert_to_events(std::vector<Bezier2d> vec);
+  ScanLineContext ScanLineContextCreate() const;
+  void ScanLineStep(std::vector<int> &active, const std::vector<OutlineEvent> &events, float y, ScanLineContext &ctx, long idx) const;
+  std::vector<ResPair> ScanLineXCoord(const std::vector<int> &active, const std::vector<OutlineEvent> &events, const std::vector<Bezier2d> &bezi, float y, long idx) const;
+  int IsPixelInside(const std::vector<ResPair> &vec, float x, long idx) const;
 private:
   GameApi::Env &e;
   std::string ttf_filename;

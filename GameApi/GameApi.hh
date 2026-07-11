@@ -1231,6 +1231,8 @@ class FontApi
 public:
   IMPORT FontApi(Env &e);
   IMPORT ~FontApi();
+  IMPORT BM outline_bm(FI font, std::string glyph);
+  IMPORT BM outline_string(EveryApi &ev, FI font, std::string str);
   IMPORT void save_atlas_store_file(FtA atlas, std::string filename);
   IMPORT FtA load_atlas_from_string(std::string buf);
   IMPORT ARR FI_sprite_atlas(EveryApi &ev, FI font, std::string chars, int sx, int sy, int y_delta);

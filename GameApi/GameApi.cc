@@ -20962,6 +20962,107 @@ GameApi::FI GameApi::FontApi::load_font(std::string ttf_filename, int sx, int sy
 #endif
 }
 
+extern bool g_is_outline;
+
+class GlyphBitmap_from_outline : public Bitmap<Color>
+{
+public:
+  GlyphBitmap_from_outline(FontInterfaceImpl *impl, long idx) : impl(impl),idx(idx) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  virtual int SizeX() const { g_is_outline=true; int sx = impl->SizeX(idx); g_is_outline=false; return sx; }
+  virtual int SizeY() const { g_is_outline=true; int sy = impl->SizeY(idx) + impl->Descender(idx); g_is_outline=false; return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    y-=impl->Descender(idx);
+    
+    if (y+0.5f>=curr_y && y<=curr_y+0.5f)
+      {
+	int c = impl->IsPixelInside(outline_respair,x+0.5f,idx);
+	return Color(255,255,255,c);
+	//if (impl->IsPixelInside(outline_respair,x+0.5f,idx)) return Color(0xffffffff);
+	return Color(0x0);
+      } 
+    if (y <= curr_y-0.5f || y>=curr_y+1.0f)
+      {
+	ctx = impl->ScanLineContextCreate();
+	active=std::vector<int>();
+      }
+    impl->ScanLineStep(active,outline_events,y+0.5f,ctx,idx);
+    outline_respair = impl->ScanLineXCoord(active,outline_events,outline_monotonic,y+0.5f,idx);
+    curr_y = y;
+    int c = impl->IsPixelInside(outline_respair,x+0.5f,idx);
+    return Color(255,255,255,c);
+    //if (impl->IsPixelInside(outline_respair,x+0.5f,idx)) return Color(0xffffffff);
+    //return Color(0x0);	
+  }
+  virtual void Prepare()
+  {
+    outline = impl->outlines(idx);
+    outline_monotonic = impl->make_monotonic(outline);
+    outline_events = impl->convert_to_events(outline_monotonic);
+    active=std::vector<int>();
+    ctx = impl->ScanLineContextCreate();
+  }
+
+private:
+  std::vector<FontInterfaceImpl::Bezier2d> outline;
+  std::vector<FontInterfaceImpl::Bezier2d> outline_monotonic;
+  std::vector<FontInterfaceImpl::OutlineEvent> outline_events;
+  mutable std::vector<FontInterfaceImpl::ResPair> outline_respair;
+  mutable std::vector<int> active;
+  mutable FontInterfaceImpl::ScanLineContext ctx;
+  mutable float curr_y=0.0;
+  FontInterfaceImpl *impl;
+  long idx;
+};
+GameApi::BM GameApi::FontApi::outline_bm(FI font, std::string label)
+{
+  //label = g_conv_table->convert_labels_to_chars(label);
+
+  
+  FontInterface *inter = find_font_interface(e,font);
+  FontInterfaceImpl *impl = (FontInterfaceImpl*)inter;
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = new GlyphBitmap_from_outline(impl,label.size()>0?label[0]:' ');
+  GameApi::BM bm = add_bitmap(e, handle2); 
+  return bm;
+}
+
+GameApi::BM GameApi::FontApi::outline_string(EveryApi &ev, FI font, std::string str)
+{
+  str = g_conv_table->convert_labels_to_chars(str);
+  FontInterface *inter = find_font_interface(e,font);
+  FontInterfaceImpl *impl = (FontInterfaceImpl*)inter;
+  int s0 = str.size();
+  int x0 = 0;
+  for(int i=0;i<s0;i++)
+    {
+      char ch = str[i];
+      long idx = (long)ch;
+      x0+=impl->AdvanceX(idx);
+    }
+  int y0=impl->SizeY('g')+impl->Descender('g');
+  GameApi::BM bm = ev.bitmap_api.newbitmap(x0,y0,0x00);
+  int s = str.size();
+  int x = 0;
+  for(int i=0;i<s;i++)
+    {
+      char ch = str[i];
+      long idx = (long)ch;
+      std::string lab(&ch,&ch+1);      
+      GameApi::BM bm0 = outline_bm(font,lab);
+      bm = ev.bitmap_api.blitbitmap(bm,bm0,x,0);
+      x+=impl->AdvanceX(idx);
+    }
+  bm = ev.bitmap_api.flip_y(bm);
+  return bm;
+}
+
+
 class RotateCmds : public CmdExecute
 {
 public:
