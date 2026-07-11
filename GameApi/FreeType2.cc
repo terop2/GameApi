@@ -160,8 +160,15 @@ void FontInterfaceImpl::ScanLineStep(std::vector<int> &active, const std::vector
   for(int i=0;i<s;i++)
     {
       //std::cout << "ACTIVE:" << i << "::" << active[i] << " " << y << " \in " << events[active[i]].ymin << ".." << events[active[i]].ymax << std::endl;
-      if (events[active[i]].ymax <= y) {
+      int a = active[i];
+      if (a>=0 && a<events.size()) {
+      if (events[a].ymax <= y) {
 	//std::cout << "ERASED!" << std::endl;
+	active.erase(active.begin()+i);
+	i--;
+	s--;
+      }
+      } else {
 	active.erase(active.begin()+i);
 	i--;
 	s--;
@@ -177,9 +184,12 @@ std::vector<FontInterfaceImpl::ResPair> FontInterfaceImpl::ScanLineXCoord(const 
   int s = active.size();
   for(int i=0;i<s;i++)
     {
-      const OutlineEvent &e = events[active[i]];
+      int a = active[i];
+      if (a<0||a>=events.size()) continue;
+      const OutlineEvent &e = events[a];
       int curve = e.curve;
       //std::cout << "CURVE:" << curve << std::endl;
+      if (curve<0 || curve>=bezi.size()) continue;
       const Bezier2d &bez = bezi[curve];
       float A = bez.p1.y-2.0*bez.p2.y+bez.p3.y;
       float B = 2.0*(bez.p2.y-bez.p1.y);

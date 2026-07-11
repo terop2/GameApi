@@ -20967,7 +20967,7 @@ extern bool g_is_outline;
 class GlyphBitmap_from_outline : public Bitmap<Color>
 {
 public:
-  GlyphBitmap_from_outline(FontInterfaceImpl *impl, long idx) : impl(impl),idx(idx) { }
+  GlyphBitmap_from_outline(FontInterfaceImpl *impl, long idx) : impl(impl),idx(idx), mutex(PTHREAD_MUTEX_INITIALIZER) { }
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -20977,13 +20977,19 @@ public:
   virtual int SizeY() const { g_is_outline=true; int sy = impl->SizeY(idx) + impl->Descender(idx); g_is_outline=false; return sy; }
   virtual Color Map(int x, int y) const
   {
+    pthread_mutex_lock(&mutex);
+    g_is_outline = true;
     y-=impl->Descender(idx);
     
     if (y+0.5f>=curr_y && y<=curr_y+0.5f)
       {
 	int c = impl->IsPixelInside(outline_respair,x+0.5f,idx);
+    g_is_outline = false;
+    pthread_mutex_unlock(&mutex);
 	return Color(255,255,255,c);
 	//if (impl->IsPixelInside(outline_respair,x+0.5f,idx)) return Color(0xffffffff);
+    g_is_outline = false;
+    pthread_mutex_unlock(&mutex);
 	return Color(0x0);
       } 
     if (y <= curr_y-0.5f || y>=curr_y+1.0f)
@@ -20995,17 +21001,23 @@ public:
     outline_respair = impl->ScanLineXCoord(active,outline_events,outline_monotonic,y+0.5f,idx);
     curr_y = y;
     int c = impl->IsPixelInside(outline_respair,x+0.5f,idx);
+    g_is_outline = false;
+    pthread_mutex_unlock(&mutex);
     return Color(255,255,255,c);
     //if (impl->IsPixelInside(outline_respair,x+0.5f,idx)) return Color(0xffffffff);
     //return Color(0x0);	
   }
   virtual void Prepare()
   {
+    pthread_mutex_lock(&mutex);
+    g_is_outline = true;
     outline = impl->outlines(idx);
     outline_monotonic = impl->make_monotonic(outline);
     outline_events = impl->convert_to_events(outline_monotonic);
     active=std::vector<int>();
     ctx = impl->ScanLineContextCreate();
+    g_is_outline = false;
+    pthread_mutex_unlock(&mutex);
   }
 
 private:
@@ -21018,6 +21030,7 @@ private:
   mutable float curr_y=0.0;
   FontInterfaceImpl *impl;
   long idx;
+  mutable pthread_mutex_t mutex;
 };
 GameApi::BM GameApi::FontApi::outline_bm(FI font, std::string label)
 {
