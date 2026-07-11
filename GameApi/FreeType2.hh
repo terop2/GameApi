@@ -58,6 +58,7 @@ private:
   int state;
   long old_idx;
   mutable pthread_mutex_t mutex;
+  mutable pthread_mutex_t outline_mutex;
   std::string key;
   mutable std::map<long, GlyphData*> *data2=0;
 };

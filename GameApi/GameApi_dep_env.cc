@@ -3861,8 +3861,9 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     }
 #endif
 #endif
+    int count=50;
     while(1) {   
-
+      count--; if (count<0) break;
       
       
   int u = g_urls.size();
@@ -3893,7 +3894,7 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
       //std::cout << "FOUND FROM G_DELMAP" << std::endl;
       return g_del_map.async_get2(url); //new ASyncDataFetcher(&(*(g_del_map.async_get(url).second)));
     }
-    }
+    // }
 
       int u2 = g_error_urls.size();
       for(int i=0;i<u2;i++)
@@ -3917,9 +3918,9 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     Sleep(300);
     //std::this_thread::sleep_for(std::chrono::milliseconds(300));
 #endif
-
+  }
     //else
-    //  return 0;
+  return 0;
   }
 
 

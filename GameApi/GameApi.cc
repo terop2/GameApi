@@ -20977,7 +20977,13 @@ public:
   virtual int SizeY() const { g_is_outline=true; int sy = impl->SizeY(idx) + impl->Descender(idx); g_is_outline=false; return sy; }
   virtual Color Map(int x, int y) const
   {
+    //std::cout << "outline::Map" << x << " " << y << std::endl;
+    //#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_lock(&mutex);
+#endif
+    //#endif
+    //std::cout << "outline::Map (mutex pass)" << x << " " << y << std::endl;
     g_is_outline = true;
     y-=impl->Descender(idx);
     
@@ -20985,12 +20991,20 @@ public:
       {
 	int c = impl->IsPixelInside(outline_respair,x+0.5f,idx);
     g_is_outline = false;
+//#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_unlock(&mutex);
-	return Color(255,255,255,c);
+#endif
+//#endif
+    return Color(255,255,255,c);
 	//if (impl->IsPixelInside(outline_respair,x+0.5f,idx)) return Color(0xffffffff);
     g_is_outline = false;
+//#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_unlock(&mutex);
-	return Color(0x0);
+#endif
+    //#endif
+    return Color(0x0);
       } 
     if (y <= curr_y-0.5f || y>=curr_y+1.0f)
       {
@@ -21002,14 +21016,22 @@ public:
     curr_y = y;
     int c = impl->IsPixelInside(outline_respair,x+0.5f,idx);
     g_is_outline = false;
+    //#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_unlock(&mutex);
+#endif
+//#endif
     return Color(255,255,255,c);
     //if (impl->IsPixelInside(outline_respair,x+0.5f,idx)) return Color(0xffffffff);
     //return Color(0x0);	
   }
   virtual void Prepare()
   {
+    //#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_lock(&mutex);
+#endif
+    //#endif
     g_is_outline = true;
     outline = impl->outlines(idx);
     outline_monotonic = impl->make_monotonic(outline);
@@ -21017,7 +21039,11 @@ public:
     active=std::vector<int>();
     ctx = impl->ScanLineContextCreate();
     g_is_outline = false;
+    //#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_unlock(&mutex);
+#endif
+    //#endif
   }
 
 private:
@@ -21045,34 +21071,82 @@ GameApi::BM GameApi::FontApi::outline_bm(FI font, std::string label)
   return bm;
 }
 
+class OutlineString : public Bitmap<Color>
+{
+public:
+  OutlineString(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::FI font, std::string str) : e(e), ev(ev), font(font), str(str) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  
+  void Prepare()
+  {
+    g_is_outline = true;
+    str = g_conv_table->convert_labels_to_chars(str);
+    FontInterface *inter = find_font_interface(e,font);
+    FontInterfaceImpl *impl = (FontInterfaceImpl*)inter;
+    int s0 = str.size();
+    int x0 = 0;
+    for(int i=0;i<s0;i++)
+      {
+	char ch = str[i];
+	long idx = (long)ch;
+	x0+=impl->AdvanceX(idx);
+      }
+    int y0=impl->SizeY('g')+impl->Descender('g');
+    GameApi::BM bm = ev.bitmap_api.newbitmap(x0,y0,0x00);
+    int s = str.size();
+    int x = 0;
+    for(int i=0;i<s;i++)
+      {
+	char ch = str[i];
+	long idx = (long)ch;
+	std::string lab(&ch,&ch+1);      
+	GameApi::BM bm0 = ev.font_api.outline_bm(font,lab);
+	bm = ev.bitmap_api.blitbitmap(bm,bm0,x,0);
+	x+=impl->AdvanceX(idx);
+      }
+    bm = ev.bitmap_api.flip_y(bm);
+    g_is_outline = false;
+    m_bm = bm;
+    BitmapHandle *handle = find_bitmap(e, m_bm);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    b2->Prepare();
+  }
+  virtual int SizeX() const {
+    BitmapHandle *handle = find_bitmap(e, m_bm);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    return b2->SizeX();
+  }
+  virtual int SizeY() const
+  {
+    BitmapHandle *handle = find_bitmap(e, m_bm);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    return b2->SizeY();
+  }
+  virtual Color Map(int x, int y) const
+  {
+    BitmapHandle *handle = find_bitmap(e, m_bm);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    return b2->Map(x,y);
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::FI font;
+  std::string str;
+  GameApi::BM m_bm;
+};
+
 GameApi::BM GameApi::FontApi::outline_string(EveryApi &ev, FI font, std::string str)
 {
-  str = g_conv_table->convert_labels_to_chars(str);
-  FontInterface *inter = find_font_interface(e,font);
-  FontInterfaceImpl *impl = (FontInterfaceImpl*)inter;
-  int s0 = str.size();
-  int x0 = 0;
-  for(int i=0;i<s0;i++)
-    {
-      char ch = str[i];
-      long idx = (long)ch;
-      x0+=impl->AdvanceX(idx);
-    }
-  int y0=impl->SizeY('g')+impl->Descender('g');
-  GameApi::BM bm = ev.bitmap_api.newbitmap(x0,y0,0x00);
-  int s = str.size();
-  int x = 0;
-  for(int i=0;i<s;i++)
-    {
-      char ch = str[i];
-      long idx = (long)ch;
-      std::string lab(&ch,&ch+1);      
-      GameApi::BM bm0 = outline_bm(font,lab);
-      bm = ev.bitmap_api.blitbitmap(bm,bm0,x,0);
-      x+=impl->AdvanceX(idx);
-    }
-  bm = ev.bitmap_api.flip_y(bm);
-  return bm;
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = new OutlineString(e,ev,font,str);
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
 }
 
 
