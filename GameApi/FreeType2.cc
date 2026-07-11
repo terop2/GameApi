@@ -9,6 +9,7 @@
 #include FT_OUTLINE_H
 #include "FreeType2.hh"
 
+bool g_is_outline=false;
 
 
 struct GlyphData
@@ -146,7 +147,7 @@ FontInterfaceImpl::ScanLineContext FontInterfaceImpl::ScanLineContextCreate() co
 
 void FontInterfaceImpl::ScanLineStep(std::vector<int> &active, const std::vector<OutlineEvent> &events, float y, FontInterfaceImpl::ScanLineContext &ctx, long idx) const
 {
-  y+=Top(idx)/64.0f; /*-5.0f*/;
+  y+=Top(idx,true)/64.0f; /*-5.0f*/;
   if (ctx.curr>=events.size()) return;
   OutlineEvent e = events[ctx.curr];
   while(e.ymin <= y) {
@@ -178,7 +179,7 @@ void FontInterfaceImpl::ScanLineStep(std::vector<int> &active, const std::vector
 
 std::vector<FontInterfaceImpl::ResPair> FontInterfaceImpl::ScanLineXCoord(const std::vector<int> &active, const std::vector<OutlineEvent> &events, const std::vector<Bezier2d> &bezi, float y, long idx) const
 {
-  y+=Top(idx)/64.0f; /*-5.0f*/;
+  y+=Top(idx,true)/64.0f; /*-5.0f*/;
   
   std::vector<ResPair> res;
   int s = active.size();
@@ -246,7 +247,7 @@ std::vector<FontInterfaceImpl::ResPair> FontInterfaceImpl::ScanLineXCoord(const 
 }
 int FontInterfaceImpl::IsPixelInside(const std::vector<ResPair> &vec, float x, long idx) const
 {
-  x+=Left(idx);
+  x+=Left(idx,true);
   
   int w = 0;
   float previous = 0.0f;
@@ -267,73 +268,73 @@ int FontInterfaceImpl::IsPixelInside(const std::vector<ResPair> &vec, float x, l
   return 0;
 }
 
-int FontInterfaceImpl::Ascender(long idx) const
+int FontInterfaceImpl::Ascender(long idx, bool is_outline) const
 {
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->ascender;
 }
-int FontInterfaceImpl::Descender(long idx) const
+int FontInterfaceImpl::Descender(long idx, bool is_outline) const
 {
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->descender;
 }
-int FontInterfaceImpl::Height(long idx) const
+int FontInterfaceImpl::Height(long idx, bool is_outline) const
 {
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->height;
 }
 
-int FontInterfaceImpl::Left(long idx) const
+int FontInterfaceImpl::Left(long idx, bool is_outline) const
 {
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->left;
 }
 
-int FontInterfaceImpl::Top(long idx) const {
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+int FontInterfaceImpl::Top(long idx, bool is_outline) const {
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->top;
 }
-int FontInterfaceImpl::SizeX(long idx) const {
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+int FontInterfaceImpl::SizeX(long idx, bool is_outline) const {
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->sx;
 }
-int FontInterfaceImpl::SizeY(long idx) const {
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+int FontInterfaceImpl::SizeY(long idx, bool is_outline) const {
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->sy;
 }
-int FontInterfaceImpl::AdvanceX(long idx) const {
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+int FontInterfaceImpl::AdvanceX(long idx, bool is_outline) const {
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->advance_x;
 }
-unsigned int FontInterfaceImpl::Map(long idx, int x, int y) const
+unsigned int FontInterfaceImpl::Map(long idx, int x, int y, bool is_outline) const
 {
   if (x<0 || x>=SizeX(idx) || y<0 || y>=SizeY(idx))
     return 0;
-  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx,is_outline);
   int ssx = SizeX(idx);
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
@@ -435,7 +436,6 @@ int cubic_to(const FT_Vector *control1, const FT_Vector *control2,
   return 0;
 }
 
-bool g_is_outline=false;
 
 std::vector<FontInterfaceImpl::Bezier2d> FontInterfaceImpl::gen_outline_data(long idx)
 {
@@ -540,7 +540,7 @@ std::vector<FontInterfaceImpl::Bezier2d> FontInterfaceImpl::gen_outline_data(lon
   return res;
 }
 
-void FontInterfaceImpl::gen_glyph_data(long idx)
+void FontInterfaceImpl::gen_glyph_data(long idx, bool is_outline)
 {
   //std::cout << "try gen_glyph_data:" << idx << std::endl;
   //std::string key = glyph_key(ttf_filename,sx,sy);
@@ -560,14 +560,19 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   //#endif
 
   std::map<long, GlyphData*> *mymap = data2;
+  //std::cout << "MYMAP1:" << (long)mymap << std::endl;
   if (!mymap) { mymap = global_glyph_data[key]; }
+  //std::cout << "MYMAP2:" << (long)mymap << std::endl;
   if (!mymap) {
     global_glyph_data[key] = new std::map<long,GlyphData*>();
     mymap = global_glyph_data[key];
     data2 = mymap;
   }
+  //std::cout << "MYMAP3:" << (long)mymap << std::endl;
   GlyphData *data = mymap?mymap->operator[](idx):0; //glyph_data[idx];
-  if (data && ((!g_is_outline && data->bitmap_data!=0) || (g_is_outline))) { 
+  //std::cout << "DATA1:" << (long)data << std::endl;
+  if (data && ((!is_outline && data->bitmap_data!=0) || (is_outline))) {
+    //std::cout << "DATA FOUND" << std::endl;
     //#ifndef EMSCRIPTEN
     //#ifndef EMSCRIPTEN
 #ifdef THREADS
@@ -576,6 +581,11 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     //#endif
     return; }
   //std::cout << "gen_glyph_data:" << idx << std::endl;
+  //std::cout << "Render:" << idx << " " << (long)data << " " << is_outline << " " << (long)data->bitmap_data << std::endl;
+  //if (!g_is_outline)
+  //  {
+  //   stackTrace();
+  // }
 
   if (!data) {
     data = new GlyphData;
@@ -632,6 +642,9 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     ptr2 = ptr3;
 
   }
+
+
+  
   data->lib = (FT_Library*)priv_;
   //FT_Library_SetLcdFilter( *data->lib, FT_LCD_FILTER_DEFAULT );
   int err = FT_New_Memory_Face( *data->lib,
@@ -656,7 +669,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 
   if (idx<0||idx>0x80) idx=idx&0xff;
   FT_UInt glyphindex = FT_Get_Char_Index(data->face, idx);
-  if (g_is_outline)
+  if (is_outline)
     {
       FT_Load_Glyph(data->face, glyphindex, FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_LIGHT);
       //FT_Render_Glyph(data->face->glyph, FT_RENDER_MODE_NORMAL);
@@ -675,7 +688,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   data->height = data->face->size->metrics.height >> 6;
 
   //std::cout << "Glyph:" << idx << " " << data->sx << " " << data->sy << " " << data->top << std::endl;
-  if (!g_is_outline) {
+  if (!is_outline) {
   int ssx = data->sx;
   int ssy = data->sy;
   if (ssx<1) ssx=1;

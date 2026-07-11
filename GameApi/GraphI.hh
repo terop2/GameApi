@@ -2232,15 +2232,15 @@ class FontInterface : public CollectInterface
 public:
   virtual ~FontInterface() { }
   virtual void Prepare() { }
-  virtual int Left(long idx) const=0;
-  virtual int Top(long idx) const=0;
-  virtual int SizeX(long idx) const=0;
-  virtual int SizeY(long idx) const=0;
-  virtual int AdvanceX(long idx) const=0;
-  virtual int Ascender(long idx) const=0;
-  virtual int Descender(long idx) const=0;
-  virtual int Height(long idx) const=0;
-  virtual unsigned int Map(long idx, int x, int y) const=0;
+  virtual int Left(long idx, bool is_outline=false) const=0;
+  virtual int Top(long idx, bool is_outline=false) const=0;
+  virtual int SizeX(long idx, bool is_outline=false) const=0;
+  virtual int SizeY(long idx, bool is_outline=false) const=0;
+  virtual int AdvanceX(long idx, bool is_outline=false) const=0;
+  virtual int Ascender(long idx, bool is_outline=false) const=0;
+  virtual int Descender(long idx, bool is_outline=false) const=0;
+  virtual int Height(long idx, bool is_outline=false) const=0;
+  virtual unsigned int Map(long idx, int x, int y, bool is_outline=false) const=0;
 };
 
 class GlyphInterface : public CollectInterface
