@@ -169,13 +169,27 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "FtA", "BM", "std::string", "int" },
 			 { "ev", "", "", "Hello{032}World!", "0" },
 			 "BM", "font_api", "font_string_from_atlas"));
-
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::large_string_from_atlas,
 			 "FI_fast_largetext",
 			 { "ev", "atlas", "atlas_bm", "url", "x_gap", "empty_line_height", "baseline_separation" },
 			 { "EveryApi&", "FtA", "BM", "std::string", "int", "int", "int" },
 			 { "ev", "", "", "file://$(instdir)/text_test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "5", "30", "-1" },
 			 "BM", "font_api", "large_string_from_atlas"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::outline_bm,
+			 "FI_outline_glyph_bm",
+			 { "font", "idx" },
+			 { "FI", "std::string" },
+			 { "", "a" },
+			 "BM", "font_api", "outline_bm"));
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::outline_string,
+			 "FI_outline",
+			 { "ev", "font", "str" },
+			 { "EveryApi&", "FI", "std::string" },
+			 { "ev", "", "Hello{032}World!" },
+			 "BM", "font_api", "outline_string"));
+
   
 #if 0
 #if (ALL==1)||(SAVE_FONT_DUMP==1)

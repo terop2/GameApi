@@ -239,7 +239,7 @@ Warning: If you submit content to using the submit button and the content is own
    });
 </script>
 
-<script>
+<!--script>
   const MAX_RELOADS = 3;
 
   let reloads =
@@ -282,7 +282,7 @@ window.addEventListener("unhandledrejection", e => {
     
   }
 });
-</script>
+</script-->
 
 </body>
 </html>
@@ -1393,6 +1393,7 @@ function get_metal_roughness(i)
   return parseFloat(str);
 }
 
+
 function get_material(i,filename)
 {
 // these are all I1 => I2 :: P->P
@@ -1464,7 +1465,6 @@ function create_script(filename, contents, filenames, contents_array2)
   if (g_path!="") {
     filename = g_path + "/" + filename;
   }
-
 
 
   var base_dir = get_base_dir(filename);

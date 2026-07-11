@@ -8,6 +8,9 @@
 #include <direct.h>
 #endif
 
+#ifdef LINUX
+#include <unistd.h>
+#endif
 
 
 
