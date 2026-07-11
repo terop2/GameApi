@@ -34,7 +34,7 @@ std::string glyph_key(std::string ttf_filename, int sx, int sy)
 }
 
 
-FontInterfaceImpl::FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, std::string homepage, int sx, int sy) : e(e), ttf_filename(ttf_filename), homepage(homepage), sx(sx), sy(sy), priv_(priv_), mutex(PTHREAD_MUTEX_INITIALIZER)
+FontInterfaceImpl::FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, std::string homepage, int sx, int sy) : e(e), ttf_filename(ttf_filename), homepage(homepage), sx(sx), sy(sy), priv_(priv_), mutex(PTHREAD_MUTEX_INITIALIZER), outline_mutex(PTHREAD_MUTEX_INITIALIZER)
 { 
   priv = 0;
   key = glyph_key(ttf_filename, sx,sy);
@@ -439,17 +439,18 @@ bool g_is_outline=false;
 
 std::vector<FontInterfaceImpl::Bezier2d> FontInterfaceImpl::gen_outline_data(long idx)
 {
+  //#ifndef EMSCRIPTEN
 #ifdef THREADS
   static bool firsttime=true;
   if (firsttime)
     {
-      pthread_mutex_init(&mutex,NULL);
+      pthread_mutex_init(&outline_mutex,NULL);
       firsttime=false;
     }
   
-  pthread_mutex_lock(&mutex);
+  pthread_mutex_lock(&outline_mutex);
 #endif
-
+  //#endif
   bool success;
   K k = find_loaded(ttf_filename, success);
   unsigned char *ptr2 = 0; //loaded_maps[ttf_filename];
@@ -461,9 +462,11 @@ std::vector<FontInterfaceImpl::Bezier2d> FontInterfaceImpl::gen_outline_data(lon
   if (!ptr) {
     std::cout << "async not ready yet, failing..." << std::endl;
     //#ifndef EMSCRIPTEN
+    //#ifndef EMSCRIPTEN
 #ifdef THREADS
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&outline_mutex);
 #endif
+//#endif
     return std::vector<FontInterfaceImpl::Bezier2d>(); 
   } else {
   }
@@ -501,9 +504,11 @@ std::vector<FontInterfaceImpl::Bezier2d> FontInterfaceImpl::gen_outline_data(lon
     //std::cout << ptr2 << std::endl;
     std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
     //#ifndef EMSCRIPTEN
+    //#ifndef EMSCRIPTEN
 #ifdef THREADS
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&outline_mutex);
 #endif
+    //#endif
     return std::vector<FontInterfaceImpl::Bezier2d>(); //exit(0);
     }
   FT_Set_Char_Size(data->face, sx*64,sy*64,96,96);
@@ -524,17 +529,22 @@ std::vector<FontInterfaceImpl::Bezier2d> FontInterfaceImpl::gen_outline_data(lon
   funcs.delta = 0;
   OutlineContext *ctx = new OutlineContext;
   FT_Outline_Decompose(outline, &funcs, (void*)ctx);
+  //#ifndef EMSCRIPTEN
 #ifdef THREADS
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&outline_mutex);
 #endif
-
-  return ctx->vec;
+    //#endif
+    std::vector<FontInterfaceImpl::Bezier2d> res = ctx->vec;
+    delete ctx;
+    
+  return res;
 }
 
 void FontInterfaceImpl::gen_glyph_data(long idx)
 {
   //std::cout << "try gen_glyph_data:" << idx << std::endl;
   //std::string key = glyph_key(ttf_filename,sx,sy);
+  //#ifndef EMSCRIPTEN
   //#ifndef EMSCRIPTEN
   //#ifndef EMSCRIPTEN
 #ifdef THREADS
@@ -557,7 +567,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     data2 = mymap;
   }
   GlyphData *data = mymap?mymap->operator[](idx):0; //glyph_data[idx];
-  if (data) { 
+  if (data && ((!g_is_outline && data->bitmap_data!=0) || (g_is_outline))) { 
     //#ifndef EMSCRIPTEN
     //#ifndef EMSCRIPTEN
 #ifdef THREADS
@@ -595,6 +605,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 #ifdef THREADS
     pthread_mutex_unlock(&mutex);
 #endif
+    //#endif
     return; 
   } else {
     //std::fstream ss(ss2.str().c_str(), std::ios_base::binary | std::ios_base::out);
@@ -638,6 +649,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 #ifdef THREADS
     pthread_mutex_unlock(&mutex);
 #endif
+    //#endif
     return; //exit(0);
     }
   FT_Set_Char_Size(data->face, sx*64,sy*64,96,96);
@@ -683,9 +695,11 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   //std::cout << std::endl;
 
   //#ifndef EMSCRIPTEN
+  //#ifndef EMSCRIPTEN
 #ifdef THREADS
   pthread_mutex_unlock(&mutex);
 #endif
-
+  //#endif
+  
 }
 #endif
