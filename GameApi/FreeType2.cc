@@ -53,6 +53,84 @@ Point2d lerp2(Point2d a, Point2d b, float t)
   return { a.x + (b.x-a.x)*t, a.y + (b.y-a.y)*t };
 }
 
+
+inline double bezierY(const FontInterfaceImpl::Bezier2d &b, double t)
+{
+    double u = 1.0 - t;
+
+    return
+        u*u*b.p1.y +
+        2.0*u*t*b.p2.y +
+        t*t*b.p3.y;
+}
+
+inline double bezierDY(const FontInterfaceImpl::Bezier2d &b, double t)
+{
+    return
+        2.0 * (
+            (1.0 - t) * (b.p2.y - b.p1.y)
+            +
+            t * (b.p3.y - b.p2.y)
+        );
+}
+
+std::pair<double,bool> solveBezierY_orig(const FontInterfaceImpl::Bezier2d &bez, double y)
+{
+      double A = bez.p1.y-2.0*bez.p2.y+bez.p3.y;
+      double B = 2.0*(bez.p2.y-bez.p1.y);
+      double C = bez.p1.y - y;
+      if (std::isnan(A)||std::isnan(B)||std::isnan(C)) return std::make_pair(0.0f,true);
+      //std::cout << "ABC:" << A << " " << B << " " << C << std::endl;
+      double D = B*B-4.0f*A*C;
+      if (D<0.0f && D >-1e-12) D=0.0f;
+      double x_1 = (-B + sqrt(D))/2.0/A;
+      double x_2 = (-B - sqrt(D))/2.0/A;
+      //std::cout << "X_n:" << x_1 << " " << x_2 << std::endl;
+      //ResPair p;
+      double t;
+      if (A==0.0f &&B==0.0f) return std::make_pair(0.0f,true);
+      if (A==0.0f) t=-C/B; else
+      if (x_1>=-0.0000000001f && x_1<=1.0000000001f) 
+	t = x_1;
+      else
+	t = x_2;
+
+      //if (t<=-0.0000000001f || t>=1.0000000001f) return std::make_pair(0.0f,true);
+      if (t<0.0f || t>1.0f) return std::make_pair(0.0f,true);
+      //t = std::clamp(t,0.0,1.0);
+      return std::make_pair(t,false);
+}
+
+#if 0
+std::pair<double,bool> solveBezierY(const FontInterfaceImpl::Bezier2d &b, double scanline)
+{
+    double y0 = b.p1.y;
+    double y2 = b.p3.y;
+
+    // Initial guess from linear interpolation.
+    double t = (scanline - y0) / (y2 - y0);
+
+    if (t<=-0.0000000001f || t>=1.0000000001f) return std::make_pair(t,true);
+      //    t = std::clamp(t, 0.0, 1.0);
+
+    for (int i = 0; i < 6; i++)
+    {
+        double f  = bezierY(b, t) - scanline;
+        double fp = bezierDY(b, t);
+
+        if (fabs(fp) < 1e-10)
+            break;
+
+        t -= f / fp;
+
+      if (t<0.0f || t>1.0f) return std::make_pair(0.0f,true);
+       // t = std::clamp(t, 0.0, 1.0);
+    }
+
+    return std::make_pair(t,false);
+}
+#endif
+
 void split(std::vector<FontInterfaceImpl::Bezier2d> &vec, FontInterfaceImpl::Bezier2d orig, float t, bool emit_left, bool emit_right)
 {
   Point2d A = lerp2(orig.p1,orig.p2,t);
@@ -163,7 +241,7 @@ void FontInterfaceImpl::ScanLineStep(std::vector<int> &active, const std::vector
       //std::cout << "ACTIVE:" << i << "::" << active[i] << " " << y << " \in " << events[active[i]].ymin << ".." << events[active[i]].ymax << std::endl;
       int a = active[i];
       if (a>=0 && a<events.size()) {
-      if (events[a].ymax <= y) {
+      if (y >= events[a].ymax) {
 	//std::cout << "ERASED!" << std::endl;
 	active.erase(active.begin()+i);
 	i--;
@@ -192,18 +270,21 @@ std::vector<FontInterfaceImpl::ResPair> FontInterfaceImpl::ScanLineXCoord(const 
       //std::cout << "CURVE:" << curve << std::endl;
       if (curve<0 || curve>=bezi.size()) continue;
       const Bezier2d &bez = bezi[curve];
-      float A = bez.p1.y-2.0*bez.p2.y+bez.p3.y;
-      float B = 2.0*(bez.p2.y-bez.p1.y);
-      float C = bez.p1.y - y;
+      //if (fabs(bez.p1.y-bez.p3.y) < 1.0f) continue;
+
+      /*
+      double A = bez.p1.y-2.0*bez.p2.y+bez.p3.y;
+      double B = 2.0*(bez.p2.y-bez.p1.y);
+      double C = bez.p1.y - y;
       if (std::isnan(A)||std::isnan(B)||std::isnan(C)) continue;
       //std::cout << "ABC:" << A << " " << B << " " << C << std::endl;
-      float D = B*B-4.0f*A*C;
+      double D = B*B-4.0f*A*C;
       if (D<0.0f && D >-1e-12) D=0.0f;
-      float x_1 = (-B + sqrt(D))/2.0/A;
-      float x_2 = (-B - sqrt(D))/2.0/A;
+      double x_1 = (-B + sqrt(D))/2.0/A;
+      double x_2 = (-B - sqrt(D))/2.0/A;
       //std::cout << "X_n:" << x_1 << " " << x_2 << std::endl;
       ResPair p;
-      float t;
+      double t;
       if (A==0.0f &&B==0.0f) continue;
       if (A==0.0f) t=-C/B; else
       if (x_1>=-0.0000000001f && x_1<=1.0000000001f) 
@@ -212,11 +293,15 @@ std::vector<FontInterfaceImpl::ResPair> FontInterfaceImpl::ScanLineXCoord(const 
 	t = x_2;
 
       if (t<=-0.0000000001f || t>=1.0000000001f) continue;
-
-
+      */
+      //std::pair<double,bool> t0 = solveBezierY(bez,y);
+      std::pair<double,bool> t0 = solveBezierY_orig(bez,y);
+      float t = t0.first;
+      bool cont = t0.second;
+      if (cont) continue;
       
       //std::cout << "t=" << t << std::endl;
-      
+      ResPair p;      
       p.x = (1.0f-t)*(1.0f-t) * bez.p1.x + 2.0*(1.0-t)*t*bez.p2.x + t*t*bez.p3.x; 
       //float y2= (1.0f-t)*(1.0f-t) * bez.p1.y + 2.0*(1.0-t)*t*bez.p2.y + t*t*bez.p3.y; 
 

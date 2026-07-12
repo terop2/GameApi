@@ -38,7 +38,7 @@ public:
   };
   struct ResPair
   {
-    float x;
+    double x;
     int winding;
   };
 
