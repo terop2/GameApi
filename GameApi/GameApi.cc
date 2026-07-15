@@ -138,6 +138,8 @@ bool is_mobile(GameApi::EveryApi &ev)
   return is_mobile_1() || ev.mainloop_api.get_screen_width() < 800 ||(g_gpu_vendor != "NVID" && g_gpu_vendor != "AMD" && g_gpu_vendor != "WebK");
 }
 
+bool file_exists(std::string filename);
+
 std::string deploy_curl_cmd()
 {
 #ifdef STEAM
