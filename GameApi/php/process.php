@@ -140,7 +140,7 @@ echo "<body>\n";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
 echo "<div class=\"image-wrapper\">\n";
-echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1; width:100%; height:auto;\" src=\"$https://$site/phoenix_bird_scr.webp\" fetchpriority=\"high\" width=\"1165\" height=\"879\"/>\n";
+echo "<img id=\"showimg\" style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1; width:100%; height:auto;\" src=\"$https://$site/builder_stable.webp\" fetchpriority=\"high\" width=\"1165\" height=\"879\"/>\n";
 //echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
 //echo "  <source src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
 //echo "  Your browser does not support video tag.";
@@ -847,7 +847,41 @@ echo "     reloadPage(\"unhandledrejection\");";
     
 echo "  }";
 echo "});";
+
+echo "var counter = 0;";
+echo "function change_image(a)";
+echo "{";
+echo "   var arr = [
+		    \"$https://$site/ChatGPT\ Image\ 15.1.2026\ klo\ 15.08.04.png\",
+		    \"$https://$site/ChatGPT\ Image\ 15.3.2026\ klo\ 06.50.12.png\",
+		    \"$https://$site/ChatGPT\ Image\ 15.3.2026\ klo\ 23.01.45.png\",
+		    \"$https://$site/ChatGPT\ Image\ 19.3.2026\ klo\ 09.51.22.png\",
+		    \"$https://$site/ChatGPT\ Image\ 5.5.2026\ klo\ 13.02.53.png\",		    
+		    \"$https://$site/ChatGPT\ Image\ 19.5.2026\ klo\ 03.27.05.png\",
+		    \"$https://$site/ChatGPT\ Image\ 7.6.2026\ klo\ 02.35.14.png\",
+		    \"$https://$site/ChatGPT\ Image\ 7.6.2026\ klo\ 02.27.34.png\",
+		    \"$https://$site/ChatGPT\ Image\ 11.6.2026\ klo\ 03.02.06.png\",
+		    \"$https://$site/ChatGPT\ Image\ 13.6.2026\ klo\ 00.57.43.png\",
+		    \"$https://$site/ChatGPT\ Image\ 20.6.2026\ klo\ 00.25.30.png\",
+		    \"$https://$site/ChatGPT\ Image\ 20.6.2026\ klo\ 00.31.32.png\",		    
+		    \"$https://$site/ChatGPT\ Image\ 27.6.2026\ klo\ 00.16.58.png\",
+		    \"$https://$site/ChatGPT\ Image\ 30.5.2026\ klo\ 05.28.00.png\",
+		    \"$https://$site/builder_stable.webp\",
+		    \"$https://$site/phoenix_bird_scr.webp\",
+		    \"$https://$site/screen1.webp\"];";
+
+echo "   var p = document.getElementById(\"showimg\");";
+echo "   p.src = arr[a];";
+echo "   counter++;";
+echo "   if (counter>16) { counter=0; }";
+echo "   window.setTimeout(function() { change_image(counter); },8000);";
+echo "}";
+echo "change_image(counter);";
+
+
 echo "</script>";
+
+
 
 
 echo "</body>\n";

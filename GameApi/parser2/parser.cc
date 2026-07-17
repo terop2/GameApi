@@ -547,7 +547,7 @@ int main(int argc, char *argv[])
       std::string filename = filenames[i];
       //      std::cout << "Filename: " << filename << std::endl;
 
-      p.parse(std::string("/home/terop/cvs/GameApi/GameApi/") + filename);
+      p.parse(std::string("/home/terop/cvs/GameApi_newer_features/GameApi/") + filename);
     }
   
   p.print(funcname);
