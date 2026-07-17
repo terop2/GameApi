@@ -4753,11 +4753,11 @@ EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, std::string &expr, Ft
 #endif
 }
 
-EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
+EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap, int noneditnum, std::string &expr)
 {
 #ifndef EMSCRIPTEN
   std::string allowed_chars = "0123456789-";
-  static std::string expr;
+  //static std::string expr;
   static W ww = empty();
   //GuiWidget *ww2 = find_widget(e,ww);
   W w = add_widget(e, new EditorGuiWidgetAtlas<long>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,false,expr,noneditnum,&ww));
@@ -4768,10 +4768,10 @@ EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas
 }
 
 
-EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
+EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap, int noneditnum, std::string &expr)
 {
   std::string allowed_chars = "0123456789abcdef";
-  static std::string expr;
+  //static std::string expr;
     static W redraw_w = empty();
     W edit = string_editor(allowed_chars, col, expr, atlas, atlas_bm, x_gap,noneditnum,&redraw_w);
     //W w1 = margin(edit,8,4,8,4);
@@ -5808,7 +5808,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
     }
   if (type=="long")
     {
-      W edit = long_editor(target.l_value, atlas, atlas_bm, x_gap,1);
+      W edit = long_editor(target.l_value, atlas, atlas_bm, x_gap,1, target.expr);
       return edit;
     }
   if (is_enum(type))
@@ -5825,7 +5825,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
     }
   if (type=="unsigned int")
     {
-      W edit = color_editor(target.color, atlas, atlas_bm, x_gap,1);
+      W edit = color_editor(target.color, atlas, atlas_bm, x_gap,1,target.expr);
       return edit;
     }
   if (type=="std::string" || type=="bool")

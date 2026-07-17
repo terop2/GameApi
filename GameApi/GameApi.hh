@@ -2298,9 +2298,9 @@ public:
   IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum=0);
   IMPORT W int_editor(int &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum=0);
   IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type,int noneditnum=0);
-  IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap,int noneditnum=0);
+  IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap,int noneditnum, std::string &expr);
   IMPORT W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
-  IMPORT W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap,int noneditnum=0);
+  IMPORT W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap,int noneditnum, std::string &expr);
   struct EditTypes
   {
     int i_value;
