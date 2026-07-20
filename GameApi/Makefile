@@ -207,7 +207,7 @@ DependO2DFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2))
 
 
 
-WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result  -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized  -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct -Wno-deprecated-enum-enum-conversion -Wno-return-type
+WARN = -Wno-overloaded-virtual -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result  -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized  -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct -Wno-deprecated-enum-enum-conversion -Wno-return-type
 
 #-fsanitize=undefined -fsanitize-recover=undefined
 #  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC

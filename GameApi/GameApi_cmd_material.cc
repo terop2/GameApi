@@ -603,8 +603,8 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
 			 "m_dyn_lights",
 			 { "ev", "nxt", "light_pos_x", "light_pos_y", "light_pos_z", "dist", "dyn_point" },
-			 { "EveryApi&", "MT", "float", "float", "float", "float", "int" },
-			 { "ev", "", "0.0", "0.0", "0.0", "500.0", "-1" },
+			 { "EveryApi&", "MT", "float", "float", "float", "float", "MN" },
+			 { "ev", "", "0.0", "0.0", "0.0", "500.0", "" },
 			 "MT", "materials_api", "dyn_lights"));
 #endif
 #if (ALL==1)||(SNOW==1)
