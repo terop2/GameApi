@@ -1367,6 +1367,30 @@ require_once("user.php");
 
 PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a>(130&#8364;) (LGPL/GPL)
 <p><br>
+STABLE RELEASE: WIN:
+<?php
+$version_win = file_get_contents("$https://$site/assets/VERSION_WIN_STABLE.TXT");
+$version_win = substr($version_win, 0, -1);
+echo "v." . $version_win . " ";
+$start_time = filemtime("./assets/GameApi-Builder-stable-v" . $version_win . ".msi");
+$end_time = time();
+$delta = floor(($end_time - $start_time)/60/60/24);
+echo "(" . $delta . " days ago)";
+?>
+<br>
+STABLE RELEASE: LINUX:
+
+<?php
+$version = file_get_contents("$https://$site/assets/VERSION_STABLE.TXT");
+$version = substr($version, 0, -1);
+echo "v." . $version  . " ";
+$start_time = filemtime("./assets/gameapi-builder-stable_1.0-" . $version . ".deb");
+$end_time = time();
+$delta = floor(($end_time - $start_time)/60/60/24);
+echo "(" . $delta . " days ago)";
+?>
+<br>
+
 MOST RECENT RELEASE: WIN: 
 <?php
 $version_win = file_get_contents("$https://$site/assets/VERSION_WIN.TXT");
@@ -1384,25 +1408,13 @@ MOST RECENT RELEASE: LINUX:
 $version = file_get_contents("$https://$site/assets/VERSION.TXT");
 $version = substr($version, 0, -1);
 echo "v." . $version  . " ";
-$start_time = filemtime("./gameapi-builder_1.0-" . $version . ".deb");
+$start_time = filemtime("./assets/gameapi-builder_1.0-" . $version . ".deb");
 $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
 ?>
 
 <br>
-MOST RECENT RELEASE: SOURCECODE: 
-
-<?php
-$version_source = file_get_contents("$https://$site/assets/VERSION_SOURCE.TXT");
-$version_source = substr($version_source, 0, -1);
-echo "v." . $version_source . " ";
-$start_time = filemtime("./GameApi-sourcecode-v" . $version_source . ".tar.gz");
-$end_time = time();
-$delta = floor(($end_time - $start_time)/60/60/24);
-echo "(" . $delta . " days ago)";
-?>
-<br><br>
 <!--
 CONCEPT IMAGES GENERATED VIA ARTIFICIAL INTELLIGENCE(chatgpt4):<br>
 <a href="<?php echo $https ?>://<?php echo $site ?>/god_playing_with_builder.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/god_playing_with_builder.webp" width="200" height="200" crossorigin></img></a>
@@ -1419,7 +1431,7 @@ DOWNLOADING THE ACTUAL PRODUCT OFFERING:
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 11 64-bit</span>
-<li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN.TXT"); ?>.msi">download msi</a>
+<li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/GameApi-Builder-stable-v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN_STABLE.TXT"); ?>.msi">stable msi</a>, <a href="<?php echo $https ?>://<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN.TXT"); ?>.msi">unstable msi</a>
 <?php
 visit_counter_inc( "tool" );
 ?>
@@ -1447,7 +1459,7 @@ visit_counter_inc( "tool" );
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Ubuntu 64-bit amd64</span>
-<li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder_1.0-<?php echo file_get_contents("$https://$site/assets/VERSION.TXT"); ?>.deb">download deb</a>
+<li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder-stable_1.0-<?php echo file_get_contents("$https://$site/assets/VERSION_STABLE.TXT"); ?>.deb">stable deb</a>, <a href="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder_1.0-<?php echo file_get_contents("$https://$site/assets/VERSION.TXT"); ?>.deb">unstable deb</a>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; float:left;">

@@ -12165,7 +12165,7 @@ extern std::vector<float> dyn_points_global_z;
 class DynLightsShaderML : public MainLoopItem
 {
 public:
-  DynLightsShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Point light_pos, float dist, int dyn_point) : env(env), ev(ev), next(next), light_pos(light_pos), dist(dist), dyn_point(dyn_point) 
+  DynLightsShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Point light_pos, float dist, GameApi::MN dyn_point) : env(env), ev(ev), next(next), light_pos(light_pos), dist(dist), dyn_point(dyn_point) 
   { 
     firsttime = true;
     sh.id = -1;
@@ -12187,6 +12187,7 @@ public:
     MainLoopEnv ee = e;
      if (firsttime)
       {
+	start_time = ev.mainloop_api.get_time();
 	firsttime = false;
 #if 1
     GameApi::US vertex;
@@ -12224,13 +12225,17 @@ public:
       {
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
-#if 1
+#if 0
 	int s = dyn_points_global_x.size();
 	if (dyn_point>=0 && dyn_point<s) {
 	  light_pos = Point(dyn_points_global_x[dyn_point],dyn_points_global_y[dyn_point],dyn_points_global_z[dyn_point]);
 	}
 #endif
-	ev.shader_api.set_var(sh, "dyn_light_pos", light_pos.x, light_pos.y, light_pos.z);
+	Movement *move = find_move(env,dyn_point);
+	float time = (e.time*1000.0-start_time) / 100.0;
+	Matrix move_m = move->get_whole_matrix(time,ev.mainloop_api.get_delta_time());
+	Point p = light_pos * move_m;
+	ev.shader_api.set_var(sh, "dyn_light_pos", p.x, p.y, p.z);
 	ev.shader_api.set_var(sh, "dyn_light_dist", dist);
       }
 
@@ -12261,7 +12266,8 @@ private:
   bool firsttime;
   Point light_pos;
   float dist;
-  int dyn_point;
+  GameApi::MN dyn_point;
+  float start_time;
 };
 
 
@@ -12515,7 +12521,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::shadow_shader(EveryApi &ev, ML mainloop,
 #endif
 }
 
-EXPORT GameApi::ML GameApi::PolygonApi::dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
+EXPORT GameApi::ML GameApi::PolygonApi::dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, MN dyn_point)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new DynLightsShaderML(e, ev, item, Point(light_pos_x, light_pos_y, light_pos_z),dist,dyn_point));

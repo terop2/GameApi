@@ -1866,7 +1866,7 @@ public:
   IMPORT ML newshadow2_phong(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int ambient_color, unsigned int dark_color, unsigned int light_color, float scale, int size, bool draw_model, MT shadow2_mt);
   IMPORT ML newshadow2_gltf(EveryApi &ev, TF I1, P shadow_p, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int ambient_color, unsigned int dark_color, unsigned int light_color, float scale, int size, MT shadow2_mt, bool emissive);
   IMPORT ML gltf_newshadow2(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size, TF tf); 
-  IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
+  IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, MN dyn_point);
   IMPORT MT coloured_lights(EveryApi &ev, MT nxt, float scale,
 			    unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8,
 			    PT pos_1, PT pos_2, PT pos_3, PT pos_4, PT pos_5, PT pos_6, PT pos_7, PT pos_8,
@@ -3324,7 +3324,7 @@ public:
   IMPORT ML bump_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML fog_shader(EveryApi &ev, ML mainloop, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT ML shadow_shader(EveryApi &ev, ML mainloop, int tex_num, float p_x, float p_y, float p_z, unsigned int dark_color, float mix);
-  IMPORT ML dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
+  IMPORT ML dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, MN dyn_point);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,unsigned int level1,unsigned int level2,unsigned int level3, float spec_size=5.0f, bool ambient=true, bool diffuse=true, bool specular=false);
   IMPORT ML spotlight_shader(EveryApi &ev, ML mainloop,int light_color_id, MN move);
   IMPORT ML coloured_lights_shader(EveryApi &ev, ML mainloop, float scale,

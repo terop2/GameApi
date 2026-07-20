@@ -9745,7 +9745,7 @@ private:
 class DynLightsMaterial : public MaterialForward
 {
 public:
-  DynLightsMaterial(GameApi::EveryApi &ev, Material *next, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point) : ev(ev), next(next), light_pos_x(light_pos_x), light_pos_y(light_pos_y), light_pos_z(light_pos_z), dist(dist), dyn_point(dyn_point) { }
+  DynLightsMaterial(GameApi::EveryApi &ev, Material *next, float light_pos_x, float light_pos_y, float light_pos_z, float dist, GameApi::MN dyn_point) : ev(ev), next(next), light_pos_x(light_pos_x), light_pos_y(light_pos_y), light_pos_z(light_pos_z), dist(dist), dyn_point(dyn_point) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
@@ -9808,7 +9808,7 @@ private:
   Material *next;
   float light_pos_x, light_pos_y, light_pos_z;
   float dist;
-  int dyn_point;
+  GameApi::MN dyn_point;
 };
 
 
@@ -11127,7 +11127,7 @@ EXPORT GameApi::MT GameApi::MaterialsApi::shadow2(EveryApi &ev, GameApi::P p, fl
   GameApi::MT m = { -1 };
   return m;
 }
-EXPORT GameApi::MT GameApi::MaterialsApi::dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
+EXPORT GameApi::MT GameApi::MaterialsApi::dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, MN dyn_point)
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new DynLightsMaterial(ev, mat, light_pos_x, light_pos_y, light_pos_z, dist, dyn_point));

@@ -206,6 +206,24 @@ echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";
 
+echo "<div class=\"bl_row\">\n";
+echo "<div class=\"bl_column\">\n";
+echo "<div class=\"bl_item customfont content\">\n";
+echo "<h2>Experience the joy of creating a computer game or a trailer:</h2>\n";
+echo "<ul>";
+echo "<li>from your design comes a node graph\n";
+echo "<li>node graph is built from hundreds of reusable nodes\n";
+echo "<li>node properties fine-tune the game\n";
+echo "<li>drag and drop glb assets to make end result look awesome\n";
+echo "<li>end result gets converted to HTML5\n";
+echo "<li>HTML5 package has a 3D engine included\n";
+echo "<li>point iframe tag to the 3D engine to embed the game to an article\n";
+echo "<li>full html5 articles with interactive web experiences\n";
+echo "</ul>";
+echo "</div>\n";
+echo "</div>\n";
+echo "</div>\n";
+
 
 
 echo "<div class=\"bl_row\">\n";
