@@ -1458,7 +1458,7 @@ visit_counter_inc( "tool" );
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
-<li><b>Operating system:</b> <span itemprop="operatingSystem">Ubuntu 64-bit amd64</span>
+<li><b>Operating system:</b> <span itemprop="operatingSystem">Ubuntu 26.04 64-bit amd64</span>
 <li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder-stable_1.0-<?php echo file_get_contents("$https://$site/assets/VERSION_STABLE.TXT"); ?>.deb">stable deb</a>, <a href="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder_1.0-<?php echo file_get_contents("$https://$site/assets/VERSION.TXT"); ?>.deb">unstable deb</a>
 </ul>
 </div>
