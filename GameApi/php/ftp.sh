@@ -36,6 +36,7 @@ copy_it bootstrap_slate.min.css
 copy_it mesh_css.css
 copy_it .htaccess
 #copy_it error.php
+copy_it mesh_iframe.php
 copy_it _bootswatch.scss
 copy_it _variables.scss
 copy_it bootstrap.css

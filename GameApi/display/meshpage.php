@@ -834,6 +834,7 @@ $mobile = js_mobile();
 $connect = "no";
 
 echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\"></canvas>";
+echo "<iframe src=\"@\" scrolling=\"no\" class=\"ems\" id=\"iframe\" style=\"display:none; width:800px; height:600px;\" width=\"800\” height=\"600\” oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></iframe>";
 
 if ($mobile=="yes") {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
@@ -2875,6 +2876,8 @@ function choose_display(id,label, vm,is_popstate)
    var d = document.getElementById("display_title_bar");
    d.innerHTML = display_labels[id];
 
+  choose_iframe_vs_canvas(id);
+
 
   m_id = id;
   if (!is_popstate) {
@@ -3436,6 +3439,12 @@ if ($mobile=="yes") {
   iframe.width = (wd)*dpr;
   iframe.height = (hd)*dpr;
 
+  var iframe3 = document.getElementById("iframe");
+  iframe3.style.width = (wd).toString() + "px";
+  iframe3.style.height = (hd).toString() + "px";
+  const dpr3 = window.devicePixelRatio || 2;
+  iframe3.width = (wd)*dpr;
+  iframe3.height = (hd)*dpr;
 
   var iframe2 = document.getElementById("canvas2");
   if (!iframe2) return;
@@ -3470,6 +3479,29 @@ Module.ccall('set_resize_event', null, ['number', 'number'], [wd,hd], {async:tru
   }
 
 }
+function choose_iframe_vs_canvas2(id,txt)
+{
+   console.log("choose_iframe:" + id + "::" + txt);
+   var el = document.getElementById("iframe");
+   var el2 = document.getElementById("canvas");
+   if (txt!="File not found.\n" && txt!="")
+   {
+	el.src = txt;
+	el.style.display="block";
+	el2.style.display="none";
+   } else {
+        el.style.display="none";
+	el2.style.display="block";
+   }
+}
+
+function choose_iframe_vs_canvas(id)
+{
+   fetch("<?php echo $https ?>://<?php echo $site ?>/mesh_iframe.php?id=" + id.toString())
+    .then(x => x.text())
+    .then(y => choose_iframe_vs_canvas2(id,y));
+}
+
 
 </script>
 <script>

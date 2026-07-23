@@ -11,6 +11,7 @@ $num = read_num( $user );
 $meshdata = $_POST["meshdata"];
 $homepage = $_POST["homepage"];
 $label = $_POST["label"];
+$iframe_url = $_POST["iframe_url"];
 if ($meshdata == "")
 {
   load_data( $arr );
@@ -21,7 +22,8 @@ $arr2 = array("username" => $user,
               "num" => intval($arr["index"])+1,
 	       "width" => 800,
 	       "height" => 600,
-	       "homepage" => $homepage);
+	       "homepage" => $homepage,
+	       "iframe_url" => $iframe_url);
 save_data($arr2);
 save_homepage($arr2);
 write_num( $arr2["username"], $arr2["index"] );

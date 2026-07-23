@@ -9,6 +9,9 @@ $width = $_GET["width"];
 $height = $_GET["height"];
 $label = $_POST["label"];
 
+$iframe_checkbox = $_POST["iframecheck"];
+$iframe_url = $_POST["iframeurl"];
+
 if ($noheaders=="") { $noheaders = $_POST["noheaders"]; }
 if ($width=="") { $width = $_POST["width"]; }
 if ($height=="") { $height = $_POST["height"]; }
@@ -63,6 +66,7 @@ $arr = array("username" => $user,
 <textarea name="pngfilename" style="display:none"><?php echo $pngfilename ?></textarea>
 <textarea name="homepage" style="display:none"><?php echo $homepage ?></textarea>
 <textarea name="label" rows="30" cols="80" style="display:none"><?php echo $label ?></textarea>
+<textarea name="iframe_url" rows="30" cols="30" style="display:none"><?php echo $iframe_url ?></textarea>
 </form>
 <form style="overflow:hidden;" action="create_mesh.php" method="post">
 <textarea name="meshdata" rows="30" cols="80" style="display:none"><?php echo $meshdata ?></textarea>
