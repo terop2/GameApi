@@ -772,6 +772,7 @@ echo "</script>";
 echo "<script>\n";
    echo "var g_background = 0;\n";
 echo "function show_script2(ii,dt) {\n";
+echo "   console.log(dt);\n";
 echo "   var d = document.getElementById(\"scriptdialog_inner\" + ii);\n";
 echo "   dt = dt.replaceAll(\"<\",\"&lt;\");\n";
 echo "   dt = dt.replaceAll(\">\",\"&gt;\");\n";
@@ -779,11 +780,12 @@ echo "   dt = dt.replaceAll(\"\\n\",\"<br>\");\n";
 echo "   d.innerHTML = \"\\n\\n\\n\"+dt;\n";
 echo "}\n";
 echo "function show_script(v,ump) {\n";
-echo "   var d = document.getElementById(\"scriptdialog\" + v);\n";
-echo "   d.style = \"\";\n";
-echo "   fetch(\"$https://$site/mesh_pre.php?id=\" + ump)\n";
-echo "     .then(x => x.text())\n";
-echo "     .then(y => show_script2(v,y));\n";
+echo "   iframe_script(v,ump);\n";
+//echo "   var d = document.getElementById(\"scriptdialog\" + v);\n";
+//echo "   d.style = \"\";\n";
+//echo "   fetch(\"$https://$site/mesh_pre.php?id=\" + ump)\n";
+//echo "     .then(x => x.text())\n";
+//echo "     .then(y => show_script2(v,y));\n";
 
 echo "}";
 echo "function hide_script(v) {\n";
@@ -3478,6 +3480,45 @@ Module.ccall('set_resize_event', null, ['number', 'number'], [wd,hd], {async:tru
 
   }
 
+}
+function iframe_script3(id,txt,data)
+{
+   const parser = new DOMParser();
+   const doc = parser.parseFromString(data,"text/html");
+   const pre = doc.getElementById("gameapi_script");
+   if (pre) {
+      var data = pre.textContent;
+      var d = document.getElementById("scriptdialog_inner" + id.toString());
+      data = data.replaceAll("<","&lt;");
+      data = data.replaceAll(">","&gt;");
+      data = data.replaceAll("\n","<br>");
+      d.style = "font-size: 70%; line-height: 130%;";
+      d.innerHTML = "\n\n\n" + data;
+      var d2 = document.getElementById("scriptdialog" + id.toString());
+      d2.style="";
+   }
+}
+function iframe_script2(id,txt,ump)
+{
+   if (txt!="File not found.\n" && txt!="")
+     {   
+      var url = txt;
+      fetch( url)
+      .then(x => x.text())
+      .then(y => iframe_script3(id,txt,y));
+      } else {
+         var d = document.getElementById("scriptdialog" + id);
+	 d.style = "";
+	 fetch("<?php echo $https; ?>://<?php echo $site; ?>/mesh_pre.php?id=" + ump)
+	 .then(x => x.text())
+	 .then(y => show_script2(id,y));
+      }
+}
+function iframe_script(id,ump)
+{
+   fetch("<?php echo $https ?>://<?php echo $site ?>/mesh_iframe.php?id=" + id.toString())
+    .then(x => x.text())
+    .then(y => iframe_script2(id,y,ump));
 }
 function choose_iframe_vs_canvas2(id,txt)
 {
