@@ -772,7 +772,6 @@ echo "</script>";
 echo "<script>\n";
    echo "var g_background = 0;\n";
 echo "function show_script2(ii,dt) {\n";
-echo "   console.log(dt);\n";
 echo "   var d = document.getElementById(\"scriptdialog_inner\" + ii);\n";
 echo "   dt = dt.replaceAll(\"<\",\"&lt;\");\n";
 echo "   dt = dt.replaceAll(\">\",\"&gt;\");\n";
