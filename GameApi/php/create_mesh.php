@@ -35,6 +35,9 @@ $arr = array("username" => $user,
 $id = create_id( $arr );
 ?>
 <form action="mesh_preview.php?id=<?php echo $id ?>" enctype="multipart/form-data" method="post">
+<b>Give url to iframe</b>:<br>
+<input type="checkbox" id="iframecheck" name="iframecheck" />
+<input type="text" name="iframeurl" id="iframeurl" size="60"/>
 <b>Give your homepage url</b>:<br>
 <input type="text" name="homepageurl" id="homepage" size="60"/>
 <div class="tooltip">gdpr

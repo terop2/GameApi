@@ -431,6 +431,8 @@ function save_data( $arr ) {
   file_put_contents( $filename1, $arr["data"] );
   $filename2 = "user_data/user_" . $arr["username"] . "/num" . $arr["index"] . ".txt";
   file_put_contents( $filename2, $arr["num"] );
+  $filename3 = "user_data/user_" . $arr["username"] . "/iframe_url" . $arr["index"] . ".txt";
+  file_put_contents( $filename3, $arr["iframe_url"] );
 }
 function save_homepage( $arr ) {
   $filename = "user_data/user_" . $arr["username"] . "/home" . $arr["index"] . ".txt";
@@ -484,6 +486,9 @@ function load_data( $arr ) {
   $arr["data"] = file_get_contents( $filename1 );
   $filename2 = "user_data/user_" . $arr["username"] . "/num" . $arr["index"] . ".txt";
   $arr["num"] = file_get_contents( $filename2 );
+  $filename3 = "user_data/user_" . $arr["username"] . "/iframe_url" . $arr["index"] . ".txt";
+  $arr["iframe_url"] = file_get_contents( $filename3 );
+
 }
 
 function create_id( $arr )

@@ -139,8 +139,8 @@ echo "<body>\n";
 //echo "SEO_KEYWORDS: meshpage.org offers unique way to do physically based rendering via runtime processing of 3d assets from normal gltf 2.0 files. The 3d models are created in blender and its gltf exporter and passed to our asset delivery system. This uses khronos group gltf 2.0 standard and can render 3d models from multiple sources, including blender and sketchfab.";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
-echo "<div class=\"image-wrapper\">\n";
-echo "<img id=\"showimg\" style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1; width:100%; height:auto;\" src=\"$https://$site/builder_stable.webp\" fetchpriority=\"high\" width=\"1165\" height=\"879\"/>\n";
+echo "<div class=\"image-wrapper\" style=\"width:98%; height:auto;\">\n";
+echo "<iframe id=\"showimg\" style=\"pointer-events: none; border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: 968px; top: 0px; left: 0px; z-order: -1;\" src=\"$https://$site/carousel/display.html\" fetchpriority=\"high\" width=\"1165px\" height=\"968px\"></iframe>\n";
 //echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
 //echo "  <source src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
 //echo "  Your browser does not support video tag.";
@@ -490,6 +490,8 @@ echo "}\n";
 echo ".image-wrapper {\n";
 echo "  position:relative;\n";
 echo "  width: 100%;\n";
+echo "  inset: 0;\n";
+echo "  z-index: 100;\n";
 echo "  margin: 0px 0px 0px 0px;\n";
 //echo "  min-height: 100vh;\n";
 echo "}\n";
@@ -866,6 +868,8 @@ echo "     reloadPage(\"unhandledrejection\");";
 echo "  }";
 echo "});";
 
+
+/*
 echo "var counter = 0;";
 echo "function change_image(a)";
 echo "{";
@@ -895,6 +899,7 @@ echo "   if (counter>16) { counter=0; }";
 echo "   window.setTimeout(function() { change_image(counter); },8000);";
 echo "}";
 echo "change_image(counter);";
+*/
 
 
 echo "</script>";
