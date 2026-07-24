@@ -1417,6 +1417,27 @@ echo "(" . $delta . " days ago)";
 ?>
 
 <br>
+<br>
+RELEASE SELECTION LOGIC:
+<div style="position: relative; top: -10px; border-width:1px; border-style: solid;">
+<ol>
+<li>You're in windows:
+<ul>
+<li>use .msi file
+</ul>
+<li>You're in linux:
+<ul>
+<li>if you have ubuntu 26.04:
+<ul><li>use .deb files.
+</ul>
+<li>otherwise
+<ul><li>use .msi files with wine (and video playing fails)
+</ul>
+</ul>
+</ol>
+</div>
+<br>
+
 <!--
 CONCEPT IMAGES GENERATED VIA ARTIFICIAL INTELLIGENCE(chatgpt4):<br>
 <a href="<?php echo $https ?>://<?php echo $site ?>/god_playing_with_builder.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/god_playing_with_builder.webp" width="200" height="200" crossorigin></img></a>
@@ -1490,7 +1511,7 @@ width="120" height="120" crossorigin/>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux with wine</span>
-<li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN.TXT"); ?>.msi">download msi</a>
+<li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/GameApi-Builder-stable-v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN_STABLE.TXT"); ?>.msi">stable msi</a>, <a href="<?php echo $https ?>://<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN.TXT"); ?>.msi">unstable msi</a>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; float:left;">

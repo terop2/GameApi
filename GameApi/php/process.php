@@ -140,7 +140,7 @@ echo "<body>\n";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
 echo "<div class=\"image-wrapper\" style=\"width:98%; height:auto;\">\n";
-echo "<iframe id=\"showimg\" style=\"pointer-events: none; border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: 968px; top: 0px; left: 0px; z-order: -1;\" src=\"$https://$site/carousel/display.html\" fetchpriority=\"high\" width=\"1165px\" height=\"968px\"></iframe>\n";
+echo "<iframe id=\"showimg\" scrolling=\"no\" style=\"pointer-events: none; border-radius: 30px; border-width: 2px; border-style: solid; width:98%; height: 700px; top: 0px; left: 0px; z-order: -1;\" src=\"$https://$site/carousel/display.html\" width=\"98%\" height=\"auto\"></iframe>\n";
 //echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
 //echo "  <source src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
 //echo "  Your browser does not support video tag.";
