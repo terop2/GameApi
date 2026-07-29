@@ -31282,3 +31282,84 @@ GameApi::ARR GameApi::PolygonApi::interpolate_mesh_pair_arr(std::vector<P> start
   return add_array(e,t);
 }
 
+
+class WebLink : public MainLoopItem
+{
+public:
+  WebLink(MainLoopItem *item,
+	  MainLoopItem *highlighted_item,
+	  Point pt,
+	  float radius,
+	  std::string url) : item(item), highlighted_item(highlighted_item), pt(pt), radius(radius), url(url) {
+    in_MV = Matrix::Identity();
+    in_T = Matrix::Identity();
+    in_P = Matrix::Identity();
+  }
+
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); highlighted_item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); highlighted_item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    in_MV = e.in_MV;
+    in_P = e.in_P;
+    in_T = e.in_T;
+
+    if (highlighted) highlighted_item->execute(e);
+    else item->execute(e);
+  }
+  void click()
+  {
+#ifdef EMSCRIPTEN
+EM_ASM({
+    window.location.href=UTF8ToString($0);
+  }, url.c_str());
+#endif
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    Point pt2 = pt * in_MV * in_T * in_P;
+    Point2d pt3 = { pt2.x, pt2.y };
+    Point2d pos = { e.cursor_pos.x, e.cursor_pos.y };
+
+    float dx = pt3.x-pos.x;
+    float dy = pt3.x-pos.x;
+    float dist = sqrt(dx*dx+dy*dy);
+
+    highlighted = dist<radius;
+
+    if (e.button == 0)
+      {
+	click();
+      }
+
+    
+    if (highlighted) highlighted_item->handle_event(e);
+    else item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    std::vector<int> vec1 =  highlighted_item->shader_id();
+    std::vector<int> vec2 =  item->shader_id();
+    int s = vec2.size();
+    for(int i=0;i<s;i++) vec1.push_back(vec2[i]);
+    return vec1;
+  }
+private:
+  MainLoopItem *item;
+  MainLoopItem *highlighted_item;
+  Point pt;
+  float radius;
+  std::string url;
+  Matrix in_MV, in_T, in_P;
+  bool highlighted;
+};
+
+GameApi::ML GameApi::MainLoopApi::web_link(ML item0, ML highlighted_item0,
+					   float pt_x, float pt_y, float pt_z,
+					   float radius,
+					   std::string url)
+{
+  MainLoopItem *item = find_main_loop(e,item0);
+  MainLoopItem *highlighted_item = find_main_loop(e,highlighted_item0);
+  return add_main_loop(e, new WebLink(item,highlighted_item,Point(pt_x,pt_y,pt_z), radius, url));
+}
