@@ -123,7 +123,7 @@ var download_result={};
 var g_download_done = false;
 req.onload = function() {
    //console.log(this.responseText);
-   download_result=json_parse(this.responseText);
+   download_result=json_parse( this.responseText );
    g_download_done = true;
 }
 req.open("get", "view_fetch.php?id=<?php echo $id ?>", true);
@@ -2516,17 +2516,17 @@ function load_data()
    //console.log("CONTENTSARRAY");
    //console.log(ca);
    if (ca !="" && ca != undefined)
-      a_ca = json_parse(ca);
+      a_ca = json_parse( ca );
    //console.log(fa.textContent);
    //console.log("FILENAMEARRAY");
    var a_fa = "";
    if (fa !="" && fa != undefined)
-      a_fa = json_parse(fa);
+      a_fa = json_parse(fa );
    //console.log(gf.textContent);
    //console.log("FILENAME");
    var a_gf = "";
    if (gf != "" && gf != undefined)
-      a_gf = json_parse(gf);
+      a_gf = json_parse( gf );
    //console.log(gp.textContent);
   //  console.log("GPATH");
   var a_gp = "";
@@ -2544,9 +2544,16 @@ function load_data()
   //console.log(a_ca[0].length);
 
    deserialize_state(a_st);
-   contents_array = base64_to_array(a_ca);
-   contents_array2 = contents_array.map(c => c.split('').map(function(x) { return x.charCodeAt(0); }));
-   filename_array = base64_to_array(a_fa);
+   contents_array = base64_to_array( a_ca );
+   contents_array2 = contents_array.map(c => {
+      const n = c.length;
+      const out = new Uint8Array(n);
+      for (let i = 0; i < n; i++)
+         out[i] = c.charCodeAt(i);
+      return out;
+     });
+/*contents_array.map(c => c.split('').map(function(x) { return x.charCodeAt(0); }));*/
+   filename_array = base64_to_array( a_fa );
    g_filename = a_gf;
    g_path = a_gp;
 
@@ -2564,7 +2571,8 @@ old_main_item_name = g_filename;
 }
 
 
-
+/*function do_base64(data) { return data; }
+function undo_base64(data) { return data; }*/
 function do_base64(data)
 {
 
@@ -2599,7 +2607,6 @@ function undo_base64(data)
 	    }
 	return data2 + "." + data3;
 }
-
 
 function encodeBase64(val) {
     let uint8Array = new TextEncoder().encode(val);
@@ -2670,16 +2677,61 @@ function array_to_base64(arr)
 
 }
 
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+const b64table = new Int16Array(256).fill(-1);
+
+for (let i = 0; i < chars.length; i++) {
+    b64table[chars.charCodeAt(i)] = i;
+}
+
+
+
+function my_atob(base64)
+{
+    const len = base64.length;
+    const out = new Uint8Array((len * 3) >> 2);
+
+    let o = 0;
+
+    for (let i = 0; i < len; i += 4)
+    {
+        const a = b64table[base64.charCodeAt(i)];
+        const b = b64table[base64.charCodeAt(i + 1)];
+        const c = b64table[base64.charCodeAt(i + 2)];
+        const d = b64table[base64.charCodeAt(i + 3)];
+
+        out[o++] = (a << 2) | (b >> 4);
+
+        if (base64.charCodeAt(i + 2) !== 61) // '='
+            out[o++] = ((b & 15) << 4) | (c >> 2);
+
+        if (base64.charCodeAt(i + 3) !== 61)
+            out[o++] = ((c & 3) << 6) | d;
+    }
+
+    return out.subarray(0, o);
+}
+/*
 function my_atob(base64) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    let output = [];
+
+const b64table = new Int16Array(256).fill(-1);
+
+for (let i = 0; i < chars.length; i++) {
+    b64table[chars.charCodeAt(i)] = i;
+}
+
+
+    let output = new Uint8Array((base64.length * 3)>>2);
+    let outPos = 0;
     let buffer = 0;
     let bitsCollected = 0;
 
     for (let i = 0; i < base64.length; i++) {
         const c = base64[i];
         if (c === '=') break; // padding
-        const val = chars.indexOf(c);
+        const val = b64table[base64.charCodeAt(i)]; //chars.indexOf(c);
         if (val === -1) continue; // skip invalid characters
 
         buffer = (buffer << 6) | val;
@@ -2688,13 +2740,14 @@ function my_atob(base64) {
         if (bitsCollected >= 8) {
             bitsCollected -= 8;
             const byte = (buffer >> bitsCollected) & 0xFF;
-            output.push(byte);
+            //output.push(byte);
+	    output[outPos++] = byte;
         }
     }
 
-    return new Uint8Array(output); // returns bytes, not a string
+    return output.subarray(0,outPos); //new Uint8Array(output); // returns bytes, not a string
 }
-
+*/
 function base64_to_array(arr)
 {
     return arr.map(str => {
@@ -2747,9 +2800,9 @@ function formsubmit()
 {
 
   //var st3 = document.getElementById("formcontentsarray");
-  var at3 = json_stringify(array_to_base64(contents_array));
+  var at3 = json_stringify(array_to_base64(contents_array) );
   //var st4 = document.getElementById("formfilenamearray");
-  var at4 = json_stringify(array_to_base64(filename_array));
+  var at4 = json_stringify(array_to_base64(filename_array) );
   //var st5 = document.getElementById("formnum");
 
   var contents_length = at3.length;
@@ -2797,7 +2850,7 @@ function formsubmit()
   		   //st2.value = st;
 
   		   //var st5 = document.getElementById("formgfilename");
-  		   var st5_val = json_stringify(g_filename);
+  		   var st5_val = json_stringify( g_filename );
 		   if (g_path==="") { g_path="./"; }
 		   var st6_val = json_stringify(g_path);
 
@@ -2813,13 +2866,13 @@ function formsubmit()
   		   data.append("g_filename", st5_val);
 		   data.append("g_path", st6_val);
   		   data.append("num",i);
-		   console.log("FORMDATA");
-		   console.log(st);
-		   console.log(st3_sub);
-		   console.log(st4_sub);
-		   console.log(st5_val);
-		   console.log(st6_val);
-		   console.log(i);
+		   //console.log("FORMDATA");
+		   //console.log(st);
+		   //console.log(st3_sub);
+		   //console.log(st4_sub);
+		   //console.log(st5_val);
+		   //console.log(st6_val);
+		   //console.log(i);
   		   var xhr2 = new XMLHttpRequest();
 		   xhr2.responseType = 'arraybuffer';
   		   xhr2.open('POST','<?php echo $site ?>/submit_contents.php', true);	
