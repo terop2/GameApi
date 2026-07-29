@@ -45937,3 +45937,117 @@ GameApi::ML GameApi::MainLoopApi::key_press_print_time_sync(ML ml)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new KeyPressTimeSyncPrint(item));
 }
+
+class ComputerImpl : public Computer
+{
+public:
+  struct ComputerData
+  {
+    Computer::ComputerType type;
+    LowApi *low;
+    GameApi::Env *e;
+    GameApi::EveryApi *ev;
+  };
+
+  // create/destroy
+  virtual int create_computer(LowApi *low, GameApi::Env &e, GameApi::EveryApi &ev, ComputerType type)
+  {
+    ComputerData *dt = new ComputerData;
+    dt->low = low;
+    dt->e = &e;
+    dt->ev = &ev;
+    dt->type = type;
+    computers.push_back(dt);
+    return computers.size()-1;
+  }
+  virtual void destroy_computer(int computer)
+  {
+    delete computers[computer];
+    computers[computer]=0;
+  }
+  virtual ComputerType computer_type(int computer) const
+  {
+    return computers[computer]->type;
+  }
+  
+  // mouse and keyboard
+  virtual std::vector<GameApi::MainLoopApi::Event> get_events(int computer)
+  {
+    std::vector<GameApi::MainLoopApi::Event> vec;
+    GameApi::MainLoopApi::Event e;
+    while((e= computers[computer]->ev->mainloop_api.get_event()).last==true)
+      {
+	vec.push_back(e);
+      }
+    return vec;
+  }
+  // display
+  //virtual Low_SDL_Window *create_display(int computer, std::string title)=0;
+  //virtual void destroy_display(int computer, Low_SDL_Window *win)=0;
+
+  //virtual Low_SDL_GLContext create_opengl_context(int computer, Low_SDL_Window *win)=0;
+  //virtual int make_opengl_context_current(int computer, Low_SDL_Window *win, Low_SDL_GLContext context)=0;
+  // opengl
+  virtual OpenglLowApi *get_opengl(int computer) const { return computers[computer]->low->ogl; }
+  // sdl
+  virtual SDLLowApi *get_sdl(int computer) const { return computers[computer]->low->sdl; }
+  // emscripten
+    virtual EmscriptenLowApi *get_emscripten(int computer) const { return computers[computer]->low->ems; }
+  // network
+  virtual void async_load_url(int computer, std::string url, std::string homepage, bool nosize=false)
+  {
+    return computers[computer]->e->async_load_url(url,homepage,nosize);
+  }
+  virtual void async_load_all_urls(int computer, std::vector<std::string> urls, std::string homepage)
+  {
+    return computers[computer]->e->async_load_all_urls(urls,homepage);
+  }
+  virtual void async_load_callback(int computer, std::string url, void(*fptr)(void*), void *data)
+  {
+    return computers[computer]->e->async_load_callback(url,fptr,data);
+  }
+  virtual void async_rem_callback(int computer, std::string url)
+  {
+    return computers[computer]->e->async_rem_callback(url);
+  }
+  virtual GameApi::ASyncVec *get_loaded_async_url(int computer, std::string url)
+  {
+    return computers[computer]->e->get_loaded_async_url(url);
+  }
+  virtual int count_async_callbacks_still_pending(int computer)
+  {
+    return computers[computer]->e->count_async_callbacks_still_pending();
+  }
+
+  // event loop
+  virtual int add_splitter_callback(int computer, void (*fptr)(void*), void *data)
+  {
+    if (computers[computer]->type==EComputerTypeSplitter)
+      {
+	return add_splitter_logo_callback(fptr,data);
+      }
+    if (computers[computer]->type==EComputerTypeMLGuiWidget)
+      {
+	return add_mlguiwidget_logo_callback(fptr,data);
+      }
+  }
+  virtual void remove_splitter_callback(int computer, int id)
+  {
+    if (computers[computer]->type==EComputerTypeSplitter) {
+      remove_splitter_logo_callback(id);
+    }
+    if (computers[computer]->type==EComputerTypeMLGuiWidget)
+      {
+	remove_mlguiwidget_logo_callback(id);
+      }
+  }
+  
+  // environment
+  virtual LowApi *get_low(int computer) const { return computers[computer]->low; }
+  virtual GameApi::Env *get_env(int computer) const { return computers[computer]->e; }
+  virtual GameApi::EveryApi *get_everyapi(int computer) const { return computers[computer]->ev; }
+private:
+  std::vector<ComputerData*> computers;
+};
+ComputerImpl g_computer_impl;
+Computer *g_computer = &g_computer_impl;

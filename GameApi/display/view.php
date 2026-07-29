@@ -1166,7 +1166,12 @@ for(var i=0;i<s;i++) {
       var filename = flag ? anim_filename_array[i] : filename_array[i];
       //console.log(filename);
       if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
-      let str = new TextDecoder().decode(flag ? anim_contents_array2[i] : contents_array2[i]);
+      var contents = flag ? anim_contents_array2[i] : contents_array2[i];
+      if (contents instanceof Uint8Array)
+      {
+	contents = contents.buffer;
+      }
+      let str = new TextDecoder().decode();
      // console.log(str);
       if (str.indexOf("animations") !== -1) result=true; 
 

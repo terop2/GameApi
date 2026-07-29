@@ -4405,6 +4405,7 @@ public:
 
 
 
+
 #if 0
 class HeavyWork
 {
@@ -4469,5 +4470,65 @@ private:
 };
 #endif
 
+
+
 #endif
 
+
+#ifndef COMPUTER
+#define COMPUTER 1
+class Computer
+{
+public:
+  enum ComputerType
+    {
+      EComputerTypeBlocker = 0x554,
+      EComputerTypeSplitter = 0x555,
+      EComputerTypeMLGuiWidget = 0x556,
+      EComputerTypeBuilderGui = 0x557
+    };
+  
+  // create/destroy
+  virtual int create_computer(LowApi *low, GameApi::Env &e, GameApi::EveryApi &ev, ComputerType type)=0;
+  virtual void destroy_computer(int computer)=0;
+  virtual ComputerType computer_type(int computer) const=0;
+
+  // stack of computers
+  static void PushActiveComputer(Computer *comp, int computer);
+  static void PopActiveComputer(Computer *comp, int computer);
+  static Computer *ActiveComputer();
+  static int ActiveComputerId();
+  
+  // mouse and keyboard
+  virtual std::vector<GameApi::MainLoopApi::Event> get_events(int computer) = 0;
+  // display
+  //virtual Low_SDL_Window *create_display(int computer, std::string title)=0;
+  //virtual void destroy_display(int computer, Low_SDL_Window *win)=0;
+
+  //virtual Low_SDL_GLContext create_opengl_context(int computer, Low_SDL_Window *win)=0;
+  //virtual int make_opengl_context_current(int computer, Low_SDL_Window *win, Low_SDL_GLContext context)=0;
+  // opengl
+  virtual OpenglLowApi *get_opengl(int computer) const=0;
+  // sdl
+  virtual SDLLowApi *get_sdl(int computer) const=0;
+  // emscripten
+  virtual EmscriptenLowApi *get_emscripten(int computer) const=0;
+  // network
+  virtual void async_load_url(int computer, std::string url, std::string homepage, bool nosize=false)=0;
+  virtual void async_load_all_urls(int computer, std::vector<std::string> urls, std::string homapage)=0;
+  virtual void async_load_callback(int computer, std::string url, void(*fptr)(void*), void *data)=0;
+  virtual void async_rem_callback(int computer, std::string url)=0;
+  virtual GameApi::ASyncVec *get_loaded_async_url(int computer, std::string url)=0;
+  virtual int count_async_callbacks_still_pending(int computer)=0;
+
+  // event loop
+  virtual int add_splitter_callback(int computer, void (*fptr)(void*), void *data)=0;
+  virtual void remove_splitter_callback(int computer, int id)=0;
+  
+  // environment
+  virtual LowApi *get_low(int computer) const=0;
+  virtual GameApi::Env *get_env(int computer) const=0;
+  virtual GameApi::EveryApi *get_everyapi(int computer) const=0;
+};
+extern Computer *g_computer;
+#endif
