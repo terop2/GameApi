@@ -835,7 +835,7 @@ $mobile = js_mobile();
 $connect = "no";
 
 echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\"></canvas>";
-echo "<iframe src=\"@\" scrolling=\"no\" class=\"ems\" id=\"iframe\" style=\"display:none; width:800px; height:600px;\" width=\"800\” height=\"600\” oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></iframe>";
+echo "<iframe scrolling=\"no\" class=\"ems\" id=\"iframe\" style=\"display:none; width:800px; height:600px;\" width=\"800\” height=\"600\” oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></iframe>";
 
 if ($mobile=="yes") {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
@@ -1431,8 +1431,18 @@ RELEASE SELECTION LOGIC:
 <ul><li>use .deb files.
 </ul>
 <li>otherwise
+<ul>
+<li>if you have nvidia gfx card (or can get gpu working in docker..)
+<ul><li>use docker release
+</ul>
+<li>otherwise
 <ul><li>use .msi files with wine (and video playing fails)
 </ul>
+</ul>
+</ul>
+<li>If everything else fails
+<ul>
+<li>get the source code from github repo/compile it yourself
 </ul>
 </ol>
 </div>
@@ -2500,6 +2510,7 @@ var app = new Vue({
       	  window.choose_nav(0);
       	  window.clearActive();
       	  window.menu(0);	
+	  choose_iframe_vs_canvas(id);	  
   
 	  //start_emscripten(vm);
 	  //if (pgnum==1)
@@ -2514,7 +2525,7 @@ var app = new Vue({
 	  window.choose_nav(1);
       	  window.clearActive2();
       	  window.menu2(1,id,false);
-	  
+	  choose_iframe_vs_canvas(id);	  
 	  if (typeof fix_keyboard === "function") fix_keyboard(false);
 	  }
        }
@@ -3551,6 +3562,7 @@ function choose_iframe_vs_canvas2(id,txt)
 	el.style.display="block";
 	el2.style.display="none";
    } else {
+        el.src = "";
         el.style.display="none";
 	el2.style.display="block";
    }
