@@ -12,6 +12,8 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 
   vec.push_back(new EnvGameApiItem_arr);
   vec.push_back(new EnvGameApiItem_arr_p);
+
+
   
 #if (ALL==1)||(STRING_BYTESTORE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::string_bytestore,
@@ -95,9 +97,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::web_link,
 			 "web_link",
-			 { "item", "highlighted_item", "pt_x", "pt_y", "pt_z", "radius", "url" },
-			 { "ML", "ML", "float", "float", "float", "float", "std::string" },
-			 { "", "", "0.0", "0.0", "0.0", "200.0", "https://meshpage.org" },
+			 { "ev", "item", "highlighted_item", "pt_x", "pt_y", "pt_z", "radius", "url" },
+			 { "EveryApi&", "ML", "ML", "float", "float", "float", "float", "std::string" },
+			 { "ev", "", "", "0.0", "0.0", "0.0", "200.0", "https://meshpage.org" },
 			 "ML", "mainloop_api", "web_link"));
 			 
 #if (ALL==1)||(TIMING_START==1)  
@@ -1608,6 +1610,13 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			{ "ML", "int" },
 			{ "", "60" },
 			"ML", "mainloop_api", "ogl_set_frame_rate"));
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::AI_modified,
+			"AI_modified",
+			{ "ev", "ml", "url" },
+			{ "EveryApi&", "ML", "std::string" },
+			{ "ev", "", "https://meshpage.org/AI_modified.png" },
+			"ML", "mainloop_api", "AI_modified"));
+			
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::logo_change,
 			"logo_change",
 			{ "ml", "connect 500x300", "download 500x300", "prepare 500x300" },

@@ -31286,11 +31286,11 @@ GameApi::ARR GameApi::PolygonApi::interpolate_mesh_pair_arr(std::vector<P> start
 class WebLink : public MainLoopItem
 {
 public:
-  WebLink(MainLoopItem *item,
+  WebLink(GameApi::EveryApi &ev, MainLoopItem *item,
 	  MainLoopItem *highlighted_item,
 	  Point pt,
 	  float radius,
-	  std::string url) : item(item), highlighted_item(highlighted_item), pt(pt), radius(radius), url(url) {
+	  std::string url) : ev(ev), item(item), highlighted_item(highlighted_item), pt(pt), radius(radius), url(url) {
     in_MV = Matrix::Identity();
     in_T = Matrix::Identity();
     in_P = Matrix::Identity();
@@ -31318,21 +31318,27 @@ EM_ASM({
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    Point pt2 = pt * in_MV * in_T * in_P;
-    Point2d pt3 = { pt2.x, pt2.y };
-    Point2d pos = { e.cursor_pos.x, e.cursor_pos.y };
-
+    Point pt2m = pt * in_MV * in_T;
+    Point pt2 = pt2m;
+    pt2.x /= -pt2.z;
+    pt2.y /= -pt2.z;
+    
+    Point2d pt3 = { pt2.x*400.0f, pt2.y*300.0f };
+    Point2d pos = { e.cursor_pos.x-ev.mainloop_api.get_screen_sx()/2.0f, e.cursor_pos.y-ev.mainloop_api.get_screen_sy()/2.0f };
+    
     float dx = pt3.x-pos.x;
-    float dy = pt3.x-pos.x;
+    float dy = pt3.y-pos.y;
     float dist = sqrt(dx*dx+dy*dy);
 
-    highlighted = dist<radius;
+    float rad = radius / (-(pt * in_MV * in_T).z);
+    rad *= 600.0;
+    
+    highlighted = dist<rad;
 
     if (highlighted && e.button == 0)
       {
 	click();
       }
-
     
     if (highlighted) highlighted_item->handle_event(e);
     else item->handle_event(e);
@@ -31345,6 +31351,7 @@ EM_ASM({
     return vec1;
   }
 private:
+  GameApi::EveryApi &ev;
   MainLoopItem *item;
   MainLoopItem *highlighted_item;
   Point pt;
@@ -31354,12 +31361,12 @@ private:
   bool highlighted;
 };
 
-GameApi::ML GameApi::MainLoopApi::web_link(ML item0, ML highlighted_item0,
+GameApi::ML GameApi::MainLoopApi::web_link(EveryApi &ev, ML item0, ML highlighted_item0,
 					   float pt_x, float pt_y, float pt_z,
 					   float radius,
 					   std::string url)
 {
   MainLoopItem *item = find_main_loop(e,item0);
   MainLoopItem *highlighted_item = find_main_loop(e,highlighted_item0);
-  return add_main_loop(e, new WebLink(item,highlighted_item,Point(pt_x,pt_y,pt_z), radius, url));
+  return add_main_loop(e, new WebLink(ev,item,highlighted_item,Point(pt_x,pt_y,pt_z), radius, url));
 }
