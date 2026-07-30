@@ -46051,3 +46051,18 @@ private:
 };
 ComputerImpl g_computer_impl;
 Computer *g_computer = &g_computer_impl;
+
+
+GameApi::ML GameApi::MainLoopApi::AI_modified(EveryApi &ev, GameApi::ML ml, std::string url)
+{
+  BM I22=ev.bitmap_api.loadbitmapfromurl(url); //"https://meshpage.org/AI_modified.png"); // 10,21
+BM I23=ev.bitmap_api.subbitmap(I22,0,30,350,93); // 157,10
+ML I24=ev.sprite_api.vertex_array_render(ev,I23); // 287,18
+MN I25=ev.move_api.mn_empty(); // 175,186
+MN I26=ev.move_api.trans2(I25,8,800,0); // 301,195
+ML I27=ev.move_api.move_ml(ev,I24,I26,1,10.0); // 454,77
+ML I28=ev.sprite_api.turn_to_2d(ev,I27,0.0,0.0,800.0,600.0); // 629,22
+ ML I29=ev.mainloop_api.or_elem_ml(ev,ml,I28);
+ return I29;
+  
+}

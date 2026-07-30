@@ -50,6 +50,8 @@ copy_it img_4.webp
 copy_it row1.webp
 copy_it row2.webp
 copy_it row3.webp
+copy_it AI_modified.png
+copy_it AI_generated.png
 copy_it vue.js
 copy_it mesh_apk_gen_page.php
 copy_it mesh_apk_gen_result.php

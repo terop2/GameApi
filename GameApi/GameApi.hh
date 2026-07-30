@@ -397,7 +397,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  IMPORT ML web_link(ML item, ML highlighted_item, float pt_x, float pt_y, float pt_z, float radius, std::string url);
+  IMPORT ML AI_modified(EveryApi &ev, ML ml, std::string url);
+  IMPORT ML web_link(EveryApi &ev, ML item, ML highlighted_item, float pt_x, float pt_y, float pt_z, float radius, std::string url);
   IMPORT ML print_time_sync(ML ml);
   IMPORT ML key_press_print_time_sync(ML ml);
   IMPORT ML random_game_seq(float time_step,MN mn,std::vector<ML> true_vec,std::vector<ML> false_vec,float perc,int num_levels);
