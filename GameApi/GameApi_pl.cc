@@ -31328,7 +31328,7 @@ EM_ASM({
 
     highlighted = dist<radius;
 
-    if (e.button == 0)
+    if (highlighted && e.button == 0)
       {
 	click();
       }
