@@ -31370,3 +31370,16 @@ GameApi::ML GameApi::MainLoopApi::web_link(EveryApi &ev, ML item0, ML highlighte
   MainLoopItem *highlighted_item = find_main_loop(e,highlighted_item0);
   return add_main_loop(e, new WebLink(ev,item,highlighted_item,Point(pt_x,pt_y,pt_z), radius, url));
 }
+
+GameApi::ML GameApi::MainLoopApi::double_instancing(EveryApi &ev, GameApi::P p, GameApi::PTS static_inst, GameApi::PTS real_inst, MT mat)
+{
+  GameApi::P p1 = ev.polygon_api.static_instancing(ev,p,static_inst);
+  GameApi::ML ml = ev.materials_api.bind_inst(p1,real_inst,mat);
+  return ml;
+}
+GameApi::ML GameApi::MainLoopApi::double_instancing_matrix(EveryApi &ev, GameApi::P p, GameApi::MS static_ms, GameApi::MS real_ms, MT mat)
+{
+  GameApi::P p1 = ev.polygon_api.static_instancing_matrix(ev,p,static_ms);
+  GameApi::ML ml = ev.materials_api.bind_inst_matrix(p1,real_ms,mat);
+  return ml;
+}
