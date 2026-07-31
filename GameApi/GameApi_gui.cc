@@ -1106,6 +1106,7 @@ public:
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
+    //std::cout << "button=" << button << " ch=" << ch << " type=" << std::hex << type << " wheel_y=" << mouse_wheel_y << std::endl;
     if (inside_redraw) return;
     bool changed = false;
     Point2d pos = get_pos();
@@ -1156,7 +1157,8 @@ public:
 
     
     //std::cout << type << " " << ch << std::endl;
-    if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; }
+    bool shiftactiveevent=false;
+    if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; shiftactiveevent=true;}
     if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; }
     if (type==768 && (ch==1073742048||ch==1073742052)) { ctrl = true; }
     if (type==769 && (ch==1073742048||ch==1073742052)) { ctrl = false; }
@@ -1188,7 +1190,7 @@ public:
 
 	}
 	{
-	  int l1,l2,l3,l4;
+	  int l1=-1,l2=-1,l3=-1,l4=-1;
 	  if ((l1=find_str(label,"%CD%")) != -1
 	      ||(l2= find_str(label,"%cd")) != -1
 	      ||(l3=find_str(label,"$(pwd)")) != -1
@@ -1314,7 +1316,7 @@ public:
       }
     if (done) changed=true;
     if (!done)
-    if (active && type==768 && !changed)
+    if (active && type==768 && !changed && !shiftactiveevent)
       {
 	int s = allowed_chars.size();
 	for(int i=0;i<s;i++)
