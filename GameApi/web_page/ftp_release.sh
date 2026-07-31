@@ -9,6 +9,7 @@ INDEX_3=0
 INDEX_4=0
 INDEX_5=0
 INDEX_6=0
+INDEX_7=0
 copy_it_1()
 {
     MACHINE=`uname -n`
@@ -75,6 +76,17 @@ copy_it_6()
        echo "copying $1 to meshpage.org"
     fi
 }
+copy_it_7()
+{
+    MACHINE=`uname -n`
+    if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
+	INDEX_7=${INDEX_7}+1
+	arr_7[${INDEX_7}]=$1
+     else
+       cp $1 $2
+       echo "copying $1 to meshpage.org"
+    fi
+}
 finish()
 {
     MACHINE=`uname -n`
@@ -91,6 +103,8 @@ finish()
 	scp ${arr_5[@]} terop@$SITE:/home/terop/meshpage.org/demoreboot/engine/
 	echo "Copying to cvs/GameApi/GameApi/AI/AI_engine/";
 	scp ${arr_6[@]} terop@$SITE:/home/terop/cvs/GameApi/GameApi/AI/AI_engine/
+	echo "Copying to meshpage.org/carousel/engine/";
+	scp ${arr_7[@]} terop@$SITE:/home/terop/meshpage.org/carousel/engine/
 	echo "Copying done.";
     fi
 }
@@ -149,6 +163,8 @@ copy_it_4 engine_nothreads_highmem.wasm.br /home/terop/meshpage.org/engine/
 #copy_it_4 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/engine/
 
 
+
+
 copy_it_5 engine_highmem.js /home/terop/meshpage.org/demoreboot/engine/
 copy_it_5 engine_highmem.js.br /home/terop/meshpage.org/demoreboot/engine/
 copy_it_5 engine_highmem.wasm /home/terop/meshpage.org/demoreboot/engine/
@@ -174,6 +190,14 @@ copy_it_6 engine_nothreads_highmem.wasm.br /home/terop/cvs/GameApi/GameApi/AI/AI
 #copy_it_6 engine_lowmem_nothreads.wasm /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
 #copy_it_6 engine_lowmem_nothreads.wasm.br /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
 
+copy_it_7 engine_highmem.js /home/terop/meshpage.org/carousel/engine/
+copy_it_7 engine_highmem.js.br /home/terop/meshpage.org/carousel/engine/
+copy_it_7 engine_highmem.wasm /home/terop/meshpage.org/carousel/engine/
+copy_it_7 engine_highmem.wasm.br /home/terop/meshpage.org/carousel/engine/
+copy_it_7 engine_nothreads_highmem.js /home/terop/meshpage.org/carousel/engine/
+copy_it_7 engine_nothreads_highmem.js.br /home/terop/meshpage.org/carousel/engine/
+copy_it_7 engine_nothreads_highmem.wasm /home/terop/meshpage.org/carousel/engine/
+copy_it_7 engine_nothreads_highmem.wasm.br /home/terop/meshpage.org/carousel/engine/
 
 
 

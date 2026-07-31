@@ -45938,6 +45938,7 @@ GameApi::ML GameApi::MainLoopApi::key_press_print_time_sync(ML ml)
   return add_main_loop(e, new KeyPressTimeSyncPrint(item));
 }
 
+#if 0
 class ComputerImpl : public Computer
 {
 public:
@@ -46051,18 +46052,51 @@ private:
 };
 ComputerImpl g_computer_impl;
 Computer *g_computer = &g_computer_impl;
+#endif
 
 
 GameApi::ML GameApi::MainLoopApi::AI_modified(EveryApi &ev, GameApi::ML ml, std::string url)
 {
   BM I22=ev.bitmap_api.loadbitmapfromurl(url); //"https://meshpage.org/AI_modified.png"); // 10,21
-BM I23=ev.bitmap_api.subbitmap(I22,0,30,350,93); // 157,10
-ML I24=ev.sprite_api.vertex_array_render(ev,I23); // 287,18
-MN I25=ev.move_api.mn_empty(); // 175,186
-MN I26=ev.move_api.trans2(I25,8,800,0); // 301,195
-ML I27=ev.move_api.move_ml(ev,I24,I26,1,10.0); // 454,77
-ML I28=ev.sprite_api.turn_to_2d(ev,I27,0.0,0.0,800.0,600.0); // 629,22
+  BM I23=ev.bitmap_api.subbitmap(I22,0,30,350,93); // 157,10
+  ML I24=ev.sprite_api.vertex_array_render(ev,I23); // 287,18
+  MN I25=ev.move_api.mn_empty(); // 175,186
+  MN I26=ev.move_api.trans2(I25,8,800,0); // 301,195
+  ML I27=ev.move_api.move_ml(ev,I24,I26,1,10.0); // 454,77
+  ML I28=ev.sprite_api.turn_to_2d(ev,I27,0.0,0.0,800.0,600.0); // 629,22
+
+//BM I30=ev.bitmap_api.subbitmap(I22,0,30,350,93); // 145,211
+//BM I31=ev.bitmap_api.flip_y(I30); // 300,187
+//P I32=ev.polygon_api.bitmapsized_quad(I31); // 433,27
+//MT I33=ev.materials_api.texture(ev,I31,1.0); // 91,32
+//MT I34=ev.materials_api.fade(ev,I33,0,0,10,12); // 280,10
+//ML I35=ev.materials_api.bind(I32,I34); // 626,36
+//MN I36=ev.move_api.mn_empty(); // 207,351
+//MN I37=ev.move_api.trans2(I36,-510,-466,0); // 333,360
+//ML I38=ev.move_api.move_ml(ev,I35,I37,1,10.0); // 486,242
+
  ML I29=ev.mainloop_api.or_elem_ml(ev,ml,I28);
  return I29;
   
+}
+GameApi::ML GameApi::MainLoopApi::AI_generated(EveryApi &ev, GameApi::ML ml, std::string url)
+{
+  BM I7=ev.bitmap_api.loadbitmapfromurl(url); // 10,13
+  ML I8=ev.sprite_api.vertex_array_render(ev,I7); // 287,10
+  MN I9=ev.move_api.mn_empty(); // 175,178
+  MN I10=ev.move_api.trans2(I9,8,820,0); // 301,187
+  ML I11=ev.move_api.move_ml(ev,I8,I10,1,10.0); // 454,69
+  ML I12=ev.sprite_api.turn_to_2d(ev,I11,0.0,0.0,800.0,600.0); // 629,14
+
+  //  BM I10=ev.bitmap_api.loadbitmapfromurl(url); // 10,186
+  //BM I11=ev.bitmap_api.flip_y(I10); // 145,180
+  //P I12=ev.polygon_api.bitmapsized_quad(I11); // 401,27
+  //MT I13=ev.materials_api.texture(ev,I11,1.0); // 59,32
+  //MT I14=ev.materials_api.fade(ev,I13,0,0,10,12); // 248,10
+  //ML I15=ev.materials_api.bind(I12,I14); // 594,36
+  //MN I16=ev.move_api.mn_empty(); // 175,351
+  //MN I17=ev.move_api.trans2(I16,-540,-476,0); // 301,360
+  //ML I18=ev.move_api.move_ml(ev,I15,I17,1,10.0); // 454,242
+  ML I13=ev.mainloop_api.or_elem_ml(ev,ml,I12);
+ return I13;
 }

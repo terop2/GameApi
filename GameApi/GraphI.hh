@@ -4475,6 +4475,7 @@ private:
 #endif
 
 
+#if 0
 #ifndef COMPUTER
 #define COMPUTER 1
 class Computer
@@ -4531,4 +4532,5 @@ public:
   virtual GameApi::EveryApi *get_everyapi(int computer) const=0;
 };
 extern Computer *g_computer;
+#endif
 #endif
