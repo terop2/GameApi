@@ -397,6 +397,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML double_instancing(EveryApi &ev, P p, PTS static_inst, PTS real_inst, MT mat);
+  IMPORT ML double_instancing_matrix(EveryApi &ev, P p, MS static_ms, MS real_ms, MT mat);
   IMPORT ML AI_modified(EveryApi &ev, ML ml, std::string url);
   IMPORT ML AI_generated(EveryApi &ev, ML ml, std::string url);
   IMPORT ML web_link(EveryApi &ev, ML item, ML highlighted_item, float pt_x, float pt_y, float pt_z, float radius, std::string url);

@@ -988,6 +988,7 @@ list_item($https . "://" . $site . "/assets/Printer.txt", "3d printer instructio
 list_item($https . "://" . $site . "/assets/Skills_to_learn.txt", "Skills to learn");
 list_item($https . "://" . $site . "/assets/Releasing_animations.txt", "Releasing animations to your web page");
 list_item("$https://$site/mesh_doc.php?menu=0&submenu=0&select=select&1831127721", "API reference manual");
+list_item($https . "://" . $site . "/assets/Display_menu_behaviour.txt", "Display menu behavior/how builder renders different types");
 list_end();
 ?>
 
