@@ -2439,6 +2439,7 @@ public:
     async_pending_plus("LoadBitmapFromUrl", "ctor");
 
 #endif
+    std::cout<< "GameApi_gltf.cc::loadbitmapfromurl:" << url << std::endl;
     // id=register_cache_deleter(&del_bitmap_cache,(void*)this);
     env.async_load_callback(url,&bm_cb,this);
   }
