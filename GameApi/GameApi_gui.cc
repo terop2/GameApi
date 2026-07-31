@@ -7551,7 +7551,8 @@ ASyncData async_data[] = {
   { "voxel_api", "vox_bind_ml2",1},
   { "voxel_api", "lod_vox", 1},
   { "texture_api", "videofile_txid_generic", 3},
-  { "mainloop_api", "AI_modified", 2}
+  { "mainloop_api", "AI_modified", 2},
+  { "mainloop_api", "AI_generated", 2}
 };
 IMPORT ASyncData *g_async_ptr = &async_data[0];
 IMPORT int g_async_count = sizeof(async_data)/sizeof(ASyncData);

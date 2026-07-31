@@ -1616,6 +1616,12 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			{ "EveryApi&", "ML", "std::string" },
 			{ "ev", "", "https://meshpage.org/AI_modified.png" },
 			"ML", "mainloop_api", "AI_modified"));
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::AI_generated,
+			"AI_generated",
+			{ "ev", "ml", "url" },
+			{ "EveryApi&", "ML", "std::string" },
+			{ "ev", "", "https://meshpage.org/AI_generated.png" },
+			"ML", "mainloop_api", "AI_generated"));
 			
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::logo_change,
 			"logo_change",
