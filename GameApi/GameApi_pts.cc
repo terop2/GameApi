@@ -46,6 +46,55 @@ private:
 
 IMPORT extern std::string gameapi_homepageurl;
 
+class CombinePointsApiPoints : public PointsApiPoints
+{
+public:
+  CombinePointsApiPoints(PointsApiPoints *inst1, PointsApiPoints *inst2) : inst1(inst1), inst2(inst2) { }
+  void Collect(CollectVisitor &vis) { inst1->Collect(vis); inst2->Collect(vis); }
+  void HeavyPrepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    bool b1 = inst1->Update(e);
+    bool b2 = inst2->Update(e);
+    return b1&&b2;
+  }
+  virtual int NumPoints() const
+  {
+    return inst1->NumPoints()*inst2->NumPoints();
+  }
+  virtual int MaxNumPoints() const { return NumPoints(); }
+  virtual Point Pos(int i) const
+  {
+    int num = inst1->NumPoints();
+    int i0 = i/num;
+    int i1 = i-num*i0;
+    Point p0 = inst1->Pos(i0);
+    Point p1 = inst2->Pos(i1);
+    return p0+p1;
+  }
+  virtual unsigned int Color(int i) const
+  {
+    int num = inst1->NumPoints();
+    int i0 = i/num;
+    int i1 = i-num*i0;
+    unsigned int p0 = inst1->Color(i0);
+    unsigned int p1 = inst2->Color(i1);
+    return Color::Interpolate(p0,p1,0.5);
+  }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+
+private:
+  PointsApiPoints *inst1;
+  PointsApiPoints *inst2;
+};
+GameApi::PTS GameApi::PointsApi::combine_pts(PTS p1, PTS p2)
+{
+  PointsApiPoints *pp1 = find_pointsapi_points(e,p1);
+  PointsApiPoints *pp2 = find_pointsapi_points(e,p2);
+  return add_points_api_points(e, new CombinePointsApiPoints(pp1,pp2));
+}
+
+
 class LoadPoints : public PointsApiPoints
 {
 public:
@@ -3817,3 +3866,4 @@ GameApi::CFB GameApi::PointsApi::cbm_to_cfb( CBM bm,
 					 blue_mult,blue_add,
 					 alpha_mult,alpha_add));
 }
+

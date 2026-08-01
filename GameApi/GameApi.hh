@@ -3951,6 +3951,7 @@ class PointsApi
 public:
   IMPORT PointsApi(Env &e);
   // should use cubes at left,top,right edge to cut out rendering.
+  IMPORT PTS combine_pts(PTS p1, PTS p2);
   IMPORT int colour_divisor_calc(P p);
   IMPORT PTS world_filter(PTS points); // uses DynamicCursor g_dyn_cursor
   IMPORT ML world_filter_cursor(ML ml,
