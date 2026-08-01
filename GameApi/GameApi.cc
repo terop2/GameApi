@@ -4590,10 +4590,11 @@ private:
   std::vector<float> inner_start_time;
   mutable MainLoopEnv m_env;
 };
+#if 0
 GameApi::MS GameApi::MatricesApi::combine_ms(MS m1, MS m2)
 {
 }
-
+#endif
 
 GameApi::MS GameApi::MatricesApi::random_time_seq(EveryApi &ev, MS inner_start, MS outer, MS inner_end, float outer_time, float inner_time)
 {

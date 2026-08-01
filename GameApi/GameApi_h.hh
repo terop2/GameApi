@@ -835,6 +835,7 @@ struct EnvImpl
   std::vector<Array<int,FaceCollection*> *, GameApiAllocator<Array<int,FaceCollection*> *> > p_array;
   std::vector<FloatScene*, GameApiAllocator<FloatScene*> > float_scenes;
   std::vector<Path*, GameApiAllocator<Path*> > paths;
+  std::vector<void*, GameApiAllocator<void*> > objects;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1169,8 +1170,78 @@ ARRMACRO(GameApi::PAR,par)
 
 //GameApi::TFA add_tf_array(GameApi::Env &e, Array<int,LazyAlloc<std::string,GLTFModelInterface*>* > * arr);
 //GameApi::TFB add_tf_matrix(GameApi::Env &e, Bitmap<LazyAlloc<GLTFModelInterface*>* >* matrix);
+#if 0
+template<class T, class K>
+class AddFindTrait
+{
+public:
+};
+template<class IFACE>
+class AddTrait
+{
+public:
+};
+template<class ID>
+class FindTrait
+{
+public:
+};
+#define TRAIT(ident,iface) \
+template<> \
+class AddFindTrait<ident, iface> \
+{ \
+public: \
+  typedef ident id_type; \
+  typedef iface interface_type; \
+};\
+template<> \
+class AddTrait<iface> \
+{ \
+public: \
+  typedef ident id_type; \
+}; \
+template<> \
+class FindTrait<ident> \
+{ \
+public: \
+   typedef iface interface_type; \
+};
+
+TRAIT(GameApi::PAT,Path*)
+TRAIT(GameApi::FS,FloatScene*)
+
+#undef TRAIT
+
+template<class IFACE>
+typename AddTrait<IFACE>::id_type add_object(GameApi::Env &e, IFACE p)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->objects.push_back((void*)p);
+  if (g_current_block != -2)
+    add_b(p);
+  GameApi::PAT im;
+  im.id = env->objects.size()-1;
+  return im;
+}
+template<class ID>
+typename FindTrait<ID>::interface_type find_object(GameApi::Env &e, ID i)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return (typename FindTrait<ID>::interface_type)env->objects[i.id];  
+}
+
+#define add_path add_object
+#define add_float_scene add_object
+
+#define find_path find_object
+#define find_float_scene find_object
+
+#endif
+
+#if 1
 GameApi::PAT add_path(GameApi::Env &e, Path *p);
 GameApi::FS add_float_scene(GameApi::Env &e, FloatScene *fs);
+#endif
 GameApi::PV add_facecoll_array(GameApi::Env &e, Array<int,FaceCollection*> *arr);
 GameApi::PM add_facecoll_matrix(GameApi::Env &e, Bitmap<FaceCollection*> *arr);
 GameApi::OVX add_opt_voxel(GameApi::Env &e, OptVoxel *vx);
@@ -1340,8 +1411,10 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 //Array<int,LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_array(GameApi::Env &e, GameApi::TFA tfa);
 //Bitmap<LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_matrix(GameApi::Env &e, GameApi::TFB tfb);
+#if 1
 Path *find_path(GameApi::Env &e, GameApi::PAT p);
 FloatScene *find_float_scene(GameApi::Env &e, GameApi::FS fs);
+#endif
 Array<int,FaceCollection*> *find_facecoll_array(GameApi::Env &e, GameApi::PV pa);
 Bitmap<FaceCollection*> *find_facecoll_matrix(GameApi::Env &e, GameApi::MA ma);
 OptVoxel *find_opt_voxel(GameApi::Env &e, GameApi::OVX vx);
