@@ -927,13 +927,13 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi
 #endif
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::double_instancing,
 			"m_double_inst",
-			{ "ev", "p", "static_inst", "real_inst", "mat" },
+			{ "ev", "p", "inst1", "inst2", "mat" },
 			{ "EveryApi&", "P", "PTS", "PTS", "MT" },
 			{ "ev", "", "", "", "" },
 			"ML", "mainloop_api", "double_instancing"));
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::double_instancing_matrix,
 			"m_double_inst_mat",
-			{ "ev", "p", "static_ms", "real_ms", "mat" },
+			{ "ev", "p", "inst_ms1", "inst_ms2", "mat" },
 			{ "EveryApi&", "P", "MS", "MS", "MT" },
 			{ "ev", "", "", "", "" },
 			"ML", "mainloop_api", "double_instancing_matrix"));

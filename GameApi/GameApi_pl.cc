@@ -31373,13 +31373,15 @@ GameApi::ML GameApi::MainLoopApi::web_link(EveryApi &ev, ML item0, ML highlighte
 
 GameApi::ML GameApi::MainLoopApi::double_instancing(EveryApi &ev, GameApi::P p, GameApi::PTS static_inst, GameApi::PTS real_inst, MT mat)
 {
-  GameApi::P p1 = ev.polygon_api.static_instancing(ev,p,static_inst);
-  GameApi::ML ml = ev.materials_api.bind_inst(p1,real_inst,mat);
+  //GameApi::P p1 = ev.polygon_api.static_instancing(ev,p,static_inst);
+  GameApi::PTS inst = ev.points_api.combine_pts(static_inst,real_inst);
+  GameApi::ML ml = ev.materials_api.bind_inst(p,inst,mat);
   return ml;
 }
 GameApi::ML GameApi::MainLoopApi::double_instancing_matrix(EveryApi &ev, GameApi::P p, GameApi::MS static_ms, GameApi::MS real_ms, MT mat)
 {
-  GameApi::P p1 = ev.polygon_api.static_instancing_matrix(ev,p,static_ms);
-  GameApi::ML ml = ev.materials_api.bind_inst_matrix(p1,real_ms,mat);
+  GameApi::MS inst = ev.matrices_api.mult_array(static_ms,real_ms);
+  //GameApi::P p1 = ev.polygon_api.static_instancing_matrix(ev,p,static_ms);
+  GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,real_ms,mat);
   return ml;
 }

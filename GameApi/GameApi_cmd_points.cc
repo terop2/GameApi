@@ -57,7 +57,15 @@
 			 { "", "" },
 			 "PTS", "points_api", "or_points"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::combine_pts,
+			 "combine_points",
+			 { "p1", "p2" },
+			 { "PTS", "PTS" },
+			 { "", "" },
+			 "PTS", "points_api", "combine_pts"));
+
 #ifndef STABLE
+
 #if (ALL==1)||(CONVEX_HULL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::convex_hull,
 			 "pts_convexhull",
