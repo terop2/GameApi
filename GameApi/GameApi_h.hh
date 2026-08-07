@@ -1186,16 +1186,22 @@ class FindTrait
 {
 public:
 };
-#define TRAIT(ident,iface) \
+template<class T>
+class NumTrait0 { };
+
+
+
+
+#define TRAIT(basenum,dernum,ident,iface)	\
 template<> \
-class AddFindTrait<ident, iface> \
+class AddFindTrait<ident, iface*> \
 { \
 public: \
   typedef ident id_type; \
-  typedef iface interface_type; \
+  typedef iface* interface_type; \
 };\
 template<> \
-class AddTrait<iface> \
+class AddTrait<iface*> \
 { \
 public: \
   typedef ident id_type; \
@@ -1204,21 +1210,35 @@ template<> \
 class FindTrait<ident> \
 { \
 public: \
-   typedef iface interface_type; \
-};
+   typedef iface* interface_type; \
+};\
+ template<class D, class IFace, bool = std::is_base_of_v<IFace,D>> \
+struct TraitHelper##dernum; \
+template<class D, class IFace> \
+struct TraitHelper##dernum<D,IFace,false> : public NumTrait##basenum<D> { }; \
+template<class D, class IFace> \
+struct TraitHelper##dernum<D,IFace,true> { using type=IFace; }; \
+template<class D>					\
+ class NumTrait##dernum : public NumTrait##basenum<D> {	\
+public: \
+ using type = typename TraitHelper##dernum<D,iface>::type; \
+}; \
 
-TRAIT(GameApi::PAT,Path*)
-TRAIT(GameApi::FS,FloatScene*)
+
+TRAIT(0,1,GameApi::PAT,Path)
+TRAIT(1,999,GameApi::FS,FloatScene)
+
 
 #undef TRAIT
 
-template<class IFACE>
-typename AddTrait<IFACE>::id_type add_object(GameApi::Env &e, IFACE p)
+template<class D>
+typename AddTrait<typename NumTrait999<D>::type*>::id_type add_object(GameApi::Env &e,D *d)
 {
+  typename NumTrait999<D>::type* b = d;
   EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->objects.push_back((void*)p);
+  env->objects.push_back((void*)b);
   if (g_current_block != -2)
-    add_b(p);
+    add_b(b);
   GameApi::PAT im;
   im.id = env->objects.size()-1;
   return im;

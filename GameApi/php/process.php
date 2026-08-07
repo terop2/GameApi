@@ -256,7 +256,7 @@ echo "</div>\n";
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
-echo "<h2>SUITABLE EXTERNAL TOOLS:</h2> <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>, <a href=\"https://meshy.ai\">meshy</a>, <a href=\"https://hyper3d.ai/\">rodin</a>, <a href=\"https://3daistudio.com/\">3daistudio</a>, <a href=\"https://hi3d.ai/\">hi3d</a>.\n";
+echo "<h2>SUITABLE EXTERNAL TOOLS:</h2> <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>, <a href=\"https://meshy.ai\">meshy</a>, <a href=\"https://hyper3d.ai/\">rodin</a>, <a href=\"https://3daistudio.com/\">3daistudio</a>, <a href=\"https://hi3d.ai/\">hi3d</a>, <a href=\"https://tripo3d.ai\">tripo3d.ai</a>.\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";

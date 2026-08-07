@@ -2651,6 +2651,85 @@ private:
 
 #endif
 
+
+int ELayoutEmpty = 66666;
+
+class LayoutGuiWidget : public GuiWidgetForward
+{
+public:
+  LayoutGuiWidget(GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b) 
+  {    
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1,0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+  }
+  LayoutGuiWidget(GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_W(fptr_W), fptr_H(fptr_H), ctx(ctx) 
+  {
+    is_dynamic=true;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1,0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+  }
+  void set_size(Vector2d size_p)
+  {
+    // two layoutempty's.
+    if (is_dynamic) {
+      if (l==ELayoutEmpty && W==ELayoutEmpty) { W=fptr_W(ctx); l=size_p.dx-W-r; }
+      if (t==ELayoutEmpty && H==ELayoutEmpty) { H=fptr_H(ctx); t=size_p.dy-H-b; }
+      if (r==ELayoutEmpty && W==ELayoutEmpty) { W=fptr_W(ctx); r=size_p.dx-W-l; }
+      if (b==ELayoutEmpty && H==ELayoutEmpty) { H=fptr_H(ctx); b=size_p.dy-H-t; }
+    }
+    // normal layoututils equation solving
+    if (l==ELayoutEmpty) { l = size_p.dx - W - r; }
+    if (t==ELayoutEmpty) { t = size_p.dy - H - b; }
+    if (W==ELayoutEmpty) { W = size_p.dx - l - r; }
+    if (H==ELayoutEmpty) { H = size_p.dy - t - b; }
+    if (r==ELayoutEmpty) { r = size_p.dx - l - W; }
+    if (b==ELayoutEmpty) { b = size_p.dy - t - H; }
+    
+    GuiWidgetForward::set_size(size_p);
+    Vector2d delta = { float(l+r), float(t+b) };
+    vec[0]->set_size(size_p + (- delta));
+
+    Vector2d v = vec[0]->get_size();
+    Vector2d vv = { float(l+r), float(t+b) };
+    Vector2d vvv = v+vv;
+    size = vvv;
+  }
+  void set_pos(Point2d p)
+  {
+    GuiWidgetForward::set_pos(p);
+    Vector2d v = { float(l), float(t) };
+    vec[0]->set_pos(p+v);
+  }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
+    Vector2d v = vec[0]->get_size();
+    Vector2d vv = { float(l+r), float(t+b) };
+    Vector2d vvv = v+vv;
+    size = vvv;
+
+    set_pos(get_pos());
+    set_size(get_size());
+  }
+  int chosen_item() const
+  {
+    int val = vec[0]->chosen_item();
+    return val;
+  }
+
+private:
+  int l,t,W,H,r,b;
+  bool is_dynamic=false;
+  int (*fptr_W)(void *);
+  int (*fptr_H)(void *);
+  void *ctx;
+};
+
+
 //std::map<int,int> IconGuiWidget::arrs;
 class MarginGuiWidget : public GuiWidgetForward
 {
@@ -5898,6 +5977,16 @@ EXPORT GameApi::W GameApi::GuiApi::highlight(W wid)
 {
   GuiWidget *w = find_widget(e, wid);
   return add_widget(e, new Highlight2GuiWidget(ev, w, sh));
+}
+EXPORT GameApi::W GameApi::GuiApi::layout(W w, int l, int t, int W, int H, int r, int b)
+{
+  GuiWidget *ww = find_widget(e, w);
+  return add_widget(e, new LayoutGuiWidget(ev, ww, l, t, W,H,r, b));
+}
+EXPORT GameApi::W GameApi::GuiApi::layout_f(W w, int l, int t, int W, int H, int r, int b, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx)
+{
+  GuiWidget *ww = find_widget(e, w);
+  return add_widget(e, new LayoutGuiWidget(ev, ww, l, t, W,H,r, b,fptr_W,fptr_H,ctx));
 }
 EXPORT GameApi::W GameApi::GuiApi::margin(W w, int l, int t, int r, int b)
 {
