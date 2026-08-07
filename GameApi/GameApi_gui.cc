@@ -2676,7 +2676,7 @@ public:
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
-  LayoutGuiWidget(LayoutGuiWidget_WH type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_W), fptr_y(fptr_H), ctx(ctx)
+  LayoutGuiWidget(LayoutGuiWidget_WH type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx1, void *ctx2) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_W), fptr_y(fptr_H), ctx1(ctx1), ctx2(ctx2)
   {
     c_l = l;
     c_t = t;
@@ -2691,7 +2691,7 @@ public:
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
-  LayoutGuiWidget(LayoutGuiWidget_lt type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_l)(void *), int (*fptr_t)(void *), void *ctx) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_l), fptr_y(fptr_t), ctx(ctx) 
+  LayoutGuiWidget(LayoutGuiWidget_lt type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_l)(void *), int (*fptr_t)(void *), void *ctx1, void *ctx2) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_l), fptr_y(fptr_t), ctx1(ctx1), ctx2(ctx2) 
   {
     c_l = l;
     c_t = t;
@@ -2707,7 +2707,7 @@ public:
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
-  LayoutGuiWidget(LayoutGuiWidget_rb type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_r)(void *), int (*fptr_b)(void *), void *ctx) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_r), fptr_y(fptr_b), ctx(ctx) 
+  LayoutGuiWidget(LayoutGuiWidget_rb type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_r)(void *), int (*fptr_b)(void *), void *ctx1, void *ctx2) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_r), fptr_y(fptr_b), ctx1(ctx1), ctx2(ctx2) 
   {
     c_l = l;
     c_t = t;
@@ -2737,22 +2737,22 @@ public:
 
     
     if (is_dynamic_WH) {
-      if (l==ELayoutEmpty && W==ELayoutEmpty) { c_W=fptr_x(ctx); c_l=size_p.dx-c_W-r; }
-      if (t==ELayoutEmpty && H==ELayoutEmpty) { c_H=fptr_y(ctx); c_t=size_p.dy-c_H-b; }
-      if (r==ELayoutEmpty && W==ELayoutEmpty) { c_W=fptr_x(ctx); c_r=size_p.dx-c_W-l; }
-      if (b==ELayoutEmpty && H==ELayoutEmpty) { c_H=fptr_y(ctx); c_b=size_p.dy-c_H-t; }
+      if (l==ELayoutEmpty && W==ELayoutEmpty) { c_W=fptr_x(ctx1); c_l=size_p.dx-c_W-r; }
+      if (t==ELayoutEmpty && H==ELayoutEmpty) { c_H=fptr_y(ctx2); c_t=size_p.dy-c_H-b; }
+      if (r==ELayoutEmpty && W==ELayoutEmpty) { c_W=fptr_x(ctx1); c_r=size_p.dx-c_W-l; }
+      if (b==ELayoutEmpty && H==ELayoutEmpty) { c_H=fptr_y(ctx2); c_b=size_p.dy-c_H-t; }
     }
     if (is_dynamic_lt) {
-      if (l==ELayoutEmpty && W==ELayoutEmpty) { c_l=fptr_x(ctx); c_W=size_p.dx-c_l-r; }
-      if (t==ELayoutEmpty && H==ELayoutEmpty) { c_t=fptr_y(ctx); c_H=size_p.dy-c_t-b; }
-      if (r==ELayoutEmpty && l==ELayoutEmpty) { c_l=fptr_x(ctx); c_r=size_p.dx-W-c_l; }
-      if (b==ELayoutEmpty && t==ELayoutEmpty) { c_t=fptr_y(ctx); c_b=size_p.dy-H-c_t; }
+      if (l==ELayoutEmpty && W==ELayoutEmpty) { c_l=fptr_x(ctx1); c_W=size_p.dx-c_l-r; }
+      if (t==ELayoutEmpty && H==ELayoutEmpty) { c_t=fptr_y(ctx2); c_H=size_p.dy-c_t-b; }
+      if (r==ELayoutEmpty && l==ELayoutEmpty) { c_l=fptr_x(ctx1); c_r=size_p.dx-W-c_l; }
+      if (b==ELayoutEmpty && t==ELayoutEmpty) { c_t=fptr_y(ctx2); c_b=size_p.dy-H-c_t; }
     }
     if (is_dynamic_rb) {
-      if (l==ELayoutEmpty && r==ELayoutEmpty) { c_r=fptr_x(ctx); c_l=size_p.dx-W-c_r; }
-      if (t==ELayoutEmpty && b==ELayoutEmpty) { c_b=fptr_y(ctx); c_t=size_p.dy-H-c_b; }
-      if (r==ELayoutEmpty && W==ELayoutEmpty) { c_r=fptr_x(ctx); c_W=size_p.dx-c_r-l; }
-      if (b==ELayoutEmpty && H==ELayoutEmpty) { c_b=fptr_y(ctx); c_H=size_p.dy-c_b-t; }
+      if (l==ELayoutEmpty && r==ELayoutEmpty) { c_r=fptr_x(ctx1); c_l=size_p.dx-W-c_r; }
+      if (t==ELayoutEmpty && b==ELayoutEmpty) { c_b=fptr_y(ctx2); c_t=size_p.dy-H-c_b; }
+      if (r==ELayoutEmpty && W==ELayoutEmpty) { c_r=fptr_x(ctx1); c_W=size_p.dx-c_r-l; }
+      if (b==ELayoutEmpty && H==ELayoutEmpty) { c_b=fptr_y(ctx2); c_H=size_p.dy-c_b-t; }
     }
 
 
@@ -2809,7 +2809,8 @@ private:
   bool is_dynamic_rb=false;
   int (*fptr_x)(void *);
   int (*fptr_y)(void *);
-  void *ctx;
+  void *ctx1;
+  void *ctx2;
 };
 
 
@@ -6066,21 +6067,34 @@ EXPORT GameApi::W GameApi::GuiApi::layout(W w, int l, int t, int W, int H, int r
   GuiWidget *ww = find_widget(e, w);
   return add_widget(e, new LayoutGuiWidget(ev, ww, l, t, W,H,r, b));
 }
-EXPORT GameApi::W GameApi::GuiApi::layout_wh(W w, int l, int t, int W, int H, int r, int b, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx)
+EXPORT GameApi::W GameApi::GuiApi::layout_lt(W w, int l, int t, int W, int H, int r, int b, int (*fptr_l)(void *), int (*fptr_t)(void *), void *ctx, void *ctx2)
 {
   GuiWidget *ww = find_widget(e, w);
-  return add_widget(e, new LayoutGuiWidget(LayoutGuiWidget_WH(), ev, ww, l, t, W,H,r, b,fptr_W,fptr_H,ctx));
+  return add_widget(e, new LayoutGuiWidget(LayoutGuiWidget_lt(), ev, ww, l, t, W,H,r, b,fptr_l,fptr_t,ctx,ctx2));
 }
-EXPORT GameApi::W GameApi::GuiApi::layout_lt(W w, int l, int t, int W, int H, int r, int b, int (*fptr_l)(void *), int (*fptr_t)(void *), void *ctx)
+EXPORT GameApi::W GameApi::GuiApi::layout_wh(W w, int l, int t, int W, int H, int r, int b, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx, void *ctx2)
 {
   GuiWidget *ww = find_widget(e, w);
-  return add_widget(e, new LayoutGuiWidget(LayoutGuiWidget_lt(), ev, ww, l, t, W,H,r, b,fptr_l,fptr_t,ctx));
+  return add_widget(e, new LayoutGuiWidget(LayoutGuiWidget_WH(), ev, ww, l, t, W,H,r, b,fptr_W,fptr_H,ctx,ctx2));
 }
-EXPORT GameApi::W GameApi::GuiApi::layout_rb(W w, int l, int t, int W, int H, int r, int b, int (*fptr_r)(void *), int (*fptr_b)(void *), void *ctx)
+EXPORT GameApi::W GameApi::GuiApi::layout_rb(W w, int l, int t, int W, int H, int r, int b, int (*fptr_r)(void *), int (*fptr_b)(void *), void *ctx, void *ctx2)
 {
   GuiWidget *ww = find_widget(e, w);
-  return add_widget(e, new LayoutGuiWidget(LayoutGuiWidget_rb(), ev, ww, l, t, W,H,r, b,fptr_r,fptr_b,ctx));
+  return add_widget(e, new LayoutGuiWidget(LayoutGuiWidget_rb(), ev, ww, l, t, W,H,r, b,fptr_r,fptr_b,ctx,ctx2));
 }
+
+int fptr_empty(void *) { return 0; }
+struct Empty2 { int W; };
+int fptr_empty2(void *ctx) { Empty2 *e = (Empty2*)ctx; return e->W; }
+EXPORT GameApi::W GameApi::GuiApi::layout_lh(W w, int l, int t, int W, int H, int r, int b, int (*fptr_l)(void*), int (*fptr_H)(void*), void *ctx, void *ctx2)
+{
+  Empty2 e;
+  e.W = W;
+  GameApi::W w0 = layout_lt(w,l,0,W,ELayoutEmpty,r,0,fptr_l, fptr_empty, ctx, 0);
+  GameApi::W w1 = layout_wh(w0,0,t,ELayoutEmpty,H,0,b, fptr_empty2, fptr_H, (void*)&e,ctx2);
+  return w1;
+}
+
 EXPORT GameApi::W GameApi::GuiApi::margin(W w, int l, int t, int r, int b)
 {
   GuiWidget *ww = find_widget(e, w);
