@@ -17,6 +17,8 @@ void set_current_block(int id);
 int get_current_block();
 void clear_block(int id);
 
+extern int ELayoutEmpty;
+
 template<class T, class K> class Array;
 
 class CodeGenPositions;
@@ -46,7 +48,7 @@ struct PinIn { }; // empty class for return type of a function which
 template<class T>
 struct PinOut { T data; }; // one-element class that fetches data from pins. Also used for return type of function.
 
-
+  
   
 #undef rad1
 #undef rad2
@@ -2241,7 +2243,9 @@ public:
   IMPORT W highlight(int sx, int sy);
   IMPORT W highlight(W wid);
   IMPORT W layout(W item, int left, int top, int width, int height, int right, int bottom);
-  IMPORT W layout_f(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx);
+  IMPORT W layout_wh(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx);
+  IMPORT W layout_lt(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_l)(void *), int (*fptr_t)(void *), void *ctx);
+  IMPORT W layout_rb(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_r)(void *), int (*fptr_b)(void *), void *ctx);
   IMPORT W margin(W item, int left, int top, int right, int bottom);
   IMPORT W size(W item, int sx, int sy);
   IMPORT W left_align(W item, int sx);
