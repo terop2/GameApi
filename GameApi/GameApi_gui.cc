@@ -2662,7 +2662,15 @@ class LayoutGuiWidget : public GuiWidgetForward
 {
 public:
   LayoutGuiWidget(GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b) 
-  {    
+  {
+    c_l = l;
+    c_t = t;
+    c_W = W;
+    c_H = H;
+    c_r = r;
+    c_b = b;
+
+    
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
@@ -2670,6 +2678,13 @@ public:
   }
   LayoutGuiWidget(LayoutGuiWidget_WH type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_W), fptr_y(fptr_H), ctx(ctx)
   {
+    c_l = l;
+    c_t = t;
+    c_W = W;
+    c_H = H;
+    c_r = r;
+    c_b = b;
+    
     is_dynamic_WH=true;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1,0);
@@ -2678,6 +2693,14 @@ public:
   }
   LayoutGuiWidget(LayoutGuiWidget_lt type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_l)(void *), int (*fptr_t)(void *), void *ctx) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_l), fptr_y(fptr_t), ctx(ctx) 
   {
+    c_l = l;
+    c_t = t;
+    c_W = W;
+    c_H = H;
+    c_r = r;
+    c_b = b;
+
+    
     is_dynamic_lt=true;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1,0);
@@ -2686,68 +2709,86 @@ public:
   }
   LayoutGuiWidget(LayoutGuiWidget_rb type, GameApi::EveryApi &ev, GuiWidget *w, int l, int t, int W, int H, int r, int b, int (*fptr_r)(void *), int (*fptr_b)(void *), void *ctx) : GuiWidgetForward(ev, { w }), l(l), t(t), W(W), H(H), r(r), b(b), fptr_x(fptr_r), fptr_y(fptr_b), ctx(ctx) 
   {
+    c_l = l;
+    c_t = t;
+    c_W = W;
+    c_H = H;
+    c_r = r;
+    c_b = b;
+
     is_dynamic_rb=true;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
-  void set_size(Vector2d size_p)
+  void do_layout(Vector2d size_p)
   {
-    // two layoutempty's.
+    c_l = l;
+    c_t = t;
+    c_W = W;
+    c_H = H;
+    c_r = r;
+    c_b = b;
+
 
     if (l!=ELayoutEmpty && W!=ELayoutEmpty && r!=ELayoutEmpty) { assert(l+W+r==size_p.dx); }
     if (t!=ELayoutEmpty && H!=ELayoutEmpty && b!=ELayoutEmpty) { assert(t+H+b==size_p.dy); }
 
     
     if (is_dynamic_WH) {
-      if (l==ELayoutEmpty && W==ELayoutEmpty) { W=fptr_x(ctx); l=size_p.dx-W-r; }
-      if (t==ELayoutEmpty && H==ELayoutEmpty) { H=fptr_y(ctx); t=size_p.dy-H-b; }
-      if (r==ELayoutEmpty && W==ELayoutEmpty) { W=fptr_x(ctx); r=size_p.dx-W-l; }
-      if (b==ELayoutEmpty && H==ELayoutEmpty) { H=fptr_y(ctx); b=size_p.dy-H-t; }
+      if (l==ELayoutEmpty && W==ELayoutEmpty) { c_W=fptr_x(ctx); c_l=size_p.dx-c_W-r; }
+      if (t==ELayoutEmpty && H==ELayoutEmpty) { c_H=fptr_y(ctx); c_t=size_p.dy-c_H-b; }
+      if (r==ELayoutEmpty && W==ELayoutEmpty) { c_W=fptr_x(ctx); c_r=size_p.dx-c_W-l; }
+      if (b==ELayoutEmpty && H==ELayoutEmpty) { c_H=fptr_y(ctx); c_b=size_p.dy-c_H-t; }
     }
     if (is_dynamic_lt) {
-      if (l==ELayoutEmpty && W==ELayoutEmpty) { l=fptr_x(ctx); W=size_p.dx-l-r; }
-      if (t==ELayoutEmpty && H==ELayoutEmpty) { t=fptr_y(ctx); H=size_p.dy-t-b; }
-      if (r==ELayoutEmpty && l==ELayoutEmpty) { l=fptr_x(ctx); r=size_p.dx-W-l; }
-      if (b==ELayoutEmpty && t==ELayoutEmpty) { t=fptr_y(ctx); b=size_p.dy-H-t; }
+      if (l==ELayoutEmpty && W==ELayoutEmpty) { c_l=fptr_x(ctx); c_W=size_p.dx-c_l-r; }
+      if (t==ELayoutEmpty && H==ELayoutEmpty) { c_t=fptr_y(ctx); c_H=size_p.dy-c_t-b; }
+      if (r==ELayoutEmpty && l==ELayoutEmpty) { c_l=fptr_x(ctx); c_r=size_p.dx-W-c_l; }
+      if (b==ELayoutEmpty && t==ELayoutEmpty) { c_t=fptr_y(ctx); c_b=size_p.dy-H-c_t; }
     }
     if (is_dynamic_rb) {
-      if (l==ELayoutEmpty && r==ELayoutEmpty) { r=fptr_x(ctx); l=size_p.dx-W-r; }
-      if (t==ELayoutEmpty && b==ELayoutEmpty) { b=fptr_y(ctx); t=size_p.dy-H-b; }
-      if (r==ELayoutEmpty && W==ELayoutEmpty) { r=fptr_x(ctx); W=size_p.dx-r-l; }
-      if (b==ELayoutEmpty && H==ELayoutEmpty) { b=fptr_y(ctx); H=size_p.dy-b-t; }
+      if (l==ELayoutEmpty && r==ELayoutEmpty) { c_r=fptr_x(ctx); c_l=size_p.dx-W-c_r; }
+      if (t==ELayoutEmpty && b==ELayoutEmpty) { c_b=fptr_y(ctx); c_t=size_p.dy-H-c_b; }
+      if (r==ELayoutEmpty && W==ELayoutEmpty) { c_r=fptr_x(ctx); c_W=size_p.dx-c_r-l; }
+      if (b==ELayoutEmpty && H==ELayoutEmpty) { c_b=fptr_y(ctx); c_H=size_p.dy-c_b-t; }
     }
 
 
     // normal layoututils equation solving
-    if (l==ELayoutEmpty) { l = size_p.dx - W - r; }
-    if (t==ELayoutEmpty) { t = size_p.dy - H - b; }
-    if (W==ELayoutEmpty) { W = size_p.dx - l - r; }
-    if (H==ELayoutEmpty) { H = size_p.dy - t - b; }
-    if (r==ELayoutEmpty) { r = size_p.dx - l - W; }
-    if (b==ELayoutEmpty) { b = size_p.dy - t - H; }
-    
+    if (l==ELayoutEmpty) { c_l = size_p.dx - W - r; }
+    if (t==ELayoutEmpty) { c_t = size_p.dy - H - b; }
+    if (W==ELayoutEmpty) { c_W = size_p.dx - l - r; }
+    if (H==ELayoutEmpty) { c_H = size_p.dy - t - b; }
+    if (r==ELayoutEmpty) { c_r = size_p.dx - l - W; }
+    if (b==ELayoutEmpty) { c_b = size_p.dy - t - H; }
+  }
+  void set_size(Vector2d size_p)
+  {
+    // two layoutempty's.
+    do_layout(size_p);    
     GuiWidgetForward::set_size(size_p);
-    Vector2d delta = { float(l+r), float(t+b) };
+    Vector2d delta = { float(c_l+c_r), float(c_t+c_b) };
     vec[0]->set_size(size_p + (- delta));
 
     Vector2d v = vec[0]->get_size();
-    Vector2d vv = { float(l+r), float(t+b) };
+    Vector2d vv = { float(c_l+c_r), float(c_t+c_b) };
     Vector2d vvv = v+vv;
     size = vvv;
   }
   void set_pos(Point2d p)
   {
     GuiWidgetForward::set_pos(p);
-    Vector2d v = { float(l), float(t) };
+    do_layout(size);
+    Vector2d v = { float(c_l), float(c_t) };
     vec[0]->set_pos(p+v);
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
     Vector2d v = vec[0]->get_size();
-    Vector2d vv = { float(l+r), float(t+b) };
+    Vector2d vv = { float(c_l+c_r), float(c_t+c_b) };
     Vector2d vvv = v+vv;
     size = vvv;
 
@@ -2762,6 +2803,7 @@ public:
 
 private:
   int l,t,W,H,r,b;
+  int c_l,c_t,c_W,c_H,c_r,c_b;
   bool is_dynamic_WH=false;
   bool is_dynamic_lt=false;
   bool is_dynamic_rb=false;
