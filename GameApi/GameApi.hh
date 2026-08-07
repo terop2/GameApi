@@ -2240,6 +2240,8 @@ public:
   IMPORT W rectangle(int start_x, int end_x, int start_y, int end_y, unsigned int color);
   IMPORT W highlight(int sx, int sy);
   IMPORT W highlight(W wid);
+  IMPORT W layout(W item, int left, int top, int width, int height, int right, int bottom);
+  IMPORT W layout_f(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx);
   IMPORT W margin(W item, int left, int top, int right, int bottom);
   IMPORT W size(W item, int sx, int sy);
   IMPORT W left_align(W item, int sx);
