@@ -2243,9 +2243,10 @@ public:
   IMPORT W highlight(int sx, int sy);
   IMPORT W highlight(W wid);
   IMPORT W layout(W item, int left, int top, int width, int height, int right, int bottom);
-  IMPORT W layout_wh(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx);
-  IMPORT W layout_lt(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_l)(void *), int (*fptr_t)(void *), void *ctx);
-  IMPORT W layout_rb(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_r)(void *), int (*fptr_b)(void *), void *ctx);
+  IMPORT W layout_wh(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_W)(void *), int (*fptr_H)(void *), void *ctx1, void *ctx2);
+  IMPORT W layout_lt(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_l)(void *), int (*fptr_t)(void *), void *ctx1, void *ctx2);
+  IMPORT W layout_rb(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_r)(void *), int (*fptr_b)(void *), void *ctx1, void *ctx2);
+  IMPORT W layout_lh(W item, int left, int top, int width, int height, int right, int bottom, int (*fptr_l)(void*), int (*fptr_H)(void*), void *ctx1, void *ctx2);
   IMPORT W margin(W item, int left, int top, int right, int bottom);
   IMPORT W size(W item, int sx, int sy);
   IMPORT W left_align(W item, int sx);
