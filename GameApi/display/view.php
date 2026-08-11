@@ -1171,13 +1171,14 @@ for(var i=0;i<s;i++) {
       {
 	contents = contents.buffer;
       }
-      let str = new TextDecoder().decode();
-     // console.log(str);
+      let str = new TextDecoder().decode(contents);
+      //console.log(str);
       if (str.indexOf("animations") !== -1) result=true; 
 
       }
   }
-       
+  //console.log("IS_ANIMATED:");
+  //console.log(result);
      // TODO, how to handle zip files.
   return result;
 }
