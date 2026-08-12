@@ -1165,6 +1165,7 @@ function get_is_animated(contents_array2)
 for(var i=0;i<s;i++) {
       var filename = flag ? anim_filename_array[i] : filename_array[i];
       //console.log(filename);
+      if (filename.substr(-4)==".zip") { result=true; }
       if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
       var contents = flag ? anim_contents_array2[i] : contents_array2[i];
       if (contents instanceof Uint8Array)
