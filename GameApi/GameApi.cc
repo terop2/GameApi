@@ -18614,7 +18614,7 @@ public:
 	int s = vis->vec.size();
 	for(int i=0;i<s;i++) counter+=vis->count(i);
 	
-      int num2 = (counter/30)+1;
+	int num2 = 1; //(counter/30)+1;
       if (num2<1) num2=1;
       for(int i=0;i<num2;i++) {
 	vis->execute(vis_counter);
