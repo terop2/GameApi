@@ -41,6 +41,7 @@ extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
 extern int g_pthread_count;
+extern Pipeline *g_last_resize_pipeline;
 
 
 std::map<int,pthread_mutex_t *> g_decode_mutexes;
@@ -7802,7 +7803,7 @@ GameApi::LI scale_to_gltf_size_li(GameApi::Env &e, GameApi::EveryApi &ev, GameAp
 class ScaleToGLTF_p : public FaceCollection
 {
 public:
-  ScaleToGLTF_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2) : env(e), ev(ev), p(p), p2(p2) { res.id=-1; }
+  ScaleToGLTF_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2, GameApi::TRR resize_transfer_id) : env(e), ev(ev), p(p), p2(p2), resize_transfer_id(resize_transfer_id) { res.id=-1; }
   virtual std::string name() const { return "ScaleToGLTF_p"; }
 
   void Collect(CollectVisitor &vis)
@@ -7837,6 +7838,7 @@ public:
   GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
   Movement *move = find_move(env,I6);
   Matrix m = move->get_whole_matrix(0.0, 1.0);
+  g_last_resize_pipeline->add_matrix(resize_transfer_id.id,m);
   //g_last_resize=m;
   GameApi::M m2 = add_matrix2(env,m);
   res = ev.polygon_api.matrix(p2,m2);
@@ -7955,11 +7957,12 @@ private:
   GameApi::P p;
   GameApi::P p2;
   GameApi::P res;
+  GameApi::TRR resize_transfer_id;
 };
 
-GameApi::P scale_to_gltf_size_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2)
+GameApi::P scale_to_gltf_size_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2, GameApi::TRR resize_transfer_id)
 {
-  return add_polygon2(e, new ScaleToGLTF_p(e,ev,p,p2),1);
+  return add_polygon2(e, new ScaleToGLTF_p(e,ev,p,p2,resize_transfer_id),1);
 }
 
 
@@ -8569,10 +8572,10 @@ GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi 
 
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param, GameApi::TRB transfer_id);
-GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param);
+GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param, GameApi::TRB transfer_id);
 
 GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param, GameApi::TRB transfer_id);
-GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param);
+GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param, GameApi::TRB transfer_id);
 GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys, int mode,int inst, GameApi::TRA anim_transfer_id, int frame_skip);
 
 
@@ -8971,7 +8974,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   return ret;
 }
 
-GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  GameApi::P resize_obj, std::function<GameApi::P (GameApi::P p)> fptr, GameApi::MS ms, int node_id, std::string keys, GltfMaterialParams *param, Matrix root)
+GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  GameApi::P resize_obj, std::function<GameApi::P (GameApi::P p)> fptr, GameApi::MS ms, int node_id, std::string keys, GltfMaterialParams *param, Matrix root, GameApi::TRB transfer_id)
 {
   //if (!load2) load2 = load;
   int s2 = interface->nodes_size(); //load->model.nodes.size();
@@ -9083,7 +9086,7 @@ GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
 	int mesh_id = node.mesh;
 	mesh.id = -1;
 	if (mesh_id != -1) {
-	  mesh = gltf_mesh2_with_skeleton_inst_matrix(e,ev,interface, resize_obj, [&](GameApi::P p) { return f(p); },ms,  mesh_id, i,keys,param);
+	  mesh = gltf_mesh2_with_skeleton_inst_matrix(e,ev,interface, resize_obj, [&](GameApi::P p) { return f(p); },ms,  mesh_id, i,keys,param,transfer_id);
 	  done = true;
 	}
 	if (done)
@@ -9095,7 +9098,7 @@ GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
     int mesh_id = node.mesh;
     mesh.id = -1;
     if (mesh_id!=-1) {
-      mesh = gltf_mesh2_inst_matrix( e, ev, interface, resize_obj, [&](GameApi::P p) { return f(p); }, ms,  mesh_id, 0, keys,param);
+      mesh = gltf_mesh2_inst_matrix( e, ev, interface, resize_obj, [&](GameApi::P p) { return f(p); }, ms,  mesh_id, 0, keys,param, transfer_id);
     }
   }
   // todo cameras
@@ -9115,7 +9118,7 @@ GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
     int child_id = node.children[i];
     if (child_id!=-1) {
       //std::cout << "{";
-      GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, resize_obj, [&](GameApi::P p) { return f(p); }, ms, child_id,keys,param,o2.second );
+      GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, resize_obj, [&](GameApi::P p) { return f(p); }, ms, child_id,keys,param,o2.second, transfer_id );
       vec.push_back(ml);
       //std::cout << "}";
     }
@@ -9274,7 +9277,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
 GameApi::P identity_p(GameApi::P p) { return p; }
 
 
-GameApi::ML gltf_scene2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, GameApi::MS ms, int scene_id, std::string keys, GltfMaterialParams *param)
+GameApi::ML gltf_scene2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, GameApi::MS ms, int scene_id, std::string keys, GltfMaterialParams *param, GameApi::TRB transfer_id)
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -9287,7 +9290,7 @@ GameApi::ML gltf_scene2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLT
   int s = scene.nodes.size();
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, resize_obj, &identity_p, ms, scene.nodes[i], keys,param,Matrix::Identity());
+    GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, resize_obj, &identity_p, ms, scene.nodes[i], keys,param,Matrix::Identity(),transfer_id);
     vec.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, vec);
@@ -9479,7 +9482,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
 }
 
 
-GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P p)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param)
+GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P p)> fptr, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param, GameApi::TRB transfer_id)
 {
   //std::cout << mesh_id << " :: " << skin_id << std::endl;
   int cache_id = get_cache_id(interface);
@@ -9504,8 +9507,8 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       p= scale_to_gltf_size_p(e,ev,resize_obj,fptr(p0));    
     }
 #else
-
-      p = scale_to_gltf_size_p(e,ev,resize_obj,fptr(p0));
+  GameApi::TRR resize_transfer_id = { transfer_id.id };
+  p = scale_to_gltf_size_p(e,ev,resize_obj,fptr(p0),resize_transfer_id);
 #endif
       
       
@@ -9524,6 +9527,8 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       GameApi::MT mat3 = par->border_width()>=0.5?ev.materials_api.toon_border(ev,mat2,par->border_width(),par->border_color(),!colour):mat2;
 
       GameApi::MT mat2_anim;
+      // THEN-BRANCH OF THIS IF STATEMENT FAILS TO RENDER,
+      // code review didn't reveal why. Breaks animation instancing.
       if (interface->animations_size()!=0 && keys.size()>0) {
 	//int ssz = interface->animations_size();
 	int maxtimeindexes=0;
@@ -9532,7 +9537,7 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
 	  int mm = gltf_mesh2_calc_max_timeindexes(interface,iu,skin_id);
 	  if (mm>maxtimeindexes) maxtimeindexes=mm;
 	  //}
-	  GameApi::TRA anim_transfer_id = { 440 };
+	  GameApi::TRA anim_transfer_id = { transfer_id.id /*440*/ };
 	  mat2_anim= gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,par->mode(),mesh_id+10*i+100*cache_id, anim_transfer_id,par->frame_skip());
       } else
 	{
@@ -9711,7 +9716,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   }
 }
 
-GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr,GameApi::MS ms, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param)
+GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::P resize_obj, std::function<GameApi::P (GameApi::P)> fptr,GameApi::MS ms, int mesh_id, int skin_id, std::string keys, GltfMaterialParams *param, GameApi::TRB transfer_id)
 {
   //std::cout << mesh_id << " :: " << skin_id << std::endl;
   int cache_id = get_cache_id(interface);
@@ -9735,7 +9740,8 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
 	  p= scale_to_gltf_size_p(e,ev,resize_obj,fptr(p0));    
 	}
 #else
-      p = scale_to_gltf_size_p(e,ev,resize_obj,fptr(p0));
+        GameApi::TRR resize_transfer_id = { transfer_id.id };
+	p = scale_to_gltf_size_p(e,ev,resize_obj,fptr(p0), resize_transfer_id);
 #endif
       int mat = m.primitives[i].material;
       par->set_material_id(mat);
@@ -10424,8 +10430,8 @@ private:
 class GltfMeshAllInstMatrix : public MainLoopItem
 {
 public:
-  GltfMeshAllInstMatrix(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GLTFModelInterface *resize_obj, GameApi::MS ms, std::string keys, GltfMaterialParams *param)
-    :env(env), ev(ev), interface(interface),resize_obj(resize_obj), ms(ms),keys(keys),param(param) { res.id = -1;}
+  GltfMeshAllInstMatrix(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GLTFModelInterface *resize_obj, GameApi::MS ms, std::string keys, GltfMaterialParams *param, GameApi::TRB transfer_id)
+    :env(env), ev(ev), interface(interface),resize_obj(resize_obj), ms(ms),keys(keys),param(param), transfer_id(transfer_id) { res.id = -1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -10458,7 +10464,7 @@ public:
       GameApi::P mesh = gltf_scene2_p(env, ev, resize_obj /*interface*/,scene_id2,"");
       
       int scene_id = interface->get_default_scene();
-      GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,param ); // 0 = take numtimeindexes from first animation
+      GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,param,transfer_id ); // 0 = take numtimeindexes from first animation
       
       res = ml;
       
@@ -10496,7 +10502,7 @@ public:
     //GameApi::MS ms2 = scale_to_gltf_size_ms(ev,mesh2,ms);
     
     int scene_id = interface->get_default_scene();
-    GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,param); // 0 = take numtimeindexes from first animation
+    GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,mesh, ms,scene_id,keys,param,transfer_id); // 0 = take numtimeindexes from first animation
 
     res = ml;
     //GameApi::P mesh2 = ev.polygon_api.cube(-300.0,300.0,-300.0,300.0,-300.0,300.0);
@@ -10581,6 +10587,7 @@ private:
   bool DoHeavyDone=false;
   //int frame_skip;
   GltfMaterialParams *param;
+  GameApi::TRB transfer_id;
 };
 
 
@@ -10616,7 +10623,8 @@ public:
       res= scale_to_gltf_size_p(env,ev,p,p);    
     }
 #else
-    res = scale_to_gltf_size_p(env,ev,p,p);
+  GameApi::TRR transfer_id = { 441 };
+  res = scale_to_gltf_size_p(env,ev,p,p,transfer_id);
 #endif
     
     if (res.id!=-1) {
@@ -11358,7 +11366,8 @@ public:
       res= scale_to_gltf_size_p(env,ev,p2,p3);    
     }
 #else
-    res = scale_to_gltf_size_p(env,ev,p2,p3);
+  GameApi::TRR transfer_id = { 441 };
+  res = scale_to_gltf_size_p(env,ev,p2,p3,transfer_id);
 #endif
     
     
@@ -11702,7 +11711,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst_matrix( GameApi::EveryApi &
   GltfMaterialParams *param = new GltfMaterialParams_impl(0,0,mix,self_mult,rest_mult,Vector(light_dir_x,light_dir_y,light_dir_z),emissive,lod_level,transparent,acesfilm,0,border_width,border_color,frame_skip,mode);
   GLTFModelInterface *interface = find_gltf(e,model0);
   GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
-  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,keys,param));
+  GameApi::TRB transfer_id = { 440 };
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,keys,param, transfer_id));
 }
 
 
@@ -11736,7 +11746,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst( GameApi::EveryApi &ev
   GameApi::MS I1=ev.matrices_api.from_points(ms);
   GLTFModelInterface *interface = find_gltf(e,model0);
   GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
-  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,I1,keys,param));
+  GameApi::TRB transfer_id = { 440 };
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,I1,keys,param,transfer_id));
 
 }
 GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst_matrix( GameApi::EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, bool emissive, int frame_skip, int lod_level)
@@ -11744,7 +11755,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst_matrix( GameApi::Every
   GltfMaterialParams *param = new GltfMaterialParams_impl(0,0,mix,self_mult,rest_mult,Vector(light_dir_x,light_dir_y,light_dir_z),emissive,lod_level,transparent,acesfilm,0,border_width,border_color,frame_skip,mode);
   GLTFModelInterface *interface = find_gltf(e,model0);
   GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
-  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,keys,param));
+  GameApi::TRB transfer_id = { 440 };
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,keys,param,transfer_id));
 
 }
 							  
@@ -13889,7 +13901,8 @@ GameApi::ARR gltf_split_faces(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelI
       p2= scale_to_gltf_size_p(e,ev,p,p);    
     }
 #else
-  p2 = scale_to_gltf_size_p(e,ev, p, p);
+  GameApi::TRR transfer_id = { 441 };
+  p2 = scale_to_gltf_size_p(e,ev, p, p, transfer_id);
 #endif
   GameApi::ATT att = gltf_attach(e,interface, mesh_index, prim_index, num);
   return ev.polygon_api.split_faces(p2, att, max_attach);
@@ -14724,7 +14737,8 @@ public:
   }
   void HeavyPrepare()
   {
-    resize = g_last_resize; // this communicates with resize_to_correct_size()
+    resize = g_last_resize_pipeline->get_matrix(anim_transfer_id.id);
+    //resize = g_last_resize; // this communicates with resize_to_correct_size()
     resizei = Matrix::Inverse(resize);
   }
   void Prepare() {
@@ -15026,6 +15040,9 @@ public:
       ev.shader_api.set_var(sh, "jointMatrix", jointMatrices,
 			    start_joint,end_joint);
 			      //0,std::min(int(jointMatrices.size()), int(200)));
+
+
+      
       ev.shader_api.set_var(sh, "resize_matrix", add_matrix2(env,resize));
       ev.shader_api.set_var(sh, "resize_matrix_inv", add_matrix2(env,resizei));
 #ifndef NO_MV
