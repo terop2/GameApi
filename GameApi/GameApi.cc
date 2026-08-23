@@ -18632,7 +18632,7 @@ public:
       //#ifndef EMSCRIPTEN
       //std::cout << "Counters: " << num << " " << counter << std::endl;
       if (vis->vec.size()>0)
-	ProgressBar(33344, (15*15*num/counter), 15*15, "collect");
+      	ProgressBar(33344, (15*15*num/counter), 15*15, "collect");
       //if (num>=counter) next_step=true;
 
       //if (next_step)
@@ -31862,6 +31862,13 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk(std::string filename)
 GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(const unsigned char *buf, const unsigned char *end)
 {
   return add_disk_store(e, new LoadDS(buf,end));
+}
+
+void GameApi::MainLoopApi::call_execute_hack(ML ml)
+{
+  MainLoopEnv ee;
+  MainLoopItem *item = find_main_loop(e,ml);
+  item->execute(ee);
 }
 
 class SaveDSMain : public MainLoopItem

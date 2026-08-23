@@ -2541,13 +2541,13 @@ public:
       current = filled;
     }
   }
-
+  
   virtual bool has_normal() const { return current->has_normal(); }
   virtual bool has_attrib() const { return current->has_attrib(); }
   virtual bool has_color() const { return current->has_color(); }
   virtual bool has_texcoord() const { return current->has_texcoord(); }
   virtual bool has_skeleton() const { return current->has_skeleton(); }
-
+  
   virtual int NumFaces() const { return current->NumFaces(); }
   virtual int NumPoints(int face) const { return current->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return current->FacePoint(face,point); }
@@ -2588,6 +2588,15 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int 
   FaceCollection *emp = find_facecoll(e, p);
   GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count,false),1); 
   FaceCollection *coll = find_facecoll(e,p1);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
+  set_current_block(c);
+  return p2;
+}
+EXPORT GameApi::P GameApi::PolygonApi::prepare_cache(std::string url, GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  int c = get_current_block();
+  set_current_block(-1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
   set_current_block(c);
   return p2;
@@ -17413,6 +17422,8 @@ public:
     if (num<0) return -1;
     unsigned char *ptr = ds->Block(num);
     DSVertexHeader *head = (DSVertexHeader*)ptr;
+    //std::cout << head->numfaces << " " << head->numobjects << std::endl;
+    //std::cout << head->flags << std::endl;
     return head->flags;
   }
   int NumPoints(int face) const
@@ -17467,11 +17478,14 @@ public:
     return array[pos];
   }
   bool has_texcoord() const {
+    //std::cout << HasFlags() << " " << DSDisableTexCoord << std::endl;
+    //std::cout << GetFlags() << std::endl;
     if (HasFlags() && (GetFlags() & DSDisableTexCoord)) return false; 
     return true; }
   Point2d TexCoord(int face, int point) const
   {
     if (!ready) { Point2d p; p.x=0.0; p.y =0.0; return p; }
+    //std::cout << "HELLO" << std::endl;
     if (HasFlags() && GetFlags()&DSDisableTexCoord) {
       Point2d p; p.x=0.0; p.y =0.0; return p;
     }
@@ -17655,6 +17669,7 @@ public:
     header.numfaces=s;
     int s3 = coll->NumObjects();
     header.numobjects = s3;
+    header.flags = flags;
     int accum = 0;
     InstallProgress(111,"Fetch points", 15);
     pointcounts.reserve(s);

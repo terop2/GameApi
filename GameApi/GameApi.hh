@@ -399,6 +399,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT void call_execute_hack(ML ml);
   IMPORT ML double_instancing(EveryApi &ev, P p, PTS static_inst, PTS real_inst, MT mat);
   IMPORT ML double_instancing_matrix(EveryApi &ev, P p, MS static_ms, MS real_ms, MT mat);
   IMPORT ML AI_modified(EveryApi &ev, ML ml, std::string url);
@@ -2859,6 +2860,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT P prepare_cache(std::string url, P p);
   IMPORT P sphere_rays(float center_x, float center_y, float center_z, float radius,
 		       float delta_alfa, float delta_beta,
 		       FS field,

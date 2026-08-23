@@ -73,7 +73,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev", "out_filename", "poly", "disable_normal", "disable_color", "disable_texcoord", "disable_texcoord3", "disable_objects" },
 			 { "EveryApi&", "std::string", "P","bool", "bool", "bool", "bool", "bool" },
 			 { "ev", "test.ds", "", "false", "false", "false", "false", "false" },
-			 "ML", "mainloop_api", "save_ds_ml"));
+			 "DS", "mainloop_api", "save_ds_ml"));
 #endif
 #if (ALL==1)||(VOX_VOXEL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_voxel,
