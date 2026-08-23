@@ -30211,7 +30211,7 @@ public:
 		int bufidx = new_buffer.size();
 		int bufvidx = new_bufviews.size();
 		int accidx = new_accessors.size();
-	      
+ #if 0
 		new_buffer.push_back(tinygltf::Buffer());
 		new_bufviews.push_back(tinygltf::BufferView());
 		new_accessors.push_back(tinygltf::Accessor());
@@ -30223,6 +30223,20 @@ public:
 		buf2a = buf;
 		bv2a = bv;
 		acc2a =acc;
+
+#endif
+#if 1
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+
+		tinygltf::Buffer &buf2a = const_cast<tinygltf::Buffer&>(buf); //new_buffer[new_buffer.size()-1];
+
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+		bv2a = bv;
+		acc2a =acc;
+#endif
+
 		
 		acc2a.bufferView = start_bufview + bufvidx;
 		bv2a.buffer = start_buffer + bufidx;
@@ -30249,7 +30263,8 @@ public:
 		int bufidx = new_buffer.size();
 		int bufvidx = new_bufviews.size();
 		int accidx = new_accessors.size();
-	      
+
+#if 0
 		new_buffer.push_back(tinygltf::Buffer());
 		new_bufviews.push_back(tinygltf::BufferView());
 		new_accessors.push_back(tinygltf::Accessor());
@@ -30261,7 +30276,17 @@ public:
 		buf2a = buf;
 		bv2a = bv;
 		acc2a =acc;
-		
+#endif
+#if 1
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+		tinygltf::Buffer &buf2a = const_cast<tinygltf::Buffer&>(buf); //new_buffer[new_buffer.size()-1];
+
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+		bv2a = bv;
+		acc2a =acc;
+#endif
 		acc2a.bufferView = start_bufview + bufvidx;
 		bv2a.buffer = start_buffer + bufidx;
 		//vec2[j].indices = start_accessors + accidx;
@@ -30287,7 +30312,7 @@ public:
 		int bufidx = new_buffer.size();
 		int bufvidx = new_bufviews.size();
 		int accidx = new_accessors.size();
-	      
+#if 0
 		new_buffer.push_back(tinygltf::Buffer());
 		new_bufviews.push_back(tinygltf::BufferView());
 		new_accessors.push_back(tinygltf::Accessor());
@@ -30299,6 +30324,17 @@ public:
 		buf2a = buf;
 		bv2a = bv;
 		acc2a =acc;
+#endif
+#if 1
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+		tinygltf::Buffer &buf2a = const_cast<tinygltf::Buffer&>(buf); //new_buffer[new_buffer.size()-1];
+
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+		bv2a = bv;
+		acc2a =acc;
+#endif
 		
 		acc2a.bufferView = start_bufview + bufvidx;
 		bv2a.buffer = start_buffer + bufidx;
@@ -30385,10 +30421,18 @@ public:
   virtual int buffers_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->buffers_size() + new_buffer.size(); }
   virtual const tinygltf::Buffer &get_buffer(int i) const
   {
+#if 0
     const_cast<DecimateTF*>(this)->HeavyPrepare();
     if (i>=0 && i<next->buffers_size())
       return next->get_buffer(i);
     return new_buffer[i-start_buffer];
+#endif
+#if 1
+    const_cast<DecimateTF*>(this)->HeavyPrepare();
+    if (i>=0 && i<next->buffers_size())
+      return next->get_buffer(i);
+    return next->get_buffer(i-start_buffer); //new_buffer[i-start_buffer];
+#endif
   }
 
   virtual int meshes_size() const { const_cast<DecimateTF*>(this)->HeavyPrepare(); if (firsttime) return 0; return next->meshes_size(); }
