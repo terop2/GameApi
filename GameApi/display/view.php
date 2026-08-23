@@ -374,6 +374,7 @@ Vue.component('appnormals', {
 	<option value="5">Wireframe+Edged normals</option>
 	<option value="6">Wireframe+smooth normals</option>
         </select>
+	<br><input v-on:change="$emit('change_model')" true-value="true" false-value="false" type="checkbox" name="animated" id="animated" checked/>animated
        </div></div>`
  });    
        
@@ -521,7 +522,7 @@ Vue.component('objbrightness', {
     <template v-for="bg in state.brightness_db">
     <option v-bind:value="parse_bright_count(bg)">{{ parse_bright_name(bg) }}</option>
     </template>
-    </select><br><input v-on:change="$emit('change_model')" true-value="true" false-value="false" type="checkbox" name="acesfilm" id="acesfilm" checked/>acesfilm</div></div>
+    </select><br><input v-on:change="$emit('change_model')" true-value="true" false-value="false" type="checkbox" name="acesfilm" id="acesfilm"/>acesfilm</div></div>
     `
 });
 
@@ -1115,6 +1116,12 @@ function get_border_value()
   var elem = document.getElementById("border-select");
   return parseInt(elem.value);
 }
+function get_animated_value()
+{
+  var elem = document.getElementById("animated");
+  console.log(elem.checked);
+return elem.checked; // returns true or false
+}
 function get_acesfilm_value()
 {
   var elem = document.getElementById("acesfilm");
@@ -1152,7 +1159,6 @@ function get_border_width(i)
 }
 function get_is_animated(contents_array2)
 {
-
    var s = contents_array2.length;
    var flag = false;
     if (s==0) {
@@ -1178,9 +1184,11 @@ for(var i=0;i<s;i++) {
 
       }
   }
-  //console.log("IS_ANIMATED:");
-  //console.log(result);
      // TODO, how to handle zip files.
+
+ 
+  if (get_animated_value() == false) { result=false; }
+
   return result;
 }
 

@@ -5959,6 +5959,10 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
     p3 = ev.polygon_api.flip_normals(p2);
   else
     p3 = p2;
+  
+  // memoize doesnt work
+  //GameApi::P p4 = ev.polygon_api.prepare_cache(interface->Url(), p3);
+  
  return p3;
 }
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);

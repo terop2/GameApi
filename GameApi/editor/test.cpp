@@ -1868,6 +1868,19 @@ public:
 			      env->gui->delete_widget(env->mem);
 			      env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);				
 			      } else
+			    if (type=="DS")
+			      {
+			      ML ml;
+			      ml.id = id;
+			      //env->env->free_temp_memory();
+			      //env->gui->delete_widget(env->mem);
+			      env->ev->mainloop_api.call_execute_hack(ml);
+			      //MainLoopItem *item = find_main_loop(e,ml);
+			      //item->execute(env->e);
+			      
+			      //env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			      display=false;
+			      } else
 			    if (type=="MT")
 			      {
 				MT mat;
