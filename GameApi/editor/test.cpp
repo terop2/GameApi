@@ -1285,8 +1285,8 @@ public:
 		  default:
 		  case 0: properties_button = true; break;
 		  case 1: codegen_button = true; break;
-		  case 2: pkggen_button = true; break;
-		  case 3: display_button = true; break;
+		    //case 2: pkggen_button = true; break;
+		  case 2: display_button = true; break;
 		  };
 		  env->popup_selections = std::vector<W>();
 		  break;
@@ -1317,7 +1317,7 @@ public:
 		std::vector<std::string> labels;
 		labels.push_back("Properties");
 		labels.push_back("CodeGen");
-		labels.push_back("Generate Pkg");
+		//labels.push_back("Generate Pkg");
 		labels.push_back("Display");
 		
 		W w = env->gui->popup_menu(int(x), int(y), labels, env->atlas, env->atlas_bm, env->popup_selections);

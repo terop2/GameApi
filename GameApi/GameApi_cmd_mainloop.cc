@@ -1925,6 +1925,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::we
 #endif
 
 #if (ALL==1)||(MEMMAP_WINDOW2==1)
+#if 0
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::memmap_window2,
 			 "pkg_window",
 			 { "ev", "url" },
@@ -1932,13 +1933,16 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "ev", "http://meshpage.org/assets/game1.pkg" },
 			 "ML", "mainloop_api", "memmap_window2"));
 #endif
+#endif
 #if (ALL==1)||(MEMMAP_WINDOW3==1)
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::memmap_window3,
 			 "pkg_window2",
 			 { "ev", "url_1", "url_2", "url_3", "url_4", "url_5", "url_6" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
 			 { "ev", "http://meshpage.org/assets/game1_1.pkg", "http://meshpage.org/assets/game1_2.pkg", "http://meshpage.org/assets/game1_3.pkg", "http://meshpage.org/assets/game1_4.pkg", "http://meshpage.org/assets/game1_5.pkg", "http://meshpage.org/assets/game1_6.pkg" },
 			 "ML", "mainloop_api", "memmap_window3"));
+#endif
 #endif  
 
 #if 0

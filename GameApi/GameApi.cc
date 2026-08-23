@@ -42846,6 +42846,7 @@ IMPORT void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename
   std::ofstream of6(filename_6.c_str(), std::ofstream::binary);
   of6.write(buffer+newlength*5+len_fix,newlength);
   of6.close();
+
 }
 
 extern std::vector<const unsigned char*> g_content;
