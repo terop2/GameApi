@@ -54,6 +54,20 @@
 			 { "" },
 			 "FB", "float_bitmap_api", "from_alpha"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_grayscale,
+			 "from_grayscale",
+			 { "color_bm" },
+			 { "BM" },
+			 { "" },
+			 "FB", "float_bitmap_api", "from_grayscale"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::range_choose,
+			 "bm_choose_range",
+			 { "fbm", "start_range", "end_range" },
+			 { "FB", "float", "float" },
+			 { "", "0.5", "1.0" },
+			 "BB", "bitmap_api", "range_choose"));
+
+  
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::min_fb,
 			 "min_fb",

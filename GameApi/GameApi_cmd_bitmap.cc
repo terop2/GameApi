@@ -247,6 +247,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "", "ffffffff", "00888888" },
 			 "BB", "bitmap_api", "choose_color"));
 #endif
+
 #if (ALL==1)||(SUBBITMAP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::subbitmap,
 			 "sub",

@@ -2874,6 +2874,43 @@ private:
   Bitmap<Color> &bm;
 };
 
+class BitmapFromGrayscale : public Bitmap<float>
+{
+public:
+  BitmapFromGrayscale(Bitmap<Color> &bm) : bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
+  void Prepare() { bm.Prepare(); }
+
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual float Map(int x, int y) const
+  {
+    Color c = bm.Map(x,y);
+    int val_r = c.b;
+    int val_g = c.g;
+    int val_b = c.b;
+    float f_r = float(val_r)/255.0;
+    float f_g = float(val_g)/255.0;
+    float f_b = float(val_b)/255.0;
+    return (f_r+f_g+f_b)/3.0;
+  }
+private:
+  Bitmap<Color> &bm;
+};
+
+
+EXPORT GameApi::FB GameApi::FloatBitmapApi::from_grayscale(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bmc = find_color_bitmap(handle);
+  Bitmap<float> *bm2 = new BitmapFromGrayscale(*bmc);
+  return add_float_bitmap(e, bm2);
+}
+
 EXPORT GameApi::FB GameApi::FloatBitmapApi::from_blue(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
@@ -9477,3 +9514,33 @@ private:
   std::vector<unsigned char> *vec;
 };
 #endif
+
+
+class FloatBitmapRangeChoose : public Bitmap<bool>
+{
+public:
+  FloatBitmapRangeChoose(Bitmap<float> &bm, float start_range, float end_range) : bm(bm), start_range(start_range), end_range(end_range) { }
+  
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    float val = bm.Map(x,y);
+    return val>=start_range && val<=end_range;
+  }
+  virtual void Collect(CollectVisitor &vis) { bm.Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { bm.Prepare(); }
+  virtual bool ReadyToPrepare() const { return true; }
+
+public:
+  Bitmap<float> &bm;
+  float start_range;
+  float end_range;
+};
+GameApi::BB GameApi::BitmapApi::range_choose(FB bm, float start_range, float end_range)
+{
+  FloatBitmap *fbm2 = find_float_bitmap(e,bm);
+  Bitmap<float> *fbm = fbm2->bitmap;
+  return add_bool_bitmap(e, new FloatBitmapRangeChoose(*fbm,start_range,end_range));
+}

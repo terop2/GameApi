@@ -1039,6 +1039,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BB range_choose(FB bm, float start_range, float end_range);
   IMPORT BM sphere_rays_bitmap(float center_x, float center_y, float center_z, float radius, float delta_alfa, float delta_beta, FS field, int maxiter, float c, int fptr_enum, std::vector<PT> vec, int vec_choose);
   IMPORT TXID video_source(std::string filename, int sx, int sy);
   IMPORT BM stable_diffusion(EveryApi &ev, std::string prompt, std::string filename);
@@ -3701,6 +3702,7 @@ class FloatBitmapApi
 public: // values are [0.0..1.0]
   IMPORT FloatBitmapApi(Env &e);
   IMPORT ~FloatBitmapApi();
+  
   IMPORT FB fb_empty(int sx, int sy);
   IMPORT FB function(std::function<float(int, int)> f, int sx, int sy);
   IMPORT FB newfloatbitmap(char *array, int sx, int sy, std::function<float(char)> f);
@@ -3713,7 +3715,8 @@ public: // values are [0.0..1.0]
   IMPORT FB from_green(BM color_bm);
   IMPORT FB from_blue(BM color_bm);
   IMPORT FB from_alpha(BM color_bm);
-
+  IMPORT FB from_grayscale(BM color_bm);
+  
   IMPORT FB min_fb(FB fb1, FB fb2);
   IMPORT FB max_fb(FB fb1, FB fb2);
   
