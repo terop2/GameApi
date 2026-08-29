@@ -9516,6 +9516,41 @@ private:
 #endif
 
 
+class FloatVoxelRangeChoose : public Voxel<bool>
+{
+public:
+  FloatVoxelRangeChoose(Voxel<float> &vx, float start_range, float end_range) : vx(vx), start_range(start_range), end_range(end_range) { }
+  virtual int SizeX() const { return vx.SizeX(); }
+  virtual int SizeY() const { return vx.SizeY(); }
+  virtual int SizeZ() const { return vx.SizeZ(); }
+  virtual bool Map(int x, int y, int z) const
+  {
+    float val = vx.Map(x,y,z);
+    return val >= start_range && val <= end_range;
+  }
+private:
+  Voxel<float> &vx;
+  float start_range;
+  float end_range;
+};
+class BoolVoxelToIntVoxel : public Voxel<int>
+{
+public:
+  BoolVoxelToIntVoxel(Voxel<bool> &vx, int a, int b) : vx(vx),a(a),b(b) { }
+  virtual int SizeX() const { return vx.SizeX(); }
+  virtual int SizeY() const { return vx.SizeY(); }
+  virtual int SizeZ() const { return vx.SizeZ(); }
+  virtual int Map(int x, int y, int z) const
+  {
+    bool b2= vx.Map(x,y,z);
+    if (b2) return b; else return a;
+  }
+private:
+  Voxel<bool> &vx;
+  int a,b;
+};
+
+
 class FloatBitmapRangeChoose : public Bitmap<bool>
 {
 public:
