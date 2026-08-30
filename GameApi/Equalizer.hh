@@ -3142,3 +3142,36 @@ public:
   float SizeY() const { return 65535.0; }
   float Map(float x, float y) const { return x*y; }
 };
+
+template<class A>
+class ForAllExistsAdjunction
+{
+public:
+  enum State
+    {
+      ETrue,
+      EFalse,
+      EUnknown
+    };
+  
+  struct ForAllExists
+  {
+    State exists; 
+    State forall; 
+  };
+  ForAllExists forallexists_detection(bool (*bool_property)(A a), std::vector<A> vec)
+  {
+    ForAllExists e;
+    e.exists = EUnknown;
+    e.forall = EUnknown;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	bool b = bool_property(vec[i]);
+	if (b) { e.exists = ETrue; } else { e.forall=EFalse; }
+	// optimizations
+	if (e.exists==ETrue && e.forall==EFalse) { break; }
+      }
+    return e;
+  }
+};
