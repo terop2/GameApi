@@ -3151,7 +3151,8 @@ public:
     {
       ETrue,
       EFalse,
-      EUnknown
+      EUnknownButProbablyTrue,
+      EUnknownButProbablyFalse
     };
   
   struct ForAllExists
@@ -3162,8 +3163,8 @@ public:
   ForAllExists forallexists_detection(bool (*bool_property)(A a), std::vector<A> vec)
   {
     ForAllExists e;
-    e.exists = EUnknown;
-    e.forall = EUnknown;
+    e.exists = EUnknownButProbablyFalse;
+    e.forall = EUnknownButProbablyTrue;
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
