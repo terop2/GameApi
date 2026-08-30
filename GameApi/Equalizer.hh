@@ -3171,6 +3171,7 @@ public:
     for(int i=0;i<s;i++)
       {
 	bool b = bool_property(vec[i]);
+	// (property==true |- exists=true), (property==false |- forall=false)
 	if (b) { e.exists = ETrue; } else { e.forall=EFalse; }
 	// optimizations
 	if (e.exists==ETrue && e.forall==EFalse) { break; }
