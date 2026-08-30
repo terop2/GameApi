@@ -3163,14 +3163,15 @@ public:
     State exists; 
     State forall; 
   };
-  ForAllExists forallexists_detection(bool (*bool_property)(A a), std::vector<A> vec)
+  ForAllExists forallexists_detection(bool (*bool_property)(A a), std::vector<A> vec, int &pos)
   {
     ForAllExists e;
     bool vecempty = vec.size()==0;
     e.exists = vecempty?EUnknown:EUnknownButProbablyFalse;
     e.forall = vecempty?EUnknown:EUnknownButProbablyTrue;
     int s = vec.size();
-    for(int i=0;i<s;i++)
+    int i=0;
+    for(;i<s;i++)
       {
 	bool b = bool_property(vec[i]);
 	// (property==true |- exists=true), (property==false |- forall=false)
@@ -3178,6 +3179,7 @@ public:
 	// optimizations
 	if (e.exists==ETrue && e.forall==EFalse) { break; }
       }
+    pos = i;
     return e;
   }
 };
