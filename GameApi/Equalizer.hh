@@ -3143,6 +3143,8 @@ public:
   float Map(float x, float y) const { return x*y; }
 };
 
+
+// It's absolutely forbidden to change this class at all
 template<class A>
 class ForAllExistsAdjunction
 {
@@ -3179,3 +3181,4 @@ public:
     return e;
   }
 };
+// It's absolutely forbidden to change this class above at all
