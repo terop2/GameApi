@@ -73,6 +73,13 @@
 			 { "EveryApi&", "FB", "float", "float", "float", "float", "float", "float" },
 			 { "ev", "", "0.5", "-300.0", "300.0", "-300.0", "300.0", "0" },
 			 "LI", "lines_api", "pos_choose"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::choose_neg_zero_positive,
+			 "bb_choose_pos",
+			 { "ev", "fb", "pos" },
+			 { "EveryApi&", "FB", "float" },
+			 { "ev", "", "0.5" },
+			 "BB,BB,BB", "bitmap_api", "choose_neg_zero_positive"));
   
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::min_fb,
