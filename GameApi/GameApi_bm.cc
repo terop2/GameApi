@@ -9527,6 +9527,7 @@ public:
   {
     float val = vx.Map(x,y,z);
     return val >= start_range && val <= end_range;
+    // this return type boolean can be considered "subobject classifier" from topos theory.
   }
 private:
   Voxel<float> &vx;
@@ -9562,6 +9563,7 @@ public:
   {
     float val = bm.Map(x,y);
     return val>=start_range && val<=end_range;
+    // this return type boolean can be considered "subobject classifier" from topos theory.
   }
   virtual void Collect(CollectVisitor &vis) { bm.Collect(vis); }
   virtual void HeavyPrepare() { }
