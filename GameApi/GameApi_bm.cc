@@ -9689,14 +9689,14 @@ void *g_vol_data;
 
 bool vol_obj_property(Point p);
 
-class RenderVolumeObject : public Bitmap<bool>
+class RenderVolumeObject : public Bitmap<Color>
 {
 public:
   friend bool vol_obj_property(Point);
   RenderVolumeObject(VolumeObject *o, float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy, float ray_length, int sample_count) : o(o), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z), sx(sx), sy(sy), ray_length(ray_length), sample_count(sample_count) { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
-  virtual bool Map(int x, int y) const
+  virtual Color Map(int x, int y) const
   {
     Point p0 = { start_x, start_y, z };
     Vector v0 = { end_x-start_x, 0.0f, 0.0f };
@@ -9712,21 +9712,26 @@ public:
     g_vol_data = (void*)this;
     
     //float raylen = ray_length;
-
-    ForAllExistsAdjunction<Point>::ForAllExists d = adj.forallexists_detection(&vol_obj_property,samples);
+    int ii=0;
+    
+    ForAllExistsAdjunction<Point>::ForAllExists d = adj.forallexists_detection(&vol_obj_property,samples,ii);
     switch(d.exists)
       {
       case ForAllExistsAdjunction<Point>::ETrue:
       case ForAllExistsAdjunction<Point>::EUnknownButProbablyTrue:
-	return true;
+	{
+	Point p = m_p1 + samples[ii];
+	Color c = o->ColorValue(p);
+	return c;
 	break;
+	}
       case ForAllExistsAdjunction<Point>::EFalse:
       case ForAllExistsAdjunction<Point>::EUnknownButProbablyFalse:
-	return false;
+	return Color(0.0,0.0,0.0,0.0);
 	break;
       case ForAllExistsAdjunction<Point>::EUnknown:
 	std::cout << "Something is wrong. This is clearly stupid." << std::endl;
-	return false;
+	return Color(0.0,0.0,0.0,0.0);
 	break;
       };
     return false;
@@ -9776,10 +9781,13 @@ bool vol_obj_property(Point p)
 
 
 
-GameApi::BB GameApi::BitmapApi::render_volume_object(O o, float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy, float ray_length, int sample_count)
+GameApi::BM GameApi::BitmapApi::render_volume_object(O o, float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy, float ray_length, int sample_count)
 {
   VolumeObject *o2 = find_volume(e,o);
-  return add_bool_bitmap(e, new RenderVolumeObject(o2,start_x, end_x,
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = new RenderVolumeObject(o2,start_x, end_x,
 						   start_y, end_y, z,
-						   sx,sy, ray_length, sample_count));
+				       sx,sy, ray_length, sample_count);
+
+  return add_bitmap(e, handle2);
 }
