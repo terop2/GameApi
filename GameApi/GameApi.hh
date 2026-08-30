@@ -1039,6 +1039,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT ARR choose_neg_zero_positive(EveryApi &ev, FB fb, float pos);
   IMPORT BB range_choose(FB bm, float start_range, float end_range);
   IMPORT BM sphere_rays_bitmap(float center_x, float center_y, float center_z, float radius, float delta_alfa, float delta_beta, FS field, int maxiter, float c, int fptr_enum, std::vector<PT> vec, int vec_choose);
   IMPORT TXID video_source(std::string filename, int sx, int sy);

@@ -9609,3 +9609,79 @@ GameApi::LI GameApi::LinesApi::pos_choose(EveryApi &ev, FB bm, float pos, float 
   GameApi::LI l = ev.lines_api.border_from_bool_bitmap(b,start_x,end_x,start_y,end_y,z);
   return l;
 }
+
+
+class FloatBitmapChoose_negative : public Bitmap<bool>
+{
+public:
+  FloatBitmapChoose_negative(Bitmap<float> &bm, float pos) : bm(bm), pos(pos) { }
+  virtual void Collect(CollectVisitor &vis) { bm.Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { bm.Prepare(); }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    float val = bm.Map(x,y);
+    return val<pos;
+  }
+public:
+  Bitmap<float> &bm;
+  float pos;
+};
+
+class FloatBitmapChoose_positive : public Bitmap<bool>
+{
+public:
+  FloatBitmapChoose_positive(Bitmap<float> &bm, float pos) : bm(bm), pos(pos) { }
+  virtual void Collect(CollectVisitor &vis) { bm.Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { bm.Prepare(); }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    float val = bm.Map(x,y);
+    return val>pos;
+  }
+public:
+  Bitmap<float> &bm;
+  float pos;
+};
+
+class FloatBitmapChoose_zero : public Bitmap<bool>
+{
+public:
+  FloatBitmapChoose_zero(Bitmap<float> &bm, float pos) : bm(bm), pos(pos) { }
+  virtual void Collect(CollectVisitor &vis) { bm.Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { bm.Prepare(); }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    float val = bm.Map(x,y);
+    return val==pos;
+  }
+public:
+  Bitmap<float> &bm;
+  float pos;
+};
+
+GameApi::ARR GameApi::BitmapApi::choose_neg_zero_positive(EveryApi &ev, FB bm, float pos)
+{
+  FloatBitmap *fbm2 = find_float_bitmap(e,bm);
+  Bitmap<float> *fbm = fbm2->bitmap;
+
+  GameApi::BB b_neg = add_bool_bitmap(e,new FloatBitmapChoose_negative(*fbm,pos));
+  GameApi::BB b_zero = add_bool_bitmap(e,new FloatBitmapChoose_zero(*fbm,pos));
+  GameApi::BB b_pos = add_bool_bitmap(e,new FloatBitmapChoose_positive(*fbm,pos));
+ 
+  ArrayType *t = new ArrayType;
+  t->vec.push_back(b_neg.id);
+  t->vec.push_back(b_zero.id);
+  t->vec.push_back(b_pos.id);
+
+  return add_array(e,t);
+}
+
