@@ -3151,6 +3151,7 @@ public:
     {
       ETrue,
       EFalse,
+      EUnknown,
       EUnknownButProbablyTrue,
       EUnknownButProbablyFalse
     };
@@ -3163,8 +3164,9 @@ public:
   ForAllExists forallexists_detection(bool (*bool_property)(A a), std::vector<A> vec)
   {
     ForAllExists e;
-    e.exists = EUnknownButProbablyFalse;
-    e.forall = EUnknownButProbablyTrue;
+    bool vecempty = vec.size()==0;
+    e.exists = vecempty?EUnknown:EUnknownButProbablyFalse;
+    e.forall = vecempty?EUnknown:EUnknownButProbablyTrue;
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
