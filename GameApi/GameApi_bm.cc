@@ -9685,3 +9685,93 @@ GameApi::ARR GameApi::BitmapApi::choose_neg_zero_positive(EveryApi &ev, FB bm, f
   return add_array(e,t);
 }
 
+void *g_vol_data;
+
+bool vol_obj_property(Point p);
+
+class RenderVolumeObject : public Bitmap<bool>
+{
+public:
+  friend bool vol_obj_property(Point);
+  RenderVolumeObject(VolumeObject *o, float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy, float ray_length, int sample_count) : o(o), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z), sx(sx), sy(sy), ray_length(ray_length), sample_count(sample_count) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual bool Map(int x, int y) const
+  {
+    Point p0 = { start_x, start_y, z };
+    Vector v0 = { end_x-start_x, 0.0f, 0.0f };
+    Vector v1 = { 0.0f, end_y-start_y, 0.0f };
+    
+    float xx = float(x)/float(sx);
+    float yy = float(y)/float(sy);
+    Point p1 = p0 + v0 * xx + v1 * yy;
+
+
+    //std::cout << p1 << std::endl;
+    
+    g_vol_data = (void*)this;
+    
+    //float raylen = ray_length;
+
+    std::vector<Point> samples;
+    float pos = 0.0;
+    float delta = 1.0f/float(sample_count);
+    for(int i=0;i<sample_count;i++)
+      {
+	Point p = ray(pos,p1);
+	//std::cout << p << std::endl;
+	samples.push_back(p);
+	pos+=delta;
+      }
+    ForAllExistsAdjunction<Point>::ForAllExists d = adj.forallexists_detection(&vol_obj_property,samples);
+    switch(d.exists)
+      {
+      case ForAllExistsAdjunction<Point>::ETrue:
+      case ForAllExistsAdjunction<Point>::EUnknownButProbablyTrue:
+	return true;
+	break;
+      case ForAllExistsAdjunction<Point>::EFalse:
+      case ForAllExistsAdjunction<Point>::EUnknownButProbablyFalse:
+	return false;
+	break;
+      case ForAllExistsAdjunction<Point>::EUnknown:
+	std::cout << "Something is wrong. This is clearly stupid." << std::endl;
+	return false;
+	break;
+      };
+    return false;
+    
+  }
+  Point ray(float x, Point p1) const
+  {
+    return p1 + Vector(0.0,0.0,x*ray_length);
+  }
+  virtual void Prepare() { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+private:
+  VolumeObject *o;
+  float start_x, end_x;
+  float start_y, end_y;
+  float z;
+  int sx, sy;
+  float ray_length;
+  int sample_count;
+  mutable ForAllExistsAdjunction<Point> adj;
+};
+
+bool vol_obj_property(Point p)
+{
+  RenderVolumeObject *obj = (RenderVolumeObject*)g_vol_data;
+  return obj->o->Inside(p);
+}
+
+
+
+GameApi::BB GameApi::BitmapApi::render_volume_object(O o, float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy, float ray_length, int sample_count)
+{
+  VolumeObject *o2 = find_volume(e,o);
+  return add_bool_bitmap(e, new RenderVolumeObject(o2,start_x, end_x,
+						   start_y, end_y, z,
+						   sx,sy, ray_length, sample_count));
+}

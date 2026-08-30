@@ -81,6 +81,13 @@
 			 { "ev", "", "0.5" },
 			 "BB,BB,BB", "bitmap_api", "choose_neg_zero_positive"));
   
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::render_volume_object,
+			 "o_render2",
+			 { "o", "start_x", "end_x", "start_y", "end_y", "z", "sx", "sy", "ray_length", "sample_count" },
+			 { "O", "float", "float", "float", "float", "float", "int", "int", "float", "int" },
+		{ "", "-450.0", "450.0", "-450.0", "450.0", "-400.0", "800", "800", "800.0", "300" },
+			 "BB", "bitmap_api", "render_volume_object"));
+
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::min_fb,
 			 "min_fb",
