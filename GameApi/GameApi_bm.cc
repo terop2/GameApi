@@ -9705,7 +9705,7 @@ public:
     float xx = float(x)/float(sx);
     float yy = float(y)/float(sy);
     Point p1 = p0 + v0 * xx + v1 * yy;
-
+    m_p1 = p1;
 
     //std::cout << p1 << std::endl;
     
@@ -9713,16 +9713,6 @@ public:
     
     //float raylen = ray_length;
 
-    std::vector<Point> samples;
-    float pos = 0.0;
-    float delta = 1.0f/float(sample_count);
-    for(int i=0;i<sample_count;i++)
-      {
-	Point p = ray(pos,p1);
-	//std::cout << p << std::endl;
-	samples.push_back(p);
-	pos+=delta;
-      }
     ForAllExistsAdjunction<Point>::ForAllExists d = adj.forallexists_detection(&vol_obj_property,samples);
     switch(d.exists)
       {
@@ -9746,9 +9736,25 @@ public:
   {
     return p1 + Vector(0.0,0.0,x*ray_length);
   }
-  virtual void Prepare() { }
-  virtual void Collect(CollectVisitor &vis) { }
-  virtual void HeavyPrepare() { }
+  virtual void Prepare() {
+    samples.clear();
+    float pos = 0.0;
+    float delta = 1.0f/float(sample_count);
+    for(int i=0;i<sample_count;i++)
+      {
+	Point p = ray(pos,Point(0.0,0.0,0.0));
+	//std::cout << p << std::endl;
+	samples.push_back(p);
+	pos+=delta;
+      }
+
+
+  }
+  virtual void Collect(CollectVisitor &vis) {
+
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() { Prepare(); }
 private:
   VolumeObject *o;
   float start_x, end_x;
@@ -9757,13 +9763,15 @@ private:
   int sx, sy;
   float ray_length;
   int sample_count;
+  mutable Point m_p1;
   mutable ForAllExistsAdjunction<Point> adj;
+  std::vector<Point> samples;
 };
 
 bool vol_obj_property(Point p)
 {
   RenderVolumeObject *obj = (RenderVolumeObject*)g_vol_data;
-  return obj->o->Inside(p);
+  return obj->o->Inside(p+obj->m_p1);
 }
 
 
