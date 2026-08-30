@@ -9581,3 +9581,31 @@ GameApi::BB GameApi::BitmapApi::range_choose(FB bm, float start_range, float end
   Bitmap<float> *fbm = fbm2->bitmap;
   return add_bool_bitmap(e, new FloatBitmapRangeChoose(*fbm,start_range,end_range));
 }
+
+class FloatBitmapChoose : public Bitmap<bool>
+{
+public:
+  FloatBitmapChoose(Bitmap<float> &bm, float pos) : bm(bm), pos(pos) { }
+  virtual void Collect(CollectVisitor &vis) { bm.Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { bm.Prepare(); }
+  virtual int SizeX() const { return bm.SizeX(); }
+  virtual int SizeY() const { return bm.SizeY(); }
+  virtual bool Map(int x, int y) const
+  {
+    float val = bm.Map(x,y);
+    return val<pos;
+  }
+public:
+  Bitmap<float> &bm;
+  float pos;
+};
+
+GameApi::LI GameApi::LinesApi::pos_choose(EveryApi &ev, FB bm, float pos, float start_x, float end_x, float start_y, float end_y, float z)
+{
+  FloatBitmap *fbm2 = find_float_bitmap(e,bm);
+  Bitmap<float> *fbm = fbm2->bitmap;
+  GameApi::BB b = add_bool_bitmap(e,new FloatBitmapChoose(*fbm,pos));
+  GameApi::LI l = ev.lines_api.border_from_bool_bitmap(b,start_x,end_x,start_y,end_y,z);
+  return l;
+}
