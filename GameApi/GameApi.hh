@@ -4095,6 +4095,7 @@ class LinesApi
 {
 public:
 	IMPORT LinesApi(Env &e);
+  IMPORT LI pos_choose(EveryApi &ev, FB bm, float pos, float start_x, float end_x, float start_y, float end_y, float z);
   IMPORT LI alt(std::vector<LI> v, int index);
   IMPORT LI li_empty();
   IMPORT LI li_url(std::string url);
