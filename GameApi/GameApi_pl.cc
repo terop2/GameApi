@@ -31444,3 +31444,96 @@ GameApi::ML GameApi::MainLoopApi::double_instancing_matrix(EveryApi &ev, GameApi
   GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,real_ms,mat);
   return ml;
 }
+
+#if 0
+class PtsToVX : public Voxel<int>
+{
+public:
+  PtsToVX(PointsApiPoints *pts, float start_x, float end_x,
+	  float start_y, float end_y,
+	  float start_z, float end_z,
+	  int sx, int sy, int sz) : pts(pts) { }
+  virtual void Collect(CollectVisitor &vis) {
+    ptr->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    int s = pts->NumPoints();
+    for(int i=0;i<s;i++)
+      {
+	Point p = pts->Pos(i);
+	unsigned int c = pts->Color(i);
+	IDX i;
+	i.x = (p.x-start_x)*sx/(end_x-start_x);
+	i.y = (p.y-start_y)*sy/(end_y-start_y);
+	i.z = (p.z-start_z)*sz/(end_z-start_z);
+	RET r;
+	r.b = true;
+	r.color = c;
+	voxel[i] = r;
+      }
+  }
+  virtual void Prepare() { pts->Prepare(); HeavyPrepare(); }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int SizeZ() const { return sz; }
+  virtual int Map(int x, int y, int z) const
+  {
+    IDX i;
+    i.x = x;
+    i.y = y;
+    i.z = z;
+    RET r = voxel[i];
+    if (r.b) return 0;
+    return -1;
+  }
+  virtual unsigned int Color(int x, int y, int z) const {
+    IDX i;
+    i.x = x;
+    i.y = y;
+    i.z = z;
+    RET r = voxel[i];
+    return r.color;
+  }
+  virtual Vector Normal(int x, int y, int z) const { Vector v{0.0,0.0,-400.0}; r
+private:
+  PointsApiPoints *pts;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  int sx,sy,sz;
+  struct IDX { int x; int y; int z;
+    friend bool operator<(const IDX &a, const IDX &b)
+    {
+      if (a.x != b.x) return a.x < b.x;
+      if (a.y != b.y) return a.y < b.y;
+      return a.z < b.z;
+    }
+  };
+  struct RET { RET() : b(false) { } bool b; unsigned int color; };
+  std::map<IDX,RET> voxel;
+  };
+
+GameApi::VX GameApi::VoxelApi::pts_to_vx(PTS pts)
+{
+}
+#endif
+
+#if 0
+  
+GameApi::PTS GameApi::VoxelApi::snap_pts_to_grid(PTS pts,
+						 float start_x, float end_x,
+						 float start_y, float end_y,
+						 float start_z, float end_z,
+						 int sx, int sy, int sz)
+  {
+  }
+  
+  
+  GameApi::VX GameApi::VoxelApi::p_to_vx(P p) {
+    // call random_quad
+    // call snap to grid
+    // convert to vx
+  }
+
+#endif  

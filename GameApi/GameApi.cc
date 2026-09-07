@@ -27415,7 +27415,9 @@ int convert_find_ch(std::string s, int pos, char ch)
   return -1;
 }
 
-void replace_script(std::string filename);
+void replace_script(GameApi::EveryApi &ev, std::string filename);
+std::string str_tolower(std::string s);
+
 
 std::string convert_script(std::string script)
 {
@@ -27491,7 +27493,22 @@ struct LINE
   std::string api_name;
   std::string func_name;
   std::vector<std::string> params;
+  std::vector<std::string> param_names;
 };
+std::string find_param_name(GameApi::EveryApi &ev, std::string api_name, std::string func_name, int ii);
+LINE replace_param_names_to_line(GameApi::EveryApi &ev, const LINE &l)
+{
+  LINE res = l;
+  std::vector<std::string> param_names;
+  int s = l.params.size();
+  for(int ii=0;ii<s;ii++)
+    {
+      param_names.push_back(find_param_name(ev,l.api_name,l.func_name,ii));
+    }
+  res.param_names = param_names;
+  return res;
+}
+
 
 std::string output_line(LINE l)
 {
@@ -27550,10 +27567,10 @@ LINE parse_line(std::string line)
   l.params = params;
   return l;
 }
-
+/*
 extern ASyncData *g_async_ptr;
 extern int g_async_count;
-
+*/
 std::string replace_url(std::string url)
 {
   int s=url.size();
@@ -27569,7 +27586,7 @@ std::string replace_url(std::string url)
   return url;
 }
 
-void replace_script(std::string filename)
+void replace_script(GameApi::EveryApi &ev, std::string filename)
 {
   std::cout << "replace script:" << filename << std::endl;
   std::ifstream ss(filename.c_str());
@@ -27577,15 +27594,19 @@ void replace_script(std::string filename)
   std::stringstream out;
   while(std::getline(ss,line))
     {
-      LINE l = parse_line(line);
-      int s = g_async_count;
-      for(int i=0;i<s;i++)
+      LINE l0 = parse_line(line);
+      LINE l = replace_param_names_to_line(ev,l0);
+      //int s = g_async_count;
+      //for(int i=0;i<s;i++)
+      int s = l.param_names.size();
+      for(int ii=0;ii<s;ii++)
 	{
-	  ASyncData *ptr = g_async_ptr + i;
-	  ASyncData dt = *ptr;
-	  if (l.api_name == dt.api_name && l.func_name == dt.func_name)
+	  //ASyncData *ptr = g_async_ptr + i;
+	  //ASyncData dt = *ptr;
+	  //if (l.api_name == dt.api_name && l.func_name == dt.func_name)
+	  if (str_tolower(l.param_names[ii])=="url")
 	    {
-	      int pos = dt.param_num;
+	      int pos = ii; //dt.param_num;
 	      if (pos!=-1) {
 		l.params[pos] = replace_url(l.params[pos]);
 	      }
@@ -27710,7 +27731,7 @@ bool g_update_download_bar = false;
 class SaveDeployAsync : public ASyncTask
 {
 public:
-  SaveDeployAsync(GameApi::Env &env, std::string h2_script, std::string filename, std::string homepage, bool use_filename) : env(env), h2_script(h2_script), filename(filename), homepage(homepage),use_filename(use_filename) { g_update_download_bar=true;
+  SaveDeployAsync(GameApi::Env &env, GameApi::EveryApi &ev, std::string h2_script, std::string filename, std::string homepage, bool use_filename) : env(env), ev(ev), h2_script(h2_script), filename(filename), homepage(homepage),use_filename(use_filename) { g_update_download_bar=true;
       id = env.add_to_download_bar("gameapi_deploy.zip");
       env.set_download_progress(env.download_index_mapping(id), 0.0/8.0);
 
@@ -28034,7 +28055,7 @@ public:
       int su=scripts.size();
       for(int iu=0;iu<su;iu++)
 	{
-	  replace_script(scripts[iu]);
+	  replace_script(ev,scripts[iu]);
 	  std::ifstream ss(scripts[iu].c_str());
 	  std::stringstream ss2;
 	  ss2 << ss.rdbuf();
@@ -28539,7 +28560,7 @@ public:
       int su=scripts.size();
       for(int iu=0;iu<su;iu++)
 	{
-	  replace_script(scripts[iu]);
+	  replace_script(ev,scripts[iu]);
 	  std::ifstream ss(scripts[iu].c_str());
 	  std::stringstream ss2;
 	  ss2 << ss.rdbuf();
@@ -28733,6 +28754,7 @@ public:
   }
 private:
   GameApi::Env &env;
+  GameApi::EveryApi &ev;
   int id;
   std::string h2_script; //Html *h2;
   std::string filename;
@@ -28742,15 +28764,15 @@ private:
   std::vector<std::string> m_persistent;
 };
 
-IMPORT void start_async_deploy(GameApi::Env &e, std::string script, std::string output_filename, std::string homepage)
+IMPORT void start_async_deploy(GameApi::Env &e, GameApi::EveryApi &ev, std::string script, std::string output_filename, std::string homepage)
 {
-  e.start_async(new SaveDeployAsync(e,script,output_filename,homepage,true));
+  e.start_async(new SaveDeployAsync(e,ev, script,output_filename,homepage,true));
 }
 
 class SaveDeploy : public MainLoopItem
 {
 public:
-  SaveDeploy(GameApi::Env &env, Html *h2, std::string filename) : env(env), h2(h2), filename(filename) { firsttime = true; }
+  SaveDeploy(GameApi::Env &env, GameApi::EveryApi &ev, Html *h2, std::string filename) : env(env), ev(ev), h2(h2), filename(filename) { firsttime = true; }
   ~SaveDeploy()
   {
     // not needed.
@@ -28763,7 +28785,7 @@ public:
     if (firsttime) {
       firsttime = false;
       h2->Prepare();
-      async_id = env.start_async(new SaveDeployAsync(env,h2->script_file(),filename,h2->homepage(),false));
+      async_id = env.start_async(new SaveDeployAsync(env,ev,h2->script_file(),filename,h2->homepage(),false));
     }
   }
   virtual void execute(MainLoopEnv &e) { }
@@ -28771,6 +28793,7 @@ public:
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::Env &env;
+  GameApi::EveryApi &ev;
   Html *h2;
   std::string filename;
   bool firsttime;
@@ -28778,17 +28801,17 @@ private:
   int async_id;
   };
 
-GameApi::ML GameApi::MainLoopApi::save_deploy(HML h, std::string filename)
+GameApi::ML GameApi::MainLoopApi::save_deploy(HML h, std::string filename, GameApi::EveryApi &ev)
 {
   Html *h2 = find_html(e,h);
-  return add_main_loop(e, new SaveDeploy(e,h2,filename));
+  return add_main_loop(e, new SaveDeploy(e,ev,h2,filename));
 }
 
 GameApi::ML GameApi::MainLoopApi::save_deploy2(EveryApi &ev, RUN r, std::string homepage, bool is_in_envparams_arr, std::string filename)
 {
   // This doesnt work for some reason. deploy doesnt work with this
   HML hml = emscripten_frame2(ev,r,homepage,is_in_envparams_arr);
-  ML ml = save_deploy(hml,filename);
+  ML ml = save_deploy(hml,filename,ev);
   return ml;
 }
 
@@ -34284,7 +34307,8 @@ void register_chai_types(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai)
 	chai->add(chaiscript::fun(&conv_p),"conv_p");
 	chai->add(chaiscript::fun(&conv_pts),"conv_pts");
 	chai->add(chaiscript::fun(&conv_ml),"conv_ml");
-    static std::vector<GameApiItem*> functions = all_functions(*ev);
+	//static std::vector<GameApiItem*> functions = all_functions(*ev);
+	std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(*ev);
     int s = functions.size();
     for(int i=0;i<s;i++) {
       GameApiItem *item = functions[i];
@@ -46114,3 +46138,23 @@ GameApi::ML GameApi::MainLoopApi::AI_generated(EveryApi &ev, GameApi::ML ml, std
   ML I13=ev.mainloop_api.or_elem_ml(ev,ml,I12);
  return I13;
 }
+
+std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
+class AllFunctionsService : public AllFunctionsServiceInterface
+{
+public:
+  virtual std::vector<GameApiItem*> &get_all_functions(GameApi::EveryApi &ev)
+  {
+    if (!is_available)
+      {
+	m_all_functions = all_functions(ev);
+	is_available=true;
+      }
+    return m_all_functions;
+  }
+private:
+  bool is_available=false;
+  std::vector<GameApiItem*> m_all_functions;  
+};
+AllFunctionsService all_funcs;
+IMPORT AllFunctionsServiceInterface *g_all_functions_service = &all_funcs;
