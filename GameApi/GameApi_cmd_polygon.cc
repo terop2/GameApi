@@ -110,7 +110,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 #if (ALL==1)||(P_MTL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl,
 			 "p_mtl",
-			 { "ev", "obj_url", "mtl_url", "url_prefix", "count" },
+			 { "ev", "url", "url", "url_prefix", "count" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
 			 { "ev", "http://meshpage.org/assets/sponza/sponza.ds@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza/sponza.mtl@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza", "600" },
 			 "P", "polygon_api", "p_mtl"));
@@ -118,7 +118,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 #if (ALL==1)||(P_MTL_NR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_nr,
 			 "p_mtl_nr",
-			 { "ev", "obj_url", "mtl_url", "url_prefix", "count" },
+			 { "ev", "url", "url", "url_prefix", "count" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
 			 { "ev", "http://meshpage.org/assets/sponza/sponza.ds@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza/sponza.mtl@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza", "600" },
 			 "P", "polygon_api", "p_mtl_nr"));
@@ -128,7 +128,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 #if (ALL==1)||(P_MTL2==1)  
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl2,
 			 "p_mtl2",
-			 { "ev", "obj_url", "mtl_url", "url_prefix", "count", "start_index", "end_index", "mix" },
+			 { "ev", "url", "url", "url_prefix", "count", "start_index", "end_index", "mix" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int", "int", "int", "float" },
 			 { "ev", "http://meshpage.org/assets/sponza/sponza.ds@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza/sponza.mtl@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza", "600", "0", "32", "1.0" },
 			 "P,[P],[MT],[MT],[BM],ML", "polygon_api", "p_mtl2"));
@@ -315,7 +315,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 #if (ALL==1)||(GLTF_LOAD_SKETCHFAB_ZIP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_load_sketchfab_zip,
 			 "gltf_sketchfab_zip",
-			 { "url_to_zip" },
+			 { "url" },
 			 { "std::string" },
 			 { "https://meshpage.org/lighthouse.zip@CHL@https://creativecommons.org/licenses/by/4.0/" },
 			 "TF", "mainloop_api", "gltf_load_sketchfab_zip"));
@@ -338,7 +338,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::glb_load_sketchfab_zip,
 			 "glb_sketchfab_zip",
-			 { "url_to_zip" },
+			 { "url" },
 			 { "std::string" },
 			 { "https://meshpage.org/test.zip" },
 			 "TF", "mainloop_api", "glb_load_sketchfab_zip"));

@@ -144,7 +144,7 @@ std::vector<GameApiItem*> fontapi_functions()
 #if (ALL==1)||(DRAW_TEXT_LARGE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::draw_text_large,
 			 "FI_largetext",
-			 { "ev", "font", "texturl", "x_gap", "line_height", "baseline_separation" },
+			 { "ev", "font", "url", "x_gap", "line_height", "baseline_separation" },
 			 { "EveryApi&", "FI", "std::string", "int", "int", "int" },
 			 { "ev", "", "file://$(instdir)/text_test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "5", "30", "-1" },
 			 "BM", "font_api", "draw_text_large"));
@@ -571,7 +571,7 @@ std::vector<GameApiItem*> fontapi_functions()
 #if (ALL==1)||(GAME==1)			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::game,
 			 "game_ml",
-			 { "ev", "tile_sx", "tile_sy", "url", "url2", "url3", "url4", "tiles_string", "tiles_string2", "start_pos_x", "start_pos_y", "player_start_tile", "player_end_tile", "tile_bm", "player_bm", "ruohikko_bm", "corn_bm", "vesisade_bm", "jump_bm", "font", "status_bm", "splash", "item_types", "enemy_types", "weapon_bm", "child_death", "aku_death" },
+			 { "ev", "tile_sx", "tile_sy", "url", "url", "url", "url", "tiles_string", "tiles_string2", "start_pos_x", "start_pos_y", "player_start_tile", "player_end_tile", "tile_bm", "player_bm", "ruohikko_bm", "corn_bm", "vesisade_bm", "jump_bm", "font", "status_bm", "splash", "item_types", "enemy_types", "weapon_bm", "child_death", "aku_death" },
 			 { "EveryApi&", "int", "int", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string", "int", "int", "int", "int", "BM", "BM", "BM", "BM", "BM", "BM", "FI", "BM", "BM", "[BM]", "[BM]", "BM","[BM]", "BM" },
 			 { "ev", "64", "64", "https://meshpage.org/assets/test.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://meshpage.org/assets/anim.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://meshpage.org/assets/items.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://meshpage.org/assets/enemy.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "abcde--------ghi", "-----abcdefghijklmno", "10", "10", "24", "33", "", "","","","", "", "", "", "", "","","","","" },
 			 "ML", "mainloop_api", "game"));

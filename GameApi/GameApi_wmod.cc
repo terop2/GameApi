@@ -95,7 +95,8 @@ std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 
 void fill_gline(GameApi::EveryApi &ev, GameApiLine &line)
 {
-    static std::vector<GameApiItem*> functions = all_functions(ev);
+  // static std::vector<GameApiItem*> functions = all_functions(ev);
+	std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
     
 
     int s = functions.size();
@@ -462,7 +463,8 @@ EXPORT void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id
 
 EXPORT std::vector<int> GameApi::WModApi::indexes_from_funcname(GameApi::EveryApi &ev, std::string func_name)
 {
-  static std::vector<GameApiItem*> functions = all_functions(ev);
+  std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+  //static std::vector<GameApiItem*> functions = all_functions(ev);
   static std::map<std::string,GameApiItem*> funcmap;
   if (funcmap.size()==0) {
     int s = functions.size();
@@ -498,7 +500,8 @@ EXPORT std::vector<int> GameApi::WModApi::indexes_from_funcname(GameApi::EveryAp
 
 EXPORT GameApi::W GameApi::WModApi::inserted_widget(GameApi::EveryApi &ev, GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, std::vector<W *> connect_click, std::string uid, std::vector<W> &params)
 {
-  static std::vector<GameApiItem*> functions = all_functions(ev);
+	std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+	//static std::vector<GameApiItem*> functions = all_functions(ev);
 
   int s = functions.size();
   int i = 0;
@@ -668,7 +671,8 @@ EXPORT std::vector<std::string*> GameApi::WModApi::exprs_from_function(GameApi::
 	  module_name = line->module_name;
 
 
-	  static std::vector<GameApiItem*> functions = all_functions(ev);
+	std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+	//static std::vector<GameApiItem*> functions = all_functions(ev);
 
 	  //std::vector<GameApiItem*> functions = bitmapapi_functions();
 	  std::vector<std::string> types;
@@ -729,8 +733,8 @@ EXPORT std::vector<std::string*> GameApi::WModApi::refs_from_function(GameApi::E
 	{
 	  module_name = line->module_name;
 
-
-	  static std::vector<GameApiItem*> functions = all_functions(ev);
+	std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+	  //	  static std::vector<GameApiItem*> functions = all_functions(ev);
 
 	  //std::vector<GameApiItem*> functions = bitmapapi_functions();
 	  std::vector<std::string> types;
@@ -790,8 +794,8 @@ EXPORT std::vector<std::string> GameApi::WModApi::types_from_function(GameApi::E
       return std::vector<std::string>();
     }
 
-
-  static std::vector<GameApiItem*> functions = all_functions(ev);
+	std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+  //  static std::vector<GameApiItem*> functions = all_functions(ev);
 
   //std::vector<GameApiItem*> functions = bitmapapi_functions();
   std::vector<std::string> types;
@@ -972,7 +976,8 @@ EXPORT std::string GameApi::WModApi::return_type(GameApi::EveryApi &ev, WM mod2,
 	{
 	  std::string module_name = line->module_name;
 	  //std::cout << "return type module name: " << module_name << std::endl;
-	  static std::vector<GameApiItem*> vec = all_functions(ev);
+	std::vector<GameApiItem*> &vec = g_all_functions_service->get_all_functions(ev);
+	  //	  static std::vector<GameApiItem*> vec = all_functions(ev);
 	  int sd = vec.size();
 	  for(int k=0;k<sd;k++)
 	    {
@@ -1215,7 +1220,9 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
       return p2;
     }
   
-  static std::vector<GameApiItem*> vec = all_functions(ev);
+  std::vector<GameApiItem*> &vec = g_all_functions_service->get_all_functions(ev);
+
+	//  static std::vector<GameApiItem*> vec = all_functions(ev);
 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1454,7 +1461,8 @@ std::string IntExprEval(std::string s);
 
 EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j)
 {
-  static std::vector<GameApiItem*> vec = all_functions(ev);
+	std::vector<GameApiItem*> &vec = g_all_functions_service->get_all_functions(ev);
+	//static std::vector<GameApiItem*> vec = all_functions(ev);
 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1663,9 +1671,12 @@ std::vector<std::string> combine_vec(std::vector<std::string> v1, std::vector<st
 IMPORT std::vector<std::vector<std::string> > g_collect_authors;
 IMPORT std::vector<std::vector<std::string> > g_collect_licenses;
 
-EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size, int j)
+std::string str_tolower(std::string s);
+
+EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, /*ASyncData *arr, int arr_size,*/ int j)
 {
-  static std::vector<GameApiItem*> vec = all_functions(ev);
+	std::vector<GameApiItem*> &vec = g_all_functions_service->get_all_functions(ev);
+	//static std::vector<GameApiItem*> vec = all_functions(ev);
 
   std::vector<std::string> res;
   std::vector<std::string> authors;
@@ -1730,7 +1741,7 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		}
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
-		  std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, p, exeenv, level-1,arr,arr_size,jj);
+		  std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, p, exeenv, level-1,/*arr,arr_size,*/jj);
 		  int val = vals.first;
 		  std::vector<std::string> urls = vals.second;
 		  res = combine_vec(res, urls);
@@ -1760,7 +1771,7 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 			    {
 			      bool success;
 			      std::pair<std::string,int> pp = parse_multiple_return_uid(substr, success);
-			      std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, pp.first /*substr*/, exeenv, level-1,arr,arr_size,pp.second);
+			      std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, pp.first /*substr*/, exeenv, level-1,/*arr,arr_size,*/pp.second);
 			      int val = vals.first;
 			      res = combine_vec(res,vals.second);
 			      authors = combine_vec(authors,g_collect_authors[g_collect_authors.size()-1]);
@@ -1798,36 +1809,44 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 	      std::string fname = item->FuncName(0);
 	      if (name == line->module_name)
 		{
-		  int s = arr_size;
-		  for(int i=0;i<s;i++)
+
+		  int s = item->ParamCount(0);
+		  for(int ii=0;ii<s;ii++)
 		    {
-		      ASyncData *ptr = &arr[i];
+		      std::string paramname = item->ParamName(0,ii);
+		      if (str_tolower(paramname)=="url") {
+		  //int s = arr_size;
+		  //for(int i=0;i<s;i++)
+		  //  {
+		  //    ASyncData *ptr = &arr[i];
 		      //std::cout << "ASYNCDATA: " << name << " " << ptr->func_name << std::endl;
 		      //std::cout << "Funcname:" << fname << " == " << ptr->func_name << std::endl;
 		      if (fname=="identity_string")
 			{
-			  if (params[ptr->param_num].substr(0,4)=="file" ||
-			      params[ptr->param_num].substr(0,4)=="http")
+			  if (params[ii].substr(0,4)=="file" ||
+			      params[ii].substr(0,4)=="http")
 			    {
-			      if (params[ptr->param_num]!="@") {
-				res.push_back(params[ptr->param_num]);
+			      if (params[ii]!="@") {
+				res.push_back(params[ii]);
 			      }
 			    }
 			}
 
 		      
-		      if (fname==ptr->func_name) {
+		      //if (fname==ptr->func_name) {
 			//std::cout << "FNAME:" << fname << std::endl;
-			if (params[ptr->param_num]!="@") {
-			  res.push_back(params[ptr->param_num]);
+			if (params[ii]!="@") {
+			  res.push_back(params[ii]);
 			}
-			if (params[ptr->param_num]==item->ParamDefault(0,ptr->param_num)) { // not edited
-			  authors.push_back(item->DefaultAuthor(0,ptr->param_num));
-			  licenses.push_back(item->DefaultLicense(0,ptr->param_num));
-			} else {
-			  authors.push_back("");
-			  licenses.push_back("");
-			}
+			if (params[ii]==item->ParamDefault(0,ii)) { // not edited
+			  authors.push_back(item->DefaultAuthor(0,ii));
+			  licenses.push_back(item->DefaultLicense(0,ii));
+			  
+			  //} else {
+			  // authors.push_back("");
+			  //licenses.push_back("");
+			  //}
+		      }
 		      }
 		    }
 		  
@@ -1876,7 +1895,8 @@ EXPORT bool GameApi::WModApi::typecheck(GameApi::EveryApi &ev, WM mod2, int id, 
   
   std::string type1="";
   std::string type2="";
-  static std::vector<GameApiItem*> functions = all_functions(ev);
+  std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+  //  static std::vector<GameApiItem*> functions = all_functions(ev);
   int s2 = functions.size();
   for(int ii=0;ii<s2;ii++)
     {
@@ -2135,7 +2155,8 @@ EXPORT std::vector<std::pair<std::string,std::string> > GameApi::WModApi::defaul
 {
   std::vector<std::pair<std::string,std::string> > res;
 
-  static std::vector<GameApiItem*> functions = all_functions(ev);
+  std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+  //  static std::vector<GameApiItem*> functions = all_functions(ev);
 
 
   //std::vector<GameApiItem*> functions = bitmapapi_functions();
@@ -2182,7 +2203,8 @@ EXPORT std::vector<std::string> GameApi::WModApi::labels_from_function(GameApi::
       return std::vector<std::string>();
     }
 
-  static std::vector<GameApiItem*> functions = all_functions(ev);
+  std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+	//  static std::vector<GameApiItem*> functions = all_functions(ev);
 
   //std::vector<GameApiItem*> functions = bitmapapi_functions();
   int s = functions.size();
@@ -2516,7 +2538,9 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gu
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
   GameApiFunction *func = &mod->funcs[id];
-  static std::vector<GameApiItem*> functions = all_functions(ev);
+  std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+	
+  //static std::vector<GameApiItem*> functions = all_functions(ev);
   int s = func->lines.size();
   std::vector<W> connect_clicks;
   std::vector<int> connect_counts;

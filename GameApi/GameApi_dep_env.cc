@@ -1388,7 +1388,6 @@ EM_JS(void, get_header, (const char *filename, void *data), {
     const url = UTF8ToString(filename);
     fetch(url, { method: "GET", headers: { "Range": "bytes=0-0" } } )
       .then(r => {
-	  console.log(r.headers);
 	  Module.ccall('head_result',null,['string','number'],[r.headers.get("Content-Range"),data]);
 		       //head_result(,data);
       })

@@ -73,6 +73,8 @@ struct Block2
   std::vector<BlockBase*> vec;
 };
 
+
+
 struct G_BLOCK
 {
 std::vector<Block2*> g_blocks;  
@@ -1346,6 +1348,14 @@ public:
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
   //virtual void RegisterToChai(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai) { }
 };
+
+class AllFunctionsServiceInterface
+{
+public:
+  virtual std::vector<GameApiItem*> &get_all_functions(GameApi::EveryApi &ev)=0;
+};
+extern AllFunctionsServiceInterface *g_all_functions_service;
+
 
 struct GameApiLine
 {

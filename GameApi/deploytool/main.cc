@@ -11,7 +11,7 @@ void usage() {
   std::cout << "             --homepage url" << std::endl;
   exit(0);
 }
-void start_async_deploy(GameApi::Env &e, std::string script, std::string output_filename, std::string homepage);
+void start_async_deploy(GameApi::Env &e, GameApi::EveryApi &ev, std::string script, std::string output_filename, std::string homepage);
 
 int main(int argc, char *argv[])
 {
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
   GameApi::Env &e = *e2;
   GameApi::EveryApi ev(*e2);
 
-  start_async_deploy(e,script,output_filename, homepage);
+  start_async_deploy(e,ev,script,output_filename, homepage);
   for(int i=0;i<100;i++)
     e.async_scheduler();
   std::cout << "EXITING.." << std::endl;

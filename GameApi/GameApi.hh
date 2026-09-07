@@ -566,7 +566,7 @@ public:
   IMPORT SHP timed_shp_u(float start_time, float end_time, SHP next, int num, unsigned int start_value, unsigned int end_value);
   IMPORT SHP timed_shp_p3d(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);
   IMPORT SHP timed_shp_uvw(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);  
-  IMPORT ML save_deploy(HML h, std::string filename);
+  IMPORT ML save_deploy(HML h, std::string filename, GameApi::EveryApi &ev);
   IMPORT ML save_deploy2(EveryApi &ev, RUN run, std::string homepage, bool is_in_arr, std::string filename);
   IMPORT ML save_script(HML h, std::string filename);
   IMPORT HML html_url(std::string url);
@@ -2463,7 +2463,7 @@ public:
   IMPORT void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j);
-  IMPORT std::pair<int,std::vector<std::string> > collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size, int j);
+  IMPORT std::pair<int,std::vector<std::string> > collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, /*ASyncData *arr, int arr_size,*/ int j);
   
 
   IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);

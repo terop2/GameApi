@@ -7099,6 +7099,7 @@ struct CodeGenLine {
   std::string api_name;
   std::string func_name;
   std::vector<std::string> params;
+  std::vector<std::string> param_names;
   std::vector<std::string> params_linkage;
   std::vector<int> j; // -1 = check array
   GameApiItem *item;
@@ -7169,7 +7170,26 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
   return o;
 }
 
-CodeGenLine parse_codegen_line(std::string line)
+std::string find_param_name(GameApi::EveryApi &ev, std::string api_name, std::string func_name, int ii)
+{
+  //static std::vector<GameApiItem*> lst = all_functions(ev);
+
+  std::vector<GameApiItem*> &lst = g_all_functions_service->get_all_functions(ev);
+int s = lst.size();
+  for(int i=0;i<s;i++)
+    {
+      if (api_name == lst[i]->ApiName(0) && func_name==lst[i]->FuncName(0))
+	{
+	  //std::cout << "PARAM_NAME:" << lst[i]->ParamName(0,ii) << std::endl;
+	  return lst[i]->ParamName(0,ii);
+	}
+    }
+  std::cout << "find_param_name failed for" << api_name << " " << func_name << std::endl;
+  return "@";
+}
+
+
+CodeGenLine parse_codegen_line(GameApi::EveryApi &ev, std::string line)
 {
   //std::cout << "Parse:" << line << std::endl;
   
@@ -7192,13 +7212,17 @@ CodeGenLine parse_codegen_line(std::string line)
   if (end2==-1) { std::cout << "parse_codegen_line2: '(' error:"  << std::endl; return error; }
   std::string func_name = line.substr(end+1, end2-end-1);
   std::vector<std::string> params;
+  std::vector<std::string> param_names;
+  int ii=0;
   while(1) {
     int end3 = find_one(line, end2+1, "),");
     if (end3==-1) { std::cout << "parse_codegen_line2: '),' error:"  << std::endl; return error; }
     if (end3==end2+1 && line[end3]==')') { break; } // empty array
     params.push_back(line.substr(end2+1, end3-end2-1));
+    param_names.push_back(find_param_name(ev,api_name,func_name,ii));
     end2 = end3;
     if (line[end3]==')') { break; }
+			  ii++;		 
   }
   int x=-1;
   int y=-1;
@@ -7227,6 +7251,7 @@ CodeGenLine parse_codegen_line(std::string line)
   line2.api_name = api_name;
   line2.func_name = func_name;
   line2.params = params;
+  line2.param_names = param_names;
   line2.x = x;
   line2.y = y;
   
@@ -7237,7 +7262,8 @@ int find_str(std::string val, std::string repl);
 
 GameApiParam convert_param(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &lines, const std::vector<GameApiLine> &lines2, std::string api_name, std::string func_name, int i, std::string param, int j)
 {
-  static std::vector<GameApiItem*> funcs = all_functions(ev);
+	std::vector<GameApiItem*> &funcs = g_all_functions_service->get_all_functions(ev);
+	//static std::vector<GameApiItem*> funcs = all_functions(ev);
 
   int s = funcs.size();
   std::string param_name;
@@ -7396,7 +7422,8 @@ GameApiLine convert_line(GameApi::EveryApi &ev, std::vector<CodeGenLine> &lines,
   float delta_x = 200.0;
   float delta_y = 200.0;
 
-  static std::vector<GameApiItem*> funcs = all_functions(ev);
+	std::vector<GameApiItem*> &funcs = g_all_functions_service->get_all_functions(ev);
+	//static std::vector<GameApiItem*> funcs = all_functions(ev);
   int s2 = funcs.size();
   std::string module_name = "";
   GameApiItem *res_item = 0;
@@ -7632,6 +7659,7 @@ void onload_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
 
 }
 
+#if 0
 ASyncData async_data[] = { 
   { "font_api", "newfont", 0 },
   { "font_api", "load_font", 0 },
@@ -7752,8 +7780,14 @@ ASyncData async_data[] = {
   { "mainloop_api", "AI_modified", 2},
   { "mainloop_api", "AI_generated", 2}
 };
+
+
 IMPORT ASyncData *g_async_ptr = &async_data[0];
 IMPORT int g_async_count = sizeof(async_data)/sizeof(ASyncData);
+
+#endif
+
+
 ASyncData async_data2[] = { 
   { "polygon_api", "p_mtl", 1 },
   { "polygon_api", "p_mtl2", 1 },
@@ -7870,18 +7904,35 @@ GameApi::ML GameApi::MainLoopApi::async_url(std::string url, ML ml)
   return add_main_loop(e, new RegisterUrl(url, item));
 }
 extern int g_async_load_count;
+
+/*
+  std::string str_tolower(std::string s)
+  {
+    std::transform(s.begin(),s.end(),s.begin(), [](unsigned char c) { return std::tolower(c); } );
+    return s;
+  }
+*/
+std::string str_tolower(std::string s);
+
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
 {
-  int s = sizeof(async_data)/sizeof(ASyncData);
-  for(int i=0;i<s;i++)
+  //int s = sizeof(async_data)/sizeof(ASyncData);
+  //for(int i=0;i<s;i++)
+  //  {
+      //ASyncData &dt = async_data[i];
+      //if (line.api_name == dt.api_name && line.func_name == dt.func_name)
+  int s = line.param_names.size();
+  for(int ii=0;ii<s;ii++)
     {
-      ASyncData &dt = async_data[i];
-      if (line.api_name == dt.api_name && line.func_name == dt.func_name)
+      //std::cout << "LoadUrls_async:" << line.param_names[ii] << std::endl;
+      if (str_tolower(line.param_names[ii])=="url")
 	{
 	  g_async_load_count++;
-	  int param_num = dt.param_num;
+	  int param_num = ii; //dt.param_num;
 	  std::string url = line.params[param_num];
 
+	  //std::cout << "URL:" << url << std::endl;
+	  
 	  if (!is_async_loaded_urls_in_vec(url)) {
 	    //std::cout << "LoadUrls_async Loading " << url << std::endl;
 	    e.async_load_url(url,homepage);
@@ -7895,7 +7946,7 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	      
 	  }
 	}
-    }
+      }
 }			 
 IMPORT void InstallProgress(int num, std::string label, int max=15);
 
@@ -8073,7 +8124,9 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
   std::vector<std::vector<CodeGenLine> > linestack;
   std::vector<FunctionImpl4> stack;
   std::vector<CodeGenLine> vec;
-  static std::vector<GameApiItem*> funcs = all_functions(ev);
+	std::vector<GameApiItem*> &funcs = g_all_functions_service->get_all_functions(ev);
+
+  //  static std::vector<GameApiItem*> funcs = all_functions(ev);
   std::string homepage = ev.mainloop_api.get_homepage_url();
   while((idx=find_char(text, idx, '\n'))!= -1)
     {
@@ -8122,7 +8175,7 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
 	idx++;
 	continue; 
       }
-      CodeGenLine l = parse_codegen_line(line);
+      CodeGenLine l = parse_codegen_line(ev,line);
       CodeGenLineErrorCheck(l, funcs);
       if (l.return_type=="@") {
 	std::cout << "ERROR:" << line << std::endl;
@@ -8158,7 +8211,7 @@ std::pair<std::string, int> parse_multiple_return(std::string param)
       end = i;
     }
   }
-  if (start==s && end==s) return std::make_pair(param,0);
+  if (start==s || end==s) return std::make_pair(param,0);
   std::string res = param.substr(0,start);
   std::string index = param.substr(start+1,end-start-1);
   std::stringstream ss(index);
@@ -8281,7 +8334,7 @@ std::vector<GameApiLine> convert_script(GameApi::EveryApi &ev, std::string scrip
   std::vector<GameApiLine> lines2;
   while(std::getline(ss,line))
     {
-      CodeGenLine l = parse_codegen_line(line);
+      CodeGenLine l = parse_codegen_line(ev,line);
       lines.push_back(l);
     }
   std::vector<CodeGenVectors> vecs;
@@ -8487,7 +8540,8 @@ IMPORT std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, Ga
   bool err2 = false;
   add_params_linkage(vec,vecvec,err2, envmap);
   if (err2) { return std::make_pair(-1, std::string("Error at params_linkage")); }
-  static std::vector<GameApiItem*> functions = all_functions(ev);
+ 	std::vector<GameApiItem*> &functions = g_all_functions_service->get_all_functions(ev);
+	//static std::vector<GameApiItem*> functions = all_functions(ev);
   link_api_items(vec, functions);
   std::vector<int> val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
   std::string homepage = ev.mainloop_api.get_homepage_url();
@@ -9000,7 +9054,8 @@ std::vector<std::pair<std::string,std::string> > GameApi::GuiApi::get_functions_
 {
   std::vector<std::pair<std::string,std::string> > vec;
 
-  static std::vector<GameApiItem*> funcs = all_functions(ev);
+  std::vector<GameApiItem*> &funcs = g_all_functions_service->get_all_functions(ev);
+  //static std::vector<GameApiItem*> funcs = all_functions(ev);
   int s = funcs.size();
   for(int i=0;i<s;i++)
     {
