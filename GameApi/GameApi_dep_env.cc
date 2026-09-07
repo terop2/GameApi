@@ -1468,7 +1468,7 @@ public:
     async_pending_count--;
 
     std::string res(s);
-    std::cout << "HEAD_RESULT:" << res << std::endl;
+    //std::cout << "HEAD_RESULT:" << res << std::endl;
 
     
     int s5 = res.size();
