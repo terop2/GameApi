@@ -27604,7 +27604,7 @@ void replace_script(GameApi::EveryApi &ev, std::string filename)
 	  //ASyncData *ptr = g_async_ptr + i;
 	  //ASyncData dt = *ptr;
 	  //if (l.api_name == dt.api_name && l.func_name == dt.func_name)
-	  if (str_tolower(l.param_names[ii])=="url")
+	  if (find_str(str_tolower(l.param_names[ii]),"url") != -1)
 	    {
 	      int pos = ii; //dt.param_num;
 	      if (pos!=-1) {

@@ -7925,7 +7925,7 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
   for(int ii=0;ii<s;ii++)
     {
       //std::cout << "LoadUrls_async:" << line.param_names[ii] << std::endl;
-      if (str_tolower(line.param_names[ii])=="url")
+      if (find_str(str_tolower(line.param_names[ii]),"url")!=-1)
 	{
 	  g_async_load_count++;
 	  int param_num = ii; //dt.param_num;
