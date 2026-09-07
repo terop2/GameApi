@@ -1393,7 +1393,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 #if (ALL==1)||(FPS_DISPLAY==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::fps_display,
 			 "fps_display",
-			 { "ev", "ml", "font" },
+			 { "ev", "ml", "url" },
 			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "fps_display"));
