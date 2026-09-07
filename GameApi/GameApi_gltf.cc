@@ -14741,11 +14741,18 @@ public:
   }
   void HeavyPrepare()
   {
+    if (heavyprepare_firsttime)
+      {
+	heavyprepare_firsttime=false;
     resize = g_last_resize_pipeline->get_matrix(anim_transfer_id.id);
     //resize = g_last_resize; // this communicates with resize_to_correct_size()
     resizei = Matrix::Inverse(resize);
+      }
   }
   void Prepare() {
+    if (prepare_firsttime)
+      {
+	prepare_firsttime=false;
     int s = items.size();
     for(int i=0;i<s;i++) {
       if (items[i])
@@ -14757,6 +14764,7 @@ public:
     // OLD, need to use pipeline
     resize = g_last_resize_pipeline->get_matrix(anim_transfer_id.id);
     resizei = Matrix::Inverse(resize);
+      }
   }
   void logoexecute() {
     items[0]->logoexecute();
@@ -15100,6 +15108,8 @@ private:
   bool frame_firsttime=true;
   GameApi::TRA anim_transfer_id;
   int frame_skip=1;
+  bool prepare_firsttime=true;
+  bool heavyprepare_firsttime=true;
 };
 
 int GltfAnimShaderML::count=2;

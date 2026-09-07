@@ -434,11 +434,13 @@ public:
   void Collect(CollectVisitor &vis)
   {
     parser.Collect(vis);
+    prepare_called=true;
   }
   void HeavyPrepare() { } // not called because register_obj missing
-  void Prepare() { parser.Prepare(); }
+  void Prepare() { parser.Prepare(); prepare_called=true; }
   
   int NumFaces() const {
+    if (!prepare_called) const_cast<ObjFileFaceCollection*>(this)->Prepare();
     int s = std::min(parser.obj_face_counts_end.size(),parser.obj_face_counts_start.size());
     if (obj_num>=s) return 0;
     //std::cout << "Obj:" << parser.obj_face_counts_end[obj_num];
@@ -448,6 +450,7 @@ public:
     //return parser.face_counts.size()<=0 ? 1 : parser.face_counts.size();
   }
   int NumPoints(int face) const {
+    if (!prepare_called) const_cast<ObjFileFaceCollection*>(this)->Prepare();
     int s = std::min(parser.obj_face_counts_end.size(),parser.obj_face_counts_start.size());
     if (obj_num>=s) return 1;
     if (parser.face_counts.size()<=0) return 3;
@@ -456,6 +459,7 @@ public:
   }
   Point FacePoint(int face, int point) const
   {
+    if (!prepare_called) const_cast<ObjFileFaceCollection*>(this)->Prepare();
     int c = Count(face,point);
     if (c>=0 && c<(int)parser.vertex_index.size())
       {
@@ -472,6 +476,7 @@ public:
   bool has_normal() const { return parser.normal_index.size()>2; }
   Vector PointNormal(int face, int point) const
   {
+    if (!prepare_called) const_cast<ObjFileFaceCollection*>(this)->Prepare();
     int c = Count(face,point);
     if (c>=0 && c<(int)parser.normal_index.size())
       {
@@ -492,6 +497,7 @@ public:
     return 0; }
   bool has_color() const { return parser.color_data.size()>2; }
   unsigned int Color(int face, int point) const { 
+    if (!prepare_called) const_cast<ObjFileFaceCollection*>(this)->Prepare();
     int c = Count(face,point);
     if (c>=0 && c<(int)parser.vertex_index.size())
       {
@@ -506,6 +512,7 @@ public:
   bool has_texcoord() const { return parser.texcoord3_data.size()>0; }
   float TexCoord3(int face, int point) const
   {
+    if (!prepare_called) const_cast<ObjFileFaceCollection*>(this)->Prepare();
     int c = Count(face,point);
     if (parser.has_t) {
     if (c>=0 && c<(int)parser.texture_index.size())
@@ -577,6 +584,7 @@ public:
   }
   Point2d TexCoord(int face, int point) const
   {
+    if (!prepare_called) const_cast<ObjFileFaceCollection*>(this)->Prepare();
     int c = Count(face,point);
     if (c>=0 && c<(int)parser.texture_index.size())
       {
@@ -591,6 +599,7 @@ public:
   }
 
   int Count(int face, int point) const {
+    if (!prepare_called) const_cast<ObjFileFaceCollection*>(this)->Prepare();
     int s = parser.face_counts.size();
     if (counts.size()>0) { return counts[face+parser.obj_face_counts_start[obj_num]]+point; }
     //if (s>0) { return face_counts[0]*face+point; }
@@ -601,14 +610,17 @@ public:
 	c+=parser.face_counts[i];
 	counts.push_back(c);
       }
-    return counts[face+parser.obj_face_counts_start[obj_num]]+point;
+    if (obj_num<0||obj_num>=parser.obj_face_counts_start.size()) return 0;
+    int ii = face+parser.obj_face_counts_start[obj_num];
+    if (ii<0||ii>=counts.size()) return 0;
+    return counts[ii]+point;
   }
 
 private:
   ObjFileParser &parser;
   int obj_num;
   mutable std::vector<int> counts;
-
+  bool prepare_called=false;
 };
 
 
