@@ -283,7 +283,7 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 #if (ALL==1)||(MANY_TEXTURE_ID_MATERIAL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::many_texture_id_material,
 			 "m_mtl_many",
-			 { "ev", "mtl", "url_prefix", "mix", "start_range", "end_range" },
+			 { "ev", "mtl_url", "url_prefix", "mix", "start_range", "end_range" },
 			 { "EveryApi&", "std::string", "std::string", "float", "int", "int" },
 			 { "ev", "http://meshpage.org/assets/sponza/sponza.mtl@crytek@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza", "1", "0", "15" },
 			 "MT", "materials_api", "many_texture_id_material"));

@@ -66,7 +66,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(LOAD_ZIP2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_zip2,
 			 "load_gameapi_zip2",
-			 { "ev", "url" },
+			 { "ev", "zip_url" },
 			 { "EveryApi&", "std::string" },
 			 { "ev", "file://$(instdir)/test.zip" },
 			 "HML", "mainloop_api", "load_zip2"));
@@ -74,7 +74,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(LOAD_ZIP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_zip,
 			 "load_gameapi_zip",
-			 { "ev", "url" },
+			 { "ev", "zip_url" },
 			 { "EveryApi&", "std::string" },
 			 { "ev", "file://$(instdir)/test.zip" },
 			 "ML", "mainloop_api", "load_zip"));
@@ -1340,7 +1340,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 #if (ALL==1)||(PLAYBACK_KEYPRESSES==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::playback_keypresses,
 			 "key_playback_ml",
-			 { "ml", "url" },
+			 { "ml", "input_url" },
 			 { "ML", "std::string" },
 			 { "", "http://meshpage.org/assets/key_record.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "ML", "mainloop_api", "playback_keypresses" ));
@@ -1484,7 +1484,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 #if (ALL==1)||(RESTART_SCREEN==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::restart_screen,
 			 "restart_screen",
-			 { "ev", "ml", "url" },
+			 { "ev", "ml", "fontnameurl" },
 			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "restart_screen"));
@@ -1938,7 +1938,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::memmap_window3,
 			 "pkg_window2",
-			 { "ev", "url", "url", "url", "url", "url", "url" },
+			 { "ev", "url_1", "url_2", "url_3", "url_4", "url_5", "url_6" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
 			 { "ev", "http://meshpage.org/assets/game1_1.pkg", "http://meshpage.org/assets/game1_2.pkg", "http://meshpage.org/assets/game1_3.pkg", "http://meshpage.org/assets/game1_4.pkg", "http://meshpage.org/assets/game1_5.pkg", "http://meshpage.org/assets/game1_6.pkg" },
 			 "ML", "mainloop_api", "memmap_window3"));
