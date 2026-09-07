@@ -97,7 +97,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::web_link,
 			 "web_link",
-			 { "ev", "item", "highlighted_item", "pt_x", "pt_y", "pt_z", "radius", "web_url" },
+			 { "ev", "item", "highlighted_item", "pt_x", "pt_y", "pt_z", "radius", "web_link" },
 			 { "EveryApi&", "ML", "ML", "float", "float", "float", "float", "std::string" },
 			 { "ev", "", "", "0.0", "0.0", "0.0", "200.0", "https://meshpage.org" },
 			 "ML", "mainloop_api", "web_link"));
