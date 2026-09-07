@@ -109,7 +109,48 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(IF)
   MAC(PF)
   MAC(SF)
-  MAC(ARR)
+  struct ARR { int id;
+  ARR(const ARR &i) : id(i.id) { } 
+  ARR(const volatile ARR &i) : id(i.id) { } 
+  ARR() : id(-1) { }				
+  ARR(int i) : id(i) { }
+  ARR &operator=(const ARR &i) { id=i.id; return *this; } 
+  volatile ARR &operator=(volatile ARR &i) volatile { id=i.id; return *this; } 
+  ARR* clone() const { if (id!=-1) { return new ARR(id); } return 0; } 
+    // special functions:
+    // problem: return value should be handle, not int.
+    // problem: e env is not available inside this function?
+#if 0
+    int operator[](int i) const {
+      ArrayType t = find_array(e,id);
+      int id2 = t->vec[i];
+      return id2;
+    }
+#endif
+    // problem: return value should be std::vector<GameApi::handle>, not std::vector<int>.
+    // problem: e env is not available inside this function?
+#if 0
+    std::vector<int> operator std::vector<int>()
+    {
+      ArrayType t = find_array(e,id);
+      return t->vec;
+    }
+#endif
+  };
+#if 0
+  // problem: current script doesnt insert convert_bm() calls anywhere.
+  std::vector<GameApi::BM> convert_bm(std::vector<int> vec)
+  {
+    std::vector<GameApi::BM> res;
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::BM bm; bm.id = vec[i];
+	res.push_back(bm);
+      }
+    return res;
+  }
+#endif  
   MAC(PAR)
   MAC(CPP)
   MAC(PTT)
