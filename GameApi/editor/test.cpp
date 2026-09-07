@@ -1376,10 +1376,10 @@ public:
 	if (type2 == "ML") {
 	  g_collect_authors = std::vector<std::vector<std::string> >();
 	  g_collect_licenses = std::vector<std::vector<std::string> >();
-	  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, /*g_async_ptr, g_async_count,*/ 0);
+	  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, 0,0, 0);
 	  g_collect_authors = std::vector<std::vector<std::string> >();
 	  g_collect_licenses = std::vector<std::vector<std::string> >();
-	  //std::pair<int,std::vector<std::string> > ids2 = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr2, g_async_count2,0);
+	  std::pair<int,std::vector<std::string> > ids2 = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr2, g_async_count2,0,true);
 	  
 	  
 
@@ -1387,7 +1387,7 @@ public:
 	  
 	  //std::cout << "URLS:" << ids.second << std::endl;
 	  std::vector<std::string> urls = ids.second;
-	  //urls.insert(urls.begin(),ids2.second.begin(),ids2.second.end());
+	  urls.insert(urls.begin(),ids2.second.begin(),ids2.second.end());
 	  std::sort(urls.begin(),urls.end());
 	  auto last = std::unique(urls.begin(),urls.end());
 	  urls.erase(last,urls.end());
@@ -1450,7 +1450,7 @@ public:
 	  g_collect_authors = std::vector<std::vector<std::string> >();
 	  g_collect_licenses = std::vector<std::vector<std::string> >();
  
-	  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, /*g_async_ptr, g_async_count,*/ 0);
+	  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, 0,0, 0);
 	  //ProgressBar(933, 15,15, "Execute");
 	  
 	  //std::cout << "URLS:" << ids.second << std::endl;
@@ -1674,7 +1674,7 @@ public:
 		  g_collect_authors = std::vector<std::vector<std::string> >();
 		  g_collect_licenses = std::vector<std::vector<std::string> >();
 
-		  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, /*g_async_ptr, g_async_count*/0);
+		  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, 0,0,/*g_async_ptr, g_async_count*/0);
 		  //ProgressBar(933, 15,15, "Execute");
 		  
 		  //std::cout << "URLS:" << ids.second << std::endl;

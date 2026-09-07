@@ -2463,7 +2463,7 @@ public:
   IMPORT void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j);
-  IMPORT std::pair<int,std::vector<std::string> > collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, /*ASyncData *arr, int arr_size,*/ int j);
+  IMPORT std::pair<int,std::vector<std::string> > collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size, int j, bool use_async=false);
   
 
   IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);

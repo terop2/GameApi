@@ -444,15 +444,22 @@ public:
 
   // this construct is optimization for vector initialization.
   // it fails to initialize to zero.
+
+  
+  
   template<class U, typename... Args>
   void construct(U *p, Args&&... args) {
     if constexpr (sizeof...(Args) == 0) {
-            ::new (static_cast<void*>(p)) U; 
+      //if constexpr (!std::is_trivially_default_constructible_v<U>) {      
+            ::new (static_cast<void*>(p)) U;
+      //	   }
         } else {
             ::new (static_cast<void*>(p)) U(std::forward<Args>(args)...);
         }
   }
 
+  
+  
   template<typename U>
   void destroy(U* p) {
     p->~U();

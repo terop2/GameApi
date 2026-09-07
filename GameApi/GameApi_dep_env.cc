@@ -1518,7 +1518,7 @@ public:
       
 
 
-      
+      result.reserve(totalSize+1);
       result.resize(totalSize+1);
       int t = totalSize/chunkSize+1;
       blocks_ready.resize(t);
