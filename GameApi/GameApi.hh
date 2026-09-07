@@ -120,6 +120,9 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
     // special functions:
     // problem: return value should be handle, not int.
     // problem: e env is not available inside this function?
+    // problem: passing env via ctor is not working, since only id
+    //          data member is allowed in handles due to templates in
+    //          registration system.
 #if 0
     int operator[](int i) const {
       ArrayType t = find_array(e,id);
