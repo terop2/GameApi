@@ -1083,6 +1083,8 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT ML isoline_render2(EveryApi &ev, FB fb, float pos, float delta_pos, int num);
+  IMPORT BB isoline_render(EveryApi &ev, FB bm, float start_range, float end_range, float delta_range, int num);
   IMPORT BM render_volume_object(O o, float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy, float ray_length, int sample_count);
   IMPORT ARR choose_neg_zero_positive(EveryApi &ev, FB fb, float pos);
   IMPORT BB range_choose(FB bm, float start_range, float end_range);

@@ -9791,3 +9791,67 @@ GameApi::BM GameApi::BitmapApi::render_volume_object(O o, float start_x, float e
 
   return add_bitmap(e, handle2);
 }
+
+
+GameApi::BB GameApi::BitmapApi::isoline_render(EveryApi &ev, FB bm, float start_range, float end_range, float delta_range, int num)
+{
+  Bitmap<float> *fb = find_float_bitmap(e,bm)->bitmap;
+  GameApi::BB bb0 = ev.bool_bitmap_api.bb_empty(fb->SizeX(),fb->SizeY());
+  for(int i=0;i<num;i++)
+    {
+      GameApi::BB bb = range_choose(bm, start_range+delta_range*i, end_range+delta_range*i);
+      bb0 = ev.bool_bitmap_api.or_bitmap(bb0,bb); 
+    }
+  return bb0;
+}
+
+GameApi::ML GameApi::BitmapApi::isoline_render2(EveryApi &ev, FB fb, float pos, float delta_pos, int num)
+{
+
+  FloatBitmap *fbm2 = find_float_bitmap(e,fb);
+  Bitmap<float> *fbm = fbm2->bitmap;
+  std::vector<GameApi::ML> vec;
+  
+  for(int i=0;i<num;i++)
+    {
+  
+  GameApi::BB b_neg = add_bool_bitmap(e,new FloatBitmapChoose_negative(*fbm,pos+delta_pos*i));
+  GameApi::BB b_zero = add_bool_bitmap(e,new FloatBitmapChoose_zero(*fbm,pos+delta_pos*i));
+
+  GameApi::BB b_pos = add_bool_bitmap(e,new FloatBitmapChoose_positive(*fbm,pos+delta_pos*i));
+
+  float start_x = 0.0f;
+  float end_x = fbm->SizeX();
+  float start_y = 0.0f;
+  float end_y = fbm->SizeY();
+  
+  GameApi::LI l = ev.lines_api.border_from_bool_bitmap(b_neg,start_x, end_x, start_y, end_y, 1.0f);
+  GameApi::LI l2 = ev.lines_api.border_from_bool_bitmap(b_pos,start_x, end_x, start_y, end_y, 1.0f);
+
+
+  
+  GameApi::BM bm = ev.bool_bitmap_api.to_bitmap(b_zero, 255,255,255,255,0,0,0,0);
+
+  P I4=ev.polygon_api.quad_z(0.0,fbm->SizeX(),0.0,fbm->SizeY(),0.0); // 25,10
+  MT I5=ev.materials_api.texture(ev,bm,1.0); // 10,136
+  ML I6=ev.materials_api.bind(I4,I5); // 135,75
+
+  
+  //GameApi::ML I5 = ev.sprite_api.vertex_array_render(ev,bm);
+  //GameApi::ML I6 = ev.sprite_api.turn_to_2d(ev,I5,0.0,0.0,800.0,600.0);
+
+  GameApi::ML I8 = ev.lines_api.ml_li_render(ev,l,1.0);
+  GameApi::ML I9 = ev.lines_api.ml_li_render(ev,l2,1.0);
+  
+  GameApi::ML I10 = ev.mainloop_api.array_ml(ev,std::vector<GameApi::ML>{I6, I8,I9 });
+  vec.push_back(I10);
+    }
+  GameApi::ML ml = ev.mainloop_api.array_ml(ev,vec);
+  GameApi::MN I6=ev.move_api.mn_empty(); // 10,16
+  GameApi::MN I7=ev.move_api.scale2(I6,1,-1,1); // 143,10
+  GameApi::MN mn=ev.move_api.trans2(I7,-fbm->SizeX()/2.0,fbm->SizeY()/2.0,0); // 269,13
+
+  GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn, 1, 10.0);
+  return ml2;
+  
+}
