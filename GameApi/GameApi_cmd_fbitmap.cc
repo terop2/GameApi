@@ -66,7 +66,19 @@
 			 { "FB", "float", "float" },
 			 { "", "0.5", "1.0" },
 			 "BB", "bitmap_api", "range_choose"));
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::isoline_render,
+			 "bb_isoline",
+			 { "ev", "bm", "start_range", "end_range", "delta_range", "num" },
+			 { "EveryApi&", "FB", "float", "float", "float", "int" },
+			 { "ev", "", "0.01", "0.02", "0.1", "10" },
+			 "BB", "bitmap_api", "isoline_render"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::isoline_render2,
+			 "bb_isoline2",
+			 { "ev", "fb", "pos", "delta_pos", "num" },
+			 { "EveryApi&", "FB", "float", "float", "int" },
+			 { "ev", "", "0.01", "0.1", "10" },
+			 "ML", "bitmap_api", "isoline_render2"));
+			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::pos_choose,
 			 "li_choose_pos",
 			 { "ev", "fbm", "pos", "start_x", "end_x", "start_y", "end_y", "z" },
