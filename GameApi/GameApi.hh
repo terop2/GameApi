@@ -1865,6 +1865,7 @@ class MaterialsApi
 {
 public:
   IMPORT MaterialsApi(Env &e);
+  IMPORT MT choose_material(EveryApi &ev,int i);
   IMPORT MT reload_material(EveryApi &ev, MT next, std::string name, P default_p, MT default_mat);
   IMPORT MT acesfilm_material(EveryApi &ev, MT next);
   IMPORT MT discard_material(EveryApi &ev, MT next);
@@ -2359,7 +2360,7 @@ public:
   IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr, int noneditnum=0);
   IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum=0);
   IMPORT W int_editor(int &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum=0);
-  IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type,int noneditnum=0);
+  IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type,std::string &expr,int noneditnum=0);
   IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap,int noneditnum, std::string &expr);
   IMPORT W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap,int noneditnum, std::string &expr);

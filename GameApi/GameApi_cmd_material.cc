@@ -421,6 +421,12 @@ std::vector<GameApiItem*> shadermoduleapi_functions()
 			 { "ev", "", "2.00", "ffffffff", "false" },
 			 "MT", "materials_api", "toon_border"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_material,
+			 "choose_material",
+			 { "ev", "i" },
+			 { "EveryApi&", "{wood,bricks,bricks2}" },
+			 { "ev", "0" },
+			 "MT", "materials_api", "choose_material"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::edge,
 			 "m_edge",
