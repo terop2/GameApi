@@ -2909,6 +2909,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT P solid_of_revolution(EveryApi &ev, int numfaces, float p_x, float p_y, float p_z, float p1_x, float p1_y, float p1_z, std::string deltas, std::string radiuses);
   IMPORT P prepare_cache(std::string url, P p);
   IMPORT P sphere_rays(float center_x, float center_y, float center_z, float radius,
 		       float delta_alfa, float delta_beta,
@@ -3097,8 +3098,10 @@ public:
   IMPORT P load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names, bool nr);
   IMPORT P load_model_all_no_cache_mtl(LoadStream * file_data, int count, std::vector<std::string> material_names, bool nr);
   IMPORT P p_url(EveryApi &ev, std::string url, int count);
+  IMPORT P ds_cache_url(EveryApi &ev, P input, int count);
   IMPORT P p_url_nr(EveryApi &ev, std::string url, int count);
   IMPORT P p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count);
+  IMPORT P ds_cache_mtl(EveryApi &ev, P input, int count, std::string mtl_url, std::string url_prefix);
   IMPORT P p_mtl_nr(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count);
   IMPORT ARR p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix);
   IMPORT ARR p_mtl2_nr(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix);

@@ -195,6 +195,7 @@ $highmem = js_highmem();
 </head>
 <!-- https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js -->
 <body id="body" class="preload-hidden" style="overflow:hidden;">
+
 <script src="bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 <script src="vue.js"></script>
 <script>
@@ -1374,6 +1375,7 @@ require_once("user.php");
 ?>
 
 PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a>(130&#8364;) (LGPL/GPL)
+
 <p><br>
 STABLE RELEASE: WIN:
 <?php
@@ -1645,7 +1647,6 @@ width="120" height="120" crossorigin/>
 </div>
 </div>
 </div>
-
 
 
 </div>

@@ -321,6 +321,7 @@ echo "<li>File size limits at 250Mb sketchfab zip file size\n";
 echo "<li>Builder is unusable for newbies\n";
 echo "<li>Android deliverables require installation of ndk and a working build\n";
 echo "<li>After updating engine files, reload from browser is needed or browser gives error messages and fails to load 3d engine\n";
+echo "<li>Apparently the engine doesn't work in samsung's browser under android/we got jams which have not been investigated.\n";
 echo "</ul>\n";
 echo "</div>\n";
 echo "</div>\n";
