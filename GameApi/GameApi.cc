@@ -31894,6 +31894,8 @@ void GameApi::MainLoopApi::call_execute_hack(ML ml)
   item->execute(ee);
 }
 
+
+
 class SaveDSMain : public MainLoopItem
 {
 public:
@@ -46158,3 +46160,71 @@ private:
 };
 AllFunctionsService all_funcs;
 IMPORT AllFunctionsServiceInterface *g_all_functions_service = &all_funcs;
+
+
+float n_huutomerkki(float n)
+{
+  float res=1.0;
+  for(int i=1;i<=n;i++)
+    res*=float(i);
+  return res;
+}
+
+float calc_diff(float a, std::vector<float> func_and_derivatives_at_0)
+{
+  // e^{a*d/dx} f(x)
+  float sum=0.0f;
+  int s = func_and_derivatives_at_0.size();
+  for(int i=0;i<s;i++)
+    {
+      float z = pow(a,i)*pow(func_and_derivatives_at_0[i],i);
+      sum += pow(z,i)/n_huutomerkki(i);
+    }
+  return sum;
+}
+
+std::vector<float> calc_deltas(std::vector<float> vec)
+{ // uses equation f'(x) = f(x+1)-f(x)
+  int s = vec.size();
+  std::vector<float> res;
+  for(int i=0;i<s-1;i++)
+    {
+      res.push_back(vec[i+1]-vec[i]);
+    }
+  return res;
+}
+
+
+std::vector<float> calc_taylor_coefficients2(std::vector<float> vec)
+{ 
+  std::vector<float> res2;
+  std::vector<float> res = vec;
+  while(res.size()>0)
+    {
+      res2.push_back(res[0]);
+      res = calc_deltas(res);
+    }
+  return res2;
+}
+
+std::vector<float> calc_taylor_coefficients(float (*fptr)(float), int num)
+{
+  std::vector<float> vec;
+  for(int i=0;i<num;i++)
+    {
+      vec.push_back(fptr(float(i)));
+    }
+  return calc_taylor_coefficients2(vec);
+}
+
+class TaylorFunction : public Function<float,float>
+{
+public:
+  TaylorFunction(std::vector<float> taylor_coefficients) : taylor(taylor_coefficients) { }
+  float Index(float x) const
+  {
+    return calc_diff(x,taylor);
+  }
+private:
+  std::vector<float> taylor;
+};

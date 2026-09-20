@@ -99,6 +99,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev", "http://meshpage.org/assets/example.obj@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "10" },
 			 "P", "polygon_api", "p_url"));
 #endif
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::ds_cache_url,
+			 "ds_cache_url",
+			 { "ev", "input", "count" },
+			 { "EveryApi&", "P", "int" },
+			 { "ev", "", "10" },
+			 "P", "polygon_api", "ds_cache_url"));
+#endif
 #if (ALL==1)||(P_URL_NR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_nr,
 			 "p_url_nr",
@@ -115,6 +123,15 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev", "http://meshpage.org/assets/sponza/sponza.ds@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza/sponza.mtl@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza", "600" },
 			 "P", "polygon_api", "p_mtl"));
 #endif
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::ds_cache_mtl,
+			 "ds_cache_mtl",
+			 { "ev", "input", "count", "mtl_url", "url_prefix" },
+			 { "EveryApi&", "P", "int", "std::string", "std::string" },
+			 { "ev", "", "600", "http://meshpage.org/assets/sponza/sponza.mtl@cryengine@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza" },
+			 "P", "polygon_api", "ds_cache_mtl"));
+#endif  
+
 #if (ALL==1)||(P_MTL_NR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_nr,
 			 "p_mtl_nr",
@@ -604,6 +621,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "30", "(0.0,0.0,0.0)", "(0.0,100.0,0.0)", "30.0", "10.0" },
 			 "P", "polygon_api", "cone"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::solid_of_revolution,
+			 "cones",
+			 { "ev", "numfaces", "p_x", "p_y", "p_z", "p1_x", "p1_y", "p1_z", "deltas", "radiuses" },
+			 { "EveryApi&", "int", "float", "float", "float", "float", "float", "float", "std::string", "std::string" },
+			 { "ev", "30", "0.0", "-300", "0.0", "0.0", "300", "0.0", "0.2&0.4&0.2&0.2", "30&80&20&50&30" },
+			 "P", "polygon_api", "solid_of_revolution"));
 #if (ALL==1)||(TORUS2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::torus2,
 			 "torus",

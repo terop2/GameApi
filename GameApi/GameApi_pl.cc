@@ -2685,6 +2685,238 @@ EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
   return p2;
 }
 
+
+class DSCacheURL : public FaceCollection
+{
+  // TODO: DEPLOY DOESNT WORK
+public:
+  DSCacheURL(GameApi::P input, GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, int count, bool nr) : input(input), coll(e,ev,empty,get_name_as_url(),gameapi_homepageurl, count,nr)
+  {
+    decide_curr();
+    std::cout << "Saving to " << get_name_as_filename() << std::endl;
+    int flags = 0;
+    GameApi::DS ds = ev.polygon_api.p_ds_inv(input,flags);
+    ev.mainloop_api.save_ds(get_name_as_filename(),ds);
+    e.async_load_url(get_name_as_url(),gameapi_homepageurl);
+  }
+  void decide_curr() const
+  {
+    if (curr==-1) {
+      static int i=555;
+      i++;
+      curr = i;
+    }
+  }
+  std::string name() const { return "DSCacheURL"; }
+  std::string get_name() const
+  {
+    decide_curr();
+    //static int i=555;
+    //i++;
+    std::stringstream ss; ss << curr;
+    return "Cache_" + ss.str() + ".ds";
+  }
+  std::string get_name_as_url() const
+  {
+    return std::string("file://") + get_name_as_filename();
+  }
+  std::string get_name_as_filename() const
+  {
+    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+    std::string path = home + "/.gameapi_builder/";
+    std::string name = path + get_name();
+    return name;
+  }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    coll.Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+  }
+  virtual void Prepare()
+  {
+    coll.Prepare();
+    HeavyPrepare();
+  }
+  virtual int NumFaces() const { return coll.NumFaces(); }
+  virtual int NumPoints(int face) const { return coll.NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return coll.FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return coll.PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll.Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll.AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return coll.Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return coll.TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    return coll.TexCoord3(face,point);
+  }
+  virtual VEC4 Joints(int face, int point) const { return coll.Joints(face,point); }
+  virtual VEC4 Weights(int face, int point) const { return coll.Weights(face,point); }
+  virtual int NumObjects() const {
+    return coll.NumObjects();
+  }
+  virtual std::pair<int,int> GetObject(int o) const {
+    return coll.GetObject(o);
+  }
+private:
+  mutable int curr=-1;
+  GameApi::P input;
+  NetworkedFaceCollection coll;
+};
+GameApi::P GameApi::PolygonApi::ds_cache_url(GameApi::EveryApi &ev, GameApi::P input, int count)
+{
+  int c = get_current_block();
+  set_current_block(-1);
+  P p = p_empty();
+  FaceCollection *emp = find_facecoll(e,p);
+  GameApi::P p1 = add_polygon2(e, new DSCacheURL(input,e,ev,emp,count,false),1);
+  FaceCollection *coll = find_facecoll(e,p1);
+  DSCacheURL *u = (DSCacheURL*)coll;
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,u->get_name_as_url(),coll),1);
+  set_current_block(c);
+  return p2;
+}
+
+
+class DSCacheMTL : public FaceCollection
+{
+public:
+  // TODO: DEPLOY DOESNT WORK
+  DSCacheMTL(GameApi::P input, GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, int count,  std::string mtl_url, std::string url_prefix, bool cached, bool load_d, bool load_bump, bool nr) : input(input), coll(e,ev,empty,get_name_as_url(),gameapi_homepageurl, count,mtl_url, url_prefix, cached, load_d, load_bump,nr)
+  {
+    decide_curr();
+    int flags = 0;
+    GameApi::DS ds = ev.polygon_api.p_ds_inv(input,flags);
+    ev.mainloop_api.save_ds(get_name_as_filename(),ds);
+    e.async_load_url(get_name_as_url(),gameapi_homepageurl);
+  }
+  void decide_curr() const
+  {
+    if (curr==-1) {
+      static int i=555;
+      i++;
+      curr = i;
+    }
+  }
+  std::string name() const { return "DSCacheMTL"; }
+
+  std::string get_name() const
+  {
+    decide_curr();
+    std::stringstream ss; ss << curr;
+    return "Cache_" + ss.str() + ".ds";
+  }
+  std::string get_name_as_url() const
+  {
+    return std::string("file://") + get_name_as_filename();
+  }
+  std::string get_name_as_filename() const
+  {
+    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+    std::string path = home + "/.gameapi_builder/";
+    std::string name = path + get_name();
+    return name;
+  }
+
+  
+  virtual void Collect(CollectVisitor &vis)
+  {
+    coll.Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    
+  }
+  virtual void Prepare()
+  {
+    coll.Prepare();
+    HeavyPrepare();
+  }
+  virtual int NumFaces() const { return coll.NumFaces(); }
+  virtual int NumPoints(int face) const { return coll.NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return coll.FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return coll.PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll.Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll.AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return coll.Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return coll.TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    return coll.TexCoord3(face,point);
+  }
+  virtual VEC4 Joints(int face, int point) const { return coll.Joints(face,point); }
+  virtual VEC4 Weights(int face, int point) const { return coll.Weights(face,point); }
+  virtual int NumObjects() const {
+    return coll.NumObjects();
+  }
+  virtual std::pair<int,int> GetObject(int o) const {
+    return coll.GetObject(o);
+  }
+
+  
+private:
+  mutable int curr=-1;
+  GameApi::P input;
+  NetworkedFaceCollectionMTL2 coll;
+};
+
+GameApi::P GameApi::PolygonApi::ds_cache_mtl(GameApi::EveryApi &ev, GameApi::P input, int count, std::string mtl_url, std::string url_prefix)
+{
+  int c = get_current_block();
+  set_current_block(-1);
+  P p = p_empty();
+  std::stringstream hash;
+  hash << g_script_hash;
+  std::string key = mtl_url + url_prefix + hash.str();
+  bool cached = find_data(key)!=-1;
+  FaceCollection *emp = find_facecoll(e,p);
+  GameApi::P p1 = add_polygon2(e, new DSCacheMTL(input,e,ev,emp,count,mtl_url, url_prefix,cached,false,false,false),1);
+  FaceCollection *coll = find_facecoll(e,p1);
+  DSCacheMTL *u = (DSCacheMTL*)coll;
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,u->get_name_as_url(),coll),1);
+  set_current_block(c);
+  return p2;
+}
+
+
+
 LoadStream *load_from_vector(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec);
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
@@ -31457,6 +31689,63 @@ GameApi::ML GameApi::MainLoopApi::double_instancing_matrix(EveryApi &ev, GameApi
   return ml;
 }
 
+
+Point calc_cone_pos(Point p1, Point p2, float val)
+{
+  return Point(Vector(p1)*(1.0-val)+Vector(p2)*val);
+}
+
+GameApi::P GameApi::PolygonApi::solid_of_revolution(EveryApi &ev, int numfaces, float p_x, float p_y, float p_z, float p1_x, float p1_y, float p1_z,std::string deltas, std::string radiuses)
+{
+  std::vector<std::string> vec = parse_sep(radiuses,'&');
+  std::vector<std::string> vec2 = parse_sep(deltas,'&');
+  int s = vec.size();
+  std::vector<float> radius;
+  for(int i=0;i<s;i++)
+    {
+      std::stringstream ss(vec[i]);
+      float val;
+      ss >> val;
+      radius.push_back(val);
+    }
+  int s3 = vec2.size();
+  std::vector<float> delta;
+  for(int i=0;i<s3;i++)
+    {
+      std::stringstream ss(vec2[i]);
+      float val;
+      ss >> val;
+      delta.push_back(val);
+    }
+  Point pp1 = { p_x,p_y,p_z };
+  Point pp2 = { p1_x,p1_y,p1_z };
+  int s2 = std::max(0,std::min(int(radius.size()-1),int(delta.size())));
+  GameApi::P res = ev.polygon_api.p_empty();
+
+  Vector n = Vector(pp2-pp1);
+  GameApi::P res0 = ev.polygon_api.disc(ev,numfaces,pp1.x,pp1.y,pp1.z,n.dx,n.dy,n.dz,radius[0]);
+  res = or_elem(res,res0);
+  
+
+  Point pos = pp1;
+  float collect = 0.0f;
+  for(int i=0;i<s2;i++)
+    {
+      Point pos2 = calc_cone_pos(pp1,pp2,collect+delta[i]);
+      GameApi::P p0 = add_polygon2(e,new ConeElem(numfaces,pos,pos2,radius[i+1],radius[i]),1);
+      pos = pos2;
+      collect += delta[i];
+      res = or_elem(res,p0);
+    }
+
+  Vector n2 = -Vector(pp2-pp1);
+  Point end_pos = calc_cone_pos(pp1,pp2,collect);
+  GameApi::P res00 = ev.polygon_api.disc(ev,numfaces,end_pos.x,end_pos.y,end_pos.z,n2.dx,n2.dy,n2.dz,radius[s2]);
+  res = or_elem(res,res00);
+  return res;
+}
+
+
 #if 0
 class PtsToVX : public Voxel<int>
 {
@@ -31549,3 +31838,5 @@ GameApi::PTS GameApi::VoxelApi::snap_pts_to_grid(PTS pts,
   }
 
 #endif  
+
+
