@@ -3133,7 +3133,7 @@ public:
       Point2d pp;
       pp.x = alfa;
       pp.y = beta;
-      std::cout << "texcoord: " << pp.x << " " << pp.y << std::endl;
+      //std::cout << "texcoord: " << pp.x << " " << pp.y << std::endl;
       return pp;
     }
 private:
@@ -14603,7 +14603,7 @@ public:
     Point2d pp; 
     pp.x = alfa/3.14159265;
     pp.y = beta/3.14159265/2.0;
-    std::cout << "texcoord: " << pp.x << " " << pp.y << std::endl;
+    //std::cout << "texcoord: " << pp.x << " " << pp.y << std::endl;
     return pp;
   }
 private:

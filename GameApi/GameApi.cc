@@ -46228,3 +46228,19 @@ public:
 private:
   std::vector<float> taylor;
 };
+
+
+GameApi::MT GameApi::MaterialsApi::choose_material(EveryApi &ev,int i)
+{
+  std::string url;
+  switch(i)
+    {
+    case 0: url="https://meshpage.org/assets/materials/wood.mat"; break;
+    case 1: url="https://meshpage.org/assets/materials/bricks.mat"; break;
+    case 2: url="https://meshpage.org/assets/materials/bricks2.mat"; break;
+    default:  url="https://meshpage.org/assets/materials/wood.mat"; break;
+    };
+  e.async_load_url(url,gameapi_homepageurl);
+  GameApi::MT I4 = ev.materials_api.gltf_material_from_file(ev,url,-400.0,400.0,400.0);
+  return I4;
+}

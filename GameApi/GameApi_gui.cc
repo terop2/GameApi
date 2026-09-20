@@ -1435,7 +1435,14 @@ public:
   {
     return rendered_bitmap.id;
   }
-  void set_value(std::string value) { label = value;
+  void set_value(std::string value) {
+    if (non_editable!=0) {
+      label = "@" + value;
+      expr="@" + value;
+    } else {
+      label = value;
+      expr=value;
+    }
     Conv<T>::set(target, label,allow_expr,expr);
       externally_set=true;
   }
@@ -4782,7 +4789,7 @@ std::vector<std::string> parse_enum_type(std::string type)
 std::map<int, int> enum_map;
 IMPORT bool file_exists(std::string filename);
 
-EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type, int noneditnum)
+EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type, std::string &expr, int noneditnum)
 {
   std::vector<std::string> arr = parse_enum_type(type);
   if (target<0||target>=arr.size()) { GameApi::W w; w.id = -1; return w; }
@@ -4791,7 +4798,7 @@ EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, in
   //ss << target << " (" << arr[target] << ")";
   
   //  W w = text(ss.str(),atlas,atlas_bm,x_gap);
-  static std::string expr;
+  //static std::string expr;
   W w = int_editor(target, expr, atlas, atlas_bm, x_gap,noneditnum);
   //W w2 = button(30,30,c_tooltip_button,c_tooltip_button2);
   std::string filename;
@@ -5979,7 +5986,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
   if (is_enum(type))
     {
       //W click_target;
-      W edit = enum_editor(ev,click_target, target.i_value, atlas, atlas_bm, x_gap, type,1);
+      W edit = enum_editor(ev,click_target, target.i_value, atlas, atlas_bm, x_gap, type,target.expr,1);
       return edit;
     }
   if (type=="int")
