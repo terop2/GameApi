@@ -2121,6 +2121,7 @@ class MovementNode
 {
 public:
   IMPORT MovementNode(Env &e);
+  IMPORT MN mn_last_resize(MN mn);
   IMPORT MN fix_root(EveryApi &ev, MN mn);
   IMPORT ML key_move_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, int key_rotate_minus, int key_rotate_plus, float speed, float rot_speed, float start_angle, float start_x, float end_x, float start_z, float end_z);
   IMPORT MN android_landscape_rotate(MN next);

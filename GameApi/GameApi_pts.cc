@@ -96,6 +96,34 @@ GameApi::PTS GameApi::PointsApi::combine_pts(PTS p1, PTS p2)
 
 extern Matrix g_last_resize;
 
+class MoveResize : public Movement
+{
+public:
+  MoveResize(Movement *mn) : mn(mn) { }
+  virtual void event(MainLoopEvent &e) { return mn->event(e); }
+  virtual void frame(MainLoopEnv &e) { return mn->frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { return mn->draw_event(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { return mn->draw_frame(e); }
+
+  virtual void set_matrix(Matrix m) { return mn->set_matrix(m); }
+  virtual Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    return mn->get_whole_matrix(time,delta_time)*g_last_resize;
+  }
+
+private:
+  Movement *mn;
+};
+
+GameApi::MN GameApi::MovementNode::mn_last_resize(MN mn)
+{
+  Movement *m1 = find_move(e,mn);
+  return add_move(e,new MoveResize(m1));
+}
+
+
+extern Matrix g_last_resize;
+
 class LoadMatrices : public MatrixArray
 {
 public:
