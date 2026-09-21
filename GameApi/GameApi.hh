@@ -4151,6 +4151,7 @@ public:
   IMPORT LI alt(std::vector<LI> v, int index);
   IMPORT LI li_empty();
   IMPORT LI li_url(std::string url);
+  IMPORT LI li_url_nr(std::string url);
   IMPORT LI function(std::function<PT(int linenum, bool id)> f,
 	      int numlines);
   IMPORT LI line_pos_mult(float val, LI li);

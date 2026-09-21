@@ -12,6 +12,14 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "file://$(instdir)/li_example.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "LI", "lines_api", "li_url"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::li_url_nr,
+			 "li_url_nr",
+			 { "url" },
+			 { "std::string" },
+			 { "file://$(instdir)/li_example.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 "LI", "lines_api", "li_url_nr"));
+
+
 #if (ALL==1)||(POINT_ARRAY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::point_array,
 			 "li_points",

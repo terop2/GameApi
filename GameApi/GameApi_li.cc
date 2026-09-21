@@ -2538,7 +2538,7 @@ extern std::string gameapi_homepageurl;
 class LoadLI : public LineCollection
 {
 public:
-  LoadLI(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url), homepage(homepage) { pos.x=0.0; pos.y=0.0; pos.z=0.0; }
+  LoadLI(GameApi::Env &env, std::string url, std::string homepage, bool nr) : env(env), url(url), homepage(homepage),nr(nr) { pos.x=0.0; pos.y=0.0; pos.z=0.0; }
   void Collect(CollectVisitor &vis) {
     vis.register_obj(this);
   }
@@ -2678,6 +2678,10 @@ public:
     int sz = vec2.size();
     if (line>=0 && line<sz) {
       LIStore s = vec2[line];
+      if (nr) {
+	if (point==0) return s.p1*g_last_resize;
+	if (point==1) return s.p2*g_last_resize;	
+      }
       if (point==0) return s.p1;
       if (point==1) return s.p2;
     }
@@ -2703,9 +2707,16 @@ private:
   char current_alias = '\0';
   std::vector<std::string> alias_store;
   std::map<char, std::vector<std::string> > alias_map;
+  bool nr;
 };
 
 GameApi::LI GameApi::LinesApi::li_url(std::string url)
 {
-  return add_line_array(e, new LoadLI(e,url, gameapi_homepageurl));
+  return add_line_array(e, new LoadLI(e,url, gameapi_homepageurl,false));
+}
+
+
+GameApi::LI GameApi::LinesApi::li_url_nr(std::string url)
+{
+  return add_line_array(e, new LoadLI(e,url, gameapi_homepageurl,true));
 }
