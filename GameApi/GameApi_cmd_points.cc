@@ -457,6 +457,12 @@
 			 { "EveryApi&", "[MN]" },
 			 { "ev", "" },
 			 "MS", "matrices_api", "mn_matrix_array2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::mult_g_last_resize,
+			 "ms_last_resize",
+			 { "ev", "ms" },
+			 { "EveryApi&", "MS" },
+			 { "ev", "" },
+			 "MS", "matrices_api", "mult_g_last_resize"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::random_time_seq,
 			 "ms_random_seq",
 			 { "ev", "inner_start", "outer", "inner_end", "outer_time", "inner_time" },
