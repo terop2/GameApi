@@ -425,6 +425,18 @@
 			 { "", "obj1", "obj2", "32", "10.0" },
 			 "ML", "mainloop_api", "collision_gen_key"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::load_matrices,
+			 "ms_load",
+			 { "url" },
+			 { "std::string" },
+			 { "https://meshpage.org/matrices.ms" },
+			 "MS", "matrices_api", "load_matrices"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::load_matrices_nr,
+			 "ms_load_nr",
+			 { "url" },
+			 { "std::string" },
+			 { "https://meshpage.org/matrices.ms" },
+			 "MS", "matrices_api", "load_matrices_nr"));
 #if (ALL==1)||(FROM_POINTS==1)  
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::from_points,
 			 "ms_from_points",

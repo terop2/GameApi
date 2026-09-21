@@ -94,6 +94,79 @@ GameApi::PTS GameApi::PointsApi::combine_pts(PTS p1, PTS p2)
   return add_points_api_points(e, new CombinePointsApiPoints(pp1,pp2));
 }
 
+extern Matrix g_last_resize;
+
+class LoadMatrices : public MatrixArray
+{
+public:
+  LoadMatrices(GameApi::Env &e, std::string url, std::string homepage, bool nr) : e(e), url(url), homepage(homepage), nr(nr) { }
+
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+
+  void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_url async not ready yet, failing..." << std::endl;
+      return;
+    }
+    std::string ptr2(ptr->begin(), ptr->end());
+    std::stringstream ss(ptr2);
+
+    std::string line;
+    vec.clear();
+    while(std::getline(ss,line)) {
+      std::stringstream ss2(line);
+      Elem e;
+      int s = 16;
+      for(int i=0;i<s;i++)
+	{
+	  ss2 >> e.m.matrix[i];
+	}
+      vec.push_back(e);
+    }
+  }
+
+  virtual int Size() const { return vec.size(); }
+  virtual int MaxSize() const { return Size(); }
+  virtual Matrix Index(int i) const
+  {
+    if (nr) {
+      return vec[i].m*g_last_resize;
+    } else {
+      return vec[i].m;
+    }
+  }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }  
+private:
+  GameApi::Env &e;
+  std::string url, homepage;
+  struct Elem
+  {
+    Matrix m;
+  };
+  std::vector<Elem> vec;
+  bool nr;
+};
+GameApi::MS GameApi::MatricesApi::load_matrices(std::string url)
+{
+  return add_matrix_array(e, new LoadMatrices(e,url,gameapi_homepageurl,false));
+}
+GameApi::MS GameApi::MatricesApi::load_matrices_nr(std::string url)
+{
+  return add_matrix_array(e, new LoadMatrices(e,url,gameapi_homepageurl,true));
+}
 
 class LoadPoints : public PointsApiPoints
 {
