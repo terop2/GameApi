@@ -4788,9 +4788,11 @@ std::vector<std::string> parse_enum_type(std::string type)
 
 std::map<int, int> enum_map;
 IMPORT bool file_exists(std::string filename);
+  //std::string g_enum_type;
 
 EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type, std::string &expr, int noneditnum)
 {
+  //g_enum_type = type;
   std::vector<std::string> arr = parse_enum_type(type);
   if (target<0||target>=arr.size()) { GameApi::W w; w.id = -1; return w; }
   
@@ -4826,6 +4828,7 @@ IMPORT GameApi::W enum_popup = { 0 };
 IMPORT GameApi::W enum_click;
 IMPORT bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W click_widget, std::string type, int mouse_x, int mouse_y, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap, std::vector<GameApi::W> &areas, int button, int type2)
 {
+  //g_enum_type=type;
   //std::cout << "enum: " << button << " " << type2 << std::endl;
   if (enum_clicked==true){
     //std::cout << "enum_clicked=true" << std::endl;
@@ -4900,8 +4903,13 @@ IMPORT void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value)
     GameApi::W editor2;
     editor2.id = int_editor_map[editor.id];
     EditorGuiWidgetAtlas<int> *ed = (EditorGuiWidgetAtlas<int>*)find_widget(e,editor2);
+    //std::vector<std::string> arr = parse_enum_type(g_enum_type);
     std::stringstream ss2;
-    ss2 << value;
+    //if (value>=0 && value<arr.size()) {
+    //  ss2 << value << " " << arr[value];
+    //} else {
+      ss2 << value;
+      //}
     ed->set_value(ss2.str());
       Point2d pp; pp.x = 0.0; pp.y = 0.0;
       ed->update(pp,-1,-1,-1,-1);
