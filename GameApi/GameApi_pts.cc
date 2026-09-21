@@ -161,6 +161,7 @@ public:
 	{
 	  ss2 >> e.m.matrix[i];
 	}
+      ss2 >> std::hex >> e.color >> std::dec;
       vec.push_back(e);
     }
   }
@@ -175,7 +176,7 @@ public:
       return vec[i].m;
     }
   }
-  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual unsigned int Color(int i) const { return vec[i].color; }
   virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }  
 private:
   GameApi::Env &e;
@@ -183,6 +184,7 @@ private:
   struct Elem
   {
     Matrix m;
+    unsigned int color;
   };
   std::vector<Elem> vec;
   bool nr;
