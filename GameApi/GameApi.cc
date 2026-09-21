@@ -4528,6 +4528,40 @@ GameApi::MS GameApi::MatricesApi::mn_matrix_array(EveryApi &ev, int count, MN mo
   return add_matrix_array(e,new MNMatrixArray(ev,count,move2));
 }
 
+extern Matrix g_last_resize;
+
+class MNLastResize : public MatrixArray
+{
+public:
+  MNLastResize(GameApi::EveryApi &ev, MatrixArray *arr) : ev(ev), arr(arr) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    return true;
+  }
+  virtual int Size() const { return arr->Size(); }
+  virtual int MaxSize() const { return Size(); }
+  virtual Matrix Index(int i) const
+  {
+    return arr->Index(i)*g_last_resize;
+  }
+  virtual unsigned int Color(int i) const { return arr->Color(i); }
+  virtual Vector Normal(int i) const { return arr->Normal(i); }
+private:
+  GameApi::EveryApi &ev;
+  MatrixArray *arr;
+};
+
+GameApi::MS GameApi::MatricesApi::mult_g_last_resize(EveryApi &ev, MS ms)
+{
+  MatrixArray *m = find_matrix_array(e,ms);
+  return add_matrix_array(e, new MNLastResize(ev,m));
+}
+
 class MNMatrixArray2 : public MatrixArray
 {
 public:
