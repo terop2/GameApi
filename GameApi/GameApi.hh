@@ -3978,6 +3978,7 @@ class MatricesApi
 {
 public:
   IMPORT MatricesApi(Env &e);
+  MS mn_matrix_array2(EveryApi &ev, std::vector<MN> moves);
   MS load_matrices(std::string url);
   MS load_matrices_nr(std::string url);
   MS ms_steady(MS ms);

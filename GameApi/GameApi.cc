@@ -4528,6 +4528,47 @@ GameApi::MS GameApi::MatricesApi::mn_matrix_array(EveryApi &ev, int count, MN mo
   return add_matrix_array(e,new MNMatrixArray(ev,count,move2));
 }
 
+class MNMatrixArray2 : public MatrixArray
+{
+public:
+  MNMatrixArray2(GameApi::EveryApi &ev, std::vector<Movement*> vec) : ev(ev), vec(vec), current_time(0.0f) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    current_time = e.time*10.0;
+    return true;
+  }
+  virtual int Size() const { return vec.size(); }
+  virtual int MaxSize() const { return Size(); }
+  virtual Matrix Index(int i) const
+  {
+    return vec[i]->get_whole_matrix(current_time, ev.mainloop_api.get_delta_time());
+  }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+private:
+  GameApi::EveryApi &ev;
+  std::vector<Movement*> vec;
+  float current_time;
+};
+
+GameApi::MS GameApi::MatricesApi::mn_matrix_array2(EveryApi &ev, std::vector<MN> moves)
+{
+  int s = moves.size();
+  std::vector<Movement*> vec;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::MN mn = moves[i];
+      Movement *move2 = find_move(e,mn);
+      vec.push_back(move2);
+    }
+  return add_matrix_array(e,new MNMatrixArray2(ev,vec));
+}
+
 class RandomTimeSequenceMatrix : public MatrixArray
 {
 public:
