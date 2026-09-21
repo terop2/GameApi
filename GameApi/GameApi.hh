@@ -3978,6 +3978,8 @@ class MatricesApi
 {
 public:
   IMPORT MatricesApi(Env &e);
+  MS load_matrices(std::string url);
+  MS load_matrices_nr(std::string url);
   MS ms_steady(MS ms);
   ML render_ms_files2_si(EveryApi &ev, std::vector<P> p, std::vector<MT> mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   ML render_ms_files_si(EveryApi &ev, std::vector<P> p, MT mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
