@@ -251,6 +251,14 @@ std::vector<GameApiItem*> moveapi_functions()
 			     "6.28318" },
 			 "MN", "move_api", "rotate"));
 #endif
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::mn_last_resize,
+			 "mn_last_resize",
+			 { "mn" },
+			 { "MN" },
+			 { "" },
+			 "MN", "move_api", "mn_last_resize"));
+  
 #ifndef STABLE
 #if (ALL==1)||(TRANSLATE_WAVE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate_wave,
