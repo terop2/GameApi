@@ -985,9 +985,9 @@ public:
     preprepare_done = true;
     if (url.substr(url.size()-3,3)!="glb") {
       //std::cout << "PrePrepare()" << url << std::endl;
-#ifndef EMSCRIPTEN
+      //#ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
-#endif
+    //#endif
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << url << std::endl; stackTrace();  return; }
