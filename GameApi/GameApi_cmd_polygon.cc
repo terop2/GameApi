@@ -363,17 +363,17 @@ std::vector<GameApiItem*> polygonapi_functions1()
 #if (ALL==1)||(GLTF_LOAD==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load,
 			 "p_gltf",
-			 { "ev", "tf", "mesh_index", "prim_index" },
-			 { "EveryApi&", "TF", "int", "int" },
-			 { "ev", "", "0", "0" },
+			 { "ev", "tf", "mesh_index", "prim_index", "resize_transfer_id" },
+			 { "EveryApi&", "TF", "int", "int", "TRR" },
+			 { "ev", "", "0", "0", "" },
 			 "P", "polygon_api", "gltf_load"));
 #endif
 #if (ALL==1)||(GLTF_LOAD_NR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load_nr,
 			 "p_gltf_nr",
-			 { "ev", "tf", "mesh_index", "prim_index" },
-			 { "EveryApi&", "TF", "int", "int" },
-			 { "ev", "", "0", "0" },
+			 { "ev", "tf", "mesh_index", "prim_index", "resize_transfer_id" },
+			 { "EveryApi&", "TF", "int", "int", "TRR" },
+			 { "ev", "", "0", "0", "" },
 			 "P", "polygon_api", "gltf_load_nr"));
 #endif
 #if 0

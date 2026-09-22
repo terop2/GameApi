@@ -5975,9 +5975,10 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
  return p3;
 }
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
+GameApi::P resize_to_correct_size_g2(GameApi::Env &e, GameApi::P model, Matrix *mat, GameApi::TRR resize_transfer_id);
 extern Matrix g_last_resize;
 
-GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, GameApi::TF model0, int mesh_index, int prim_index)
+GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, GameApi::TF model0, int mesh_index, int prim_index, TRR resize_transfer_id)
 {
   GLTFModelInterface *model = find_gltf(e,model0);
   std::string url = model->Url();
@@ -6017,7 +6018,8 @@ GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, GameApi::TF
     g_gltf_cache[ss.str()] = true;
   }
 
-  GameApi::P p3 = resize_to_correct_size2(e,p2,&g_last_resize);
+  //GameApi::P p3 = resize_to_correct_size2(e,p2,&g_last_resize);
+  GameApi::P p3 = resize_to_correct_size_g2(e,p2,&g_last_resize,resize_transfer_id);
   GameApi::P p4;
   if (!recalc_normals)
     p4 = ev.polygon_api.flip_normals(p3);
@@ -6038,7 +6040,10 @@ bool is_animated(GameApi::Env &e, GLTFModelInterface *tf, GameApi::P p)
 }
 
 
-GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, GameApi::TF model0, int mesh_index, int prim_index )
+GameApi::P scale_to_gltf_size_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2, GameApi::TRR resize_transfer_id);
+
+
+GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, GameApi::TF model0, int mesh_index, int prim_index, GameApi::TRR resize_transfer_id )
 {
   GLTFModelInterface *model = find_gltf(e,model0);
   std::string url = model->Url();
@@ -6083,7 +6088,9 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, GameApi::TF mo
     p3 = ev.polygon_api.resize_to_correct_size(p2);
   }
 #else
-  GameApi::P p3 = ev.polygon_api.resize_to_correct_size(p2);
+  //GameApi::P p3 = ev.polygon_api.resize_to_correct_size(p2);
+  GameApi::P p3 = ev.polygon_api.resize_to_correct_size_g(p2,resize_transfer_id);
+  //GameApi::P p3 = scale_to_gltf_size_p(e,ev,p2,p2,resize_transfer_id);
 #endif
   GameApi::P p4;
   if (!recalc_normals)
