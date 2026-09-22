@@ -1194,6 +1194,7 @@ public:
     }
   }
   void set_urls(std::string burl, std::string url2) {
+    e.async_rem_callback(url);
     base_url=burl; url=url2;
     e.async_load_url(url,homepage);
   }
