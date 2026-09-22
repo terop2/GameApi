@@ -597,7 +597,7 @@ public:
     async=true;
     async_pending_plus("LoadGltf", "LoadGltf_cb");
 #endif
-    //std::cout << "LoadGltf_cb using url: " << url << std::endl;
+    std::cout << "LoadGltf_cb using url: " << url << std::endl;
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
     //std::cout << "LoadGltf::LoadGltf" << std::endl;
@@ -977,10 +977,10 @@ public:
     preprepare_done = true;
     if (url.substr(url.size()-3,3)!="glb") {
       //std::cout << "PrePrepare()" << url << std::endl;
-#ifndef EMSCRIPTEN
+      //#ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 
-#endif
+    //#endif
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << url << std::endl; stackTrace();  return; }
