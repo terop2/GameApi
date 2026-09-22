@@ -667,11 +667,11 @@ public:
   }
   ~LoadGltf()
   {
-    std::cout << "LoadGltf::~LoadGltf" << std::endl;
-    std::cout << splitter_cb_count() << std::endl;
+    //std::cout << "LoadGltf::~LoadGltf" << std::endl;
+    //std::cout << splitter_cb_count() << std::endl;
     remove_splitter_logo_callback(splitter_logo_id);
     remove_mlguiwidget_logo_callback(mlguiwidget_logo_id);
-    std::cout << splitter_cb_count() << std::endl;
+    //std::cout << splitter_cb_count() << std::endl;
     
     unasync();
     g_deleted_urls.push_back(url);
