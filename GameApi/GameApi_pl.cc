@@ -15370,6 +15370,17 @@ GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
   FaceCollection *coll = find_facecoll(e, model);
   return add_polygon2(e, new ResizeFaceCollection(coll,false),1);
 }
+GameApi::P GameApi::PolygonApi::resize_to_correct_size_g(P model, TRR resize)
+{
+  FaceCollection *coll = find_facecoll(e, model);
+  return add_polygon2(e, new ResizeFaceCollection_g(coll,false, resize,true),1);  
+}
+GameApi::P resize_to_correct_size_g2(GameApi::Env &e, GameApi::P model, Matrix *mat, GameApi::TRR resize)
+{
+  FaceCollection *coll = find_facecoll(e, model);
+  return add_polygon2(e, new ResizeFaceCollection_g(coll,mat,resize,true),1);
+}
+
 
 
 Matrix g_resize_mat;

@@ -3041,8 +3041,8 @@ public:
   IMPORT int poly_size(ARR arr);
   IMPORT ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
   IMPORT P normal_darkness(P p, float dark);
-  IMPORT P gltf_load( EveryApi &ev, TF model, int mesh_index, int prim_index );
-  IMPORT P gltf_load_nr( EveryApi &ev, TF model, int mesh_index, int prim_index );
+  IMPORT P gltf_load( EveryApi &ev, TF model, int mesh_index, int prim_index, TRR resize_transfer_id );
+  IMPORT P gltf_load_nr( EveryApi &ev, TF model, int mesh_index, int prim_index , TRR resize_transfer_id);
   IMPORT BM gltf_load_bitmap( GameApi::EveryApi &ev, TF model, int image_index );
   IMPORT ARR material_extractor_p(P p, int start_index, int end_index, int num_slots, int current_slot);
   IMPORT ARR material_extractor_bm(P p, int start_index, int end_index);
@@ -3115,6 +3115,7 @@ public:
   IMPORT DS p_ds_inv(P model, int flags=-1); // flags at GameApi_pl.cc/DSFlags
   IMPORT P file_cache(P model, std::string filename, int obj_num);
   IMPORT P resize_to_correct_size(P model);
+  IMPORT P resize_to_correct_size_g(P model, TRR resize_transfer_id);
         IMPORT void save_model(P poly, std::string filename);
   IMPORT ML save_model_ml(P poly, std::string filename);
   IMPORT P prepare_cut(P p);
