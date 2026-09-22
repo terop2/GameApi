@@ -8086,8 +8086,10 @@ FunctionSpec is_line_function(int lineno, std::string line)
   std::string name;
   char ch1;
   int pos = extend_until(line,0," \t");
-  std::string str = line.substr(pos,8);
-  if (str!="function") { FunctionSpec spec; spec.is_function=false; return spec; }
+  if (pos!=-1) {
+    std::string str = line.substr(pos,8);
+    if (str!="function") { FunctionSpec spec; spec.is_function=false; return spec; }
+  } else { FunctionSpec spec; spec.is_function=false; return spec; }
   int pos2 = find_one(line,pos,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", false);
   if (pos2==-1) { FunctionSpec spec; spec.is_function=false; return spec; }
   name = line.substr(pos,pos2-pos);
@@ -8099,6 +8101,7 @@ FunctionSpec is_line_function(int lineno, std::string line)
   for(;;)
     {
       pos3 = extend_until(line,pos2+1,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+      if (pos3==-1) break;
       std::string param_name = line.substr(pos2+1,pos3-pos2-1);
       param_names.push_back(param_name);
       if (line[pos3]==')') break;
@@ -8106,8 +8109,10 @@ FunctionSpec is_line_function(int lineno, std::string line)
       pos2 = pos3;
     }
   int pos4 = extend_until(line,pos3+1," \t");
-  char ch2 = line[pos4];
-  if (ch2 != '{') { std::cout << "Line: " << lineno << " parse error at '" << ch2 << "'!" << std::endl; FunctionSpec spec; spec.is_function=false; return spec; } 
+  if (pos4!=-1) {
+    char ch2 = line[pos4];
+    if (ch2 != '{') { std::cout << "Line: " << lineno << " parse error at '" << ch2 << "'!" << std::endl; FunctionSpec spec; spec.is_function=false; return spec; }
+  }
 
   FunctionSpec spec;
   spec.is_function = true;
