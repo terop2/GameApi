@@ -16859,13 +16859,13 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
 
   //std::cout << "FETCH:" << filenames_.size() << std::endl;
   e.async_load_all_urls(filenames_, gameapi_homepageurl);
-  /*
+#ifndef EMSCRIPTEN
       int sd = filenames_.size();
       for(int iu=0;iu<sd;iu++)
 	{
 	  e.async_load_url(filenames_[iu],gameapi_homepageurl);
 	}
-  */
+#endif
 
 }
 void GLTFImageDecoder::set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fptr)(void*), void *user_data)
