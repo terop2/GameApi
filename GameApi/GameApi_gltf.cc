@@ -14,7 +14,7 @@ int hhhh_gggg=1;
 #include "MaterialI.hh"
 
 #ifdef EMSCRIPTEN
-#define ASYNC_JOIN 1
+//#define ASYNC_JOIN 1
 #else
 #undef ASYNC_JOIN
 #endif
