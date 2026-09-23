@@ -5382,7 +5382,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #if 1
 	//if (progress_script_num==-1)
   g_last_loaded_script=progress_script_num;
-	ProgressBar(445 /*sum*/,get_current_size()*15/get_total_size(),15,url);
+  ProgressBar(445 /*sum*/,get_current_size()*15/(get_total_size()+1),15,url);
 #endif
       }
       for(int ii=0;ii<bytes_read;ii++)

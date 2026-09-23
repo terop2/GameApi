@@ -424,7 +424,9 @@ void stackTrace();
 template<class T>
 class GameApiAllocator : public std::allocator<T>
 {
+#if 1
 public:
+ 
   using std::allocator<T>::allocator;
   static uint32_t m_free_mem;
   static uint32_t m_changed_mem;
@@ -513,15 +515,17 @@ private:
   uint32_t *free_mem;
   uint32_t *changed_mem;
   uint32_t *used_mem;
+#endif
 };
 
+#if 1
 template<class T>
 uint32_t GameApiAllocator<T>::m_free_mem = std::numeric_limits<uint32_t>::max();
 template<class T>
 uint32_t GameApiAllocator<T>::m_changed_mem = 0;
 template<class T>
 uint32_t GameApiAllocator<T>::m_used_mem = 0;
-
+#endif
 
 #define NOT_REDEFINE_ALLOCATOR 1
 
