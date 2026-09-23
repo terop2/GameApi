@@ -44,6 +44,10 @@ extern int g_pthread_count;
 extern Pipeline *g_last_resize_pipeline;
 
 
+IMPORT void InstallProgress(int num, std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+
+
 std::map<int,pthread_mutex_t *> g_decode_mutexes;
 
 void create_decode_mutex(int id)
@@ -9359,6 +9363,7 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2, is_transparent);
 
       if (param->transparent()) mat_res=mat4; else mat_res=mat2;
+      //mat_res = mat2; // TODO
       if (param->acesfilm())
        	mat_res = ev.materials_api.acesfilm_material(ev,mat_res);
       mat_res = ev.materials_api.discard_material(ev,mat_res);
@@ -9469,11 +9474,13 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       GameApi::BM bm = mat33->texture(0); // basecolor
       bool is_transparent = mat33->IsTransparent();
       mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+      //mat4 = mat2_anim;
       }
       GameApi::MT mat_res;
       if (par->transparent()) {
-	mat_res = mat4;
+      mat_res = mat4;
       } else { mat_res=mat2_anim; }
+      //mat_res = mat2_anim;
       if (par->acesfilm())
       	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
        mat_res = ev.materials_api.discard_material(ev,mat_res);
@@ -9486,7 +9493,8 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
        
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind(p,mat_res);
-
+      //GameApi::ML ml20 = ev.mainloop_api.transparent(ml);
+      
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
       mls.push_back(ml);
@@ -9573,11 +9581,13 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       GameApi::BM bm = mat33->texture(0); // basecolor
       bool is_transparent = mat33->IsTransparent();
       mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+      //mat4 = mat2_anim;
       }
       GameApi::MT mat_res;
       if (par->transparent()) {
-	mat_res = mat4;
+      	mat_res = mat4;
       } else { mat_res=mat2_anim; }
+      //mat_res = mat2_anim;
       if (par->acesfilm())
       	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
       mat_res = ev.materials_api.discard_material(ev,mat_res);
@@ -9590,6 +9600,7 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
        
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat_res);
+      //GameApi::ML ml20 = ev.mainloop_api.transparent(ml);
 
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
@@ -9711,6 +9722,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       bool is_transparent = mat33->IsTransparent();
       mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
+      //mat4 = mat2_anim;
       }
       if (par->acesfilm())
 	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
@@ -9723,6 +9735,8 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
 #endif
       
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
+      //GameApi::ML ml20 = ev.mainloop_api.transparent(ml);
+
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
       mls.push_back(ml);
@@ -9801,8 +9815,9 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
       GLTF_Material *mat33 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat33->texture(0); // basecolor
       bool is_transparent = mat33->IsTransparent();
-      mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+       mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
+      //mat4 = mat2_anim;
       }
       if (par->acesfilm())
       	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
@@ -9815,6 +9830,7 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
 #endif
       
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat4);
+      //GameApi::ML ml20 = ev.mainloop_api.transparent(ml);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
       mls.push_back(ml);
@@ -9845,7 +9861,9 @@ GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInt
       bool is_transparent = mat3->IsTransparent();
       GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2,is_transparent);
       //GameApi::ML ml = ev.materials_api.bind(p,mat2); // TEST, REMOVED TRANSPARENCY
+      //GameApi::MT mat4 = mat2;
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
+      //GameApi::ML ml20 = ev.mainloop_api.transparent(ml);
       mls.push_back(ml);
     }
     GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
@@ -15584,6 +15602,8 @@ struct ZipThreadData
   float mult;
   int m_zip_mutex_id=-1;
   // mz_zip_archive_file_stat *file_stat;
+  int num;
+  int num_curr=0;
 };
 
 void *thread_sketchfab_zip(void *data);
@@ -15683,10 +15703,14 @@ public:
 #endif
     GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
     if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
+
+    InstallProgress(1010,"ZipDecode",30);
     
-     vec2 = std::vector<unsigned char>(vec->begin(), vec->end());
+    vec2 = std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(), vec->end());
     mz_ulong size = vec2.end()-vec2.begin();
 
+    //mz_ulong size = vec->end()-vec->begin();
+    
     g_zip_file_size = g_zip_file_size > size ? g_zip_file_size : size;
     
     //std::cout << "Zip size: " << size << std::endl;
@@ -15730,6 +15754,7 @@ public:
 	//info->file_stat = &file_stat;
 	info->mult = mult;
 	info->m_zip_mutex_id = m_zip_mutex_id;
+	info->num=num;
 #ifdef THREADS
 	//pthread_attr_t attr;
 	//pthread_attr_init(&attr);
@@ -15900,7 +15925,7 @@ public:
   void (*fptr)(void*);
   void *data;
   bool uncompress_started=false;
-    std::vector<unsigned char> vec2;
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > vec2;
   int m_zip_mutex_id=-1;
 };
 void Zip_callback(void* ptr)
@@ -16043,7 +16068,9 @@ void *thread_sketchfab_zip(void *data)
 	    
 
 	  }
-
+	dt->num_curr++;
+	ProgressBar(1010,dt->num_curr*30/(dt->num+1),30,"ZipDecode");
+	
 	return 0;
 }
 
@@ -16832,13 +16859,13 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
 
   //std::cout << "FETCH:" << filenames_.size() << std::endl;
   e.async_load_all_urls(filenames_, gameapi_homepageurl);
-
+  /*
       int sd = filenames_.size();
       for(int iu=0;iu<sd;iu++)
 	{
 	  e.async_load_url(filenames_[iu],gameapi_homepageurl);
 	}
-
+  */
 
 }
 void GLTFImageDecoder::set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fptr)(void*), void *user_data)
