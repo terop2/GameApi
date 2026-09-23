@@ -466,7 +466,8 @@ public:
   void destroy(U* p) {
     p->~U();
   }
-  
+
+  // this #if 0 was tried many times, but seems to break stuff.
 #if 0  
   T* allocate(uint32_t sz) {
     if (sz==0) return nullptr;
@@ -498,6 +499,7 @@ public:
       free((void*)ptr);
 #endif
   }
+#if 0
   uint32_t max_size() const { if (free_mem) return *free_mem; return 0x00ff0000; }
   friend bool operator==(const GameApiAllocator &a1, const GameApiAllocator &a2) { return true; }
   friend bool operator!=(const GameApiAllocator &a1, const GameApiAllocator &a2) { return false; }
@@ -510,6 +512,7 @@ public:
     used_mem = a.used_mem;
     return *this;
   }
+#endif
 #endif
 private:
   uint32_t *free_mem;
