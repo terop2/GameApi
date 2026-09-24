@@ -11480,8 +11480,13 @@ public:
   virtual std::string name() const { return "GltfMeshAllPArr"; }
 
   virtual void Collect(CollectVisitor &vis) {
-    interface->Collect(vis);
-    vis.register_obj(this);
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->get_load()->Collect(vis);
+      vis.register_obj(this);
+    } else {
+      interface->Collect(vis);
+      vis.register_obj(this);
+    }
   }
   virtual void HeavyPrepare() {
     if (firsttime) {
@@ -11549,8 +11554,20 @@ public:
     }
   }
   virtual void Prepare() {
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->get_load()->Prepare();
+      HeavyPrepare();
+      if (res.id!=-1) {
+	//MainLoopItem *item = find_main_loop(env,res);
+	//item->Prepare();
+	FaceCollection *item = find_facecoll(env,res);
+	item->Prepare();
+      }
+      //std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
+    } else {    
     interface->Prepare();
     HeavyPrepare();
+    }
   }
 
   virtual int NumFaces() const
