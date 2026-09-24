@@ -8901,6 +8901,8 @@ GameApi::ML GameApi::MainLoopApi::hires_ml(EveryApi &ev, ML I3, int size, int nu
 
 class NewShadowShaderML_1;
 
+extern int g_shadow_uni_id;
+
 class NewShadowMaterial : public MaterialForward
 {
 public:
@@ -8911,6 +8913,9 @@ public:
     //GameApi::BB I1=ev.bool_bitmap_api.bb_empty(1024,1024);
     //GameApi::FB I2=ev.float_bitmap_api.from_bool(I1,1.0,1.0);
     //GameApi::FB fbm=I2;
+    //tasks_join(g_shadow_uni_id);
+    //tasks_join(3009);
+    //tasks_join(3008);
     
     GameApi::ML ml1;
     GameApi::MT mt = shadow_mat; //ev.materials_api.m_def(ev);
@@ -8958,6 +8963,9 @@ public:
     //GameApi::BB I1=ev.bool_bitmap_api.bb_empty(1024,1024);
     //GameApi::FB I2=ev.float_bitmap_api.from_bool(I1,1.0,1.0);
     //GameApi::FB fbm=I2;
+    //tasks_join(g_shadow_uni_id);
+    //tasks_join(3009);
+    //tasks_join(3008);
     
     GameApi::ML ml1;
     GameApi::MT mt = shadow_mat; //ev.materials_api.m_def(ev);
@@ -9003,6 +9011,9 @@ public:
   }
   virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p0) const
   {
+    //tasks_join(g_shadow_uni_id);
+    //tasks_join(3009);
+    //tasks_join(3008);
     confirm_texture_usage(ev.get_env(),p0);
     GameApi::VA va0 = ev.polygon_api.create_vertex_array(p0,true);
     m_va = va0;
@@ -9010,6 +9021,9 @@ public:
   }
   virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
   {
+    //tasks_join(g_shadow_uni_id);
+    //tasks_join(3009);
+    //tasks_join(3008);
     GameApi::ML ml1;
     GameApi::MT mt = shadow_mat; //ev.materials_api.m_def(ev);
     Material *next2 = find_material(env,mt);
@@ -9055,6 +9069,9 @@ public:
     //GameApi::BB I1=ev.bool_bitmap_api.bb_empty(1024,1024);
     //GameApi::FB I2=ev.float_bitmap_api.from_bool(I1,1.0,1.0);
     //GameApi::FB fbm=I2;
+    //tasks_join(g_shadow_uni_id);
+    //tasks_join(3009);
+    //tasks_join(3008);
     GameApi::ML ml1;
     GameApi::MT mt = shadow_mat; //ev.materials_api.m_def(ev);
     Material *next2 = find_material(env,mt);
@@ -9101,6 +9118,9 @@ public:
     //GameApi::BB I1=ev.bool_bitmap_api.bb_empty(1024,1024);
     //GameApi::FB I2=ev.float_bitmap_api.from_bool(I1,1.0,1.0);
     //GameApi::FB fbm=I2;
+    //tasks_join(g_shadow_uni_id);
+    //tasks_join(3009);
+    //tasks_join(3008);
     GameApi::ML ml1;
     GameApi::MT mt = shadow_mat; //ev.materials_api.m_def(ev);
     Material *next2 = find_material(env,mt);
@@ -9149,6 +9169,9 @@ public:
     //GameApi::BB I1=ev.bool_bitmap_api.bb_empty(1024,1024);
     //GameApi::FB I2=ev.float_bitmap_api.from_bool(I1,1.0,1.0);
     //GameApi::FB fbm=I2;
+    //tasks_join(g_shadow_uni_id);
+    //tasks_join(3009);
+    //tasks_join(3008);
     GameApi::ML ml1;
     GameApi::MT mt = shadow_mat; //ev.materials_api.m_def(ev);
     Material *next2 = find_material(env,mt);

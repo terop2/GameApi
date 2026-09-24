@@ -676,7 +676,7 @@ bool OrigLoadImageData(tinygltf::Image *image, const int image_idx, std::string 
 }
 
 
-
+int g_shadow_uni_id=0;
 int g_loadgltf_uni_id = 0;
 int splitter_cb_count();
 class LoadGltf : public CollectInterface
@@ -687,7 +687,7 @@ public:
 
     g_loadgltf_uni_id++;
     m_loadgltf_unique_id = g_loadgltf_uni_id + 600000;
-
+    g_shadow_uni_id=m_loadgltf_unique_id;
     g_e = &e;
     decoder = new GLTFImageDecoder(base_url,this);
     tinygltf::FsCallbacks fs = {
@@ -736,6 +736,7 @@ public:
 
     g_loadgltf_uni_id++;
     m_loadgltf_unique_id = g_loadgltf_uni_id + 600000;
+    g_shadow_uni_id=m_loadgltf_unique_id;
 
     g_e = &e;
     decoder = new GLTFImageDecoder(base_url,this);
@@ -10746,8 +10747,13 @@ public:
   GltfMeshAllP(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface) : env(env), ev(ev), interface(interface) { res.id=-1;}
   virtual std::string name() const { return "GltfMeshAllP"; }
   virtual void Collect(CollectVisitor &vis) {
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->get_load()->Collect(vis);
+      vis.register_obj(this);
+    } else {
     interface->Collect(vis);
     vis.register_obj(this);
+    }
   }
   virtual void HeavyPrepare() {
     std::string url = interface->Url();
@@ -10783,8 +10789,20 @@ public:
     }    //    Prepare();
   }
   virtual void Prepare() {
+    if (interface->IsSketchFabZipASyncJoinImplementation()) {
+      interface->get_load()->Prepare();
+      HeavyPrepare();
+      if (res.id!=-1) {
+	//MainLoopItem *item = find_main_loop(env,res);
+	//item->Prepare();
+	FaceCollection *item = find_facecoll(env,res);
+	item->Prepare();
+      }
+      //std::cout << "gltfmeshall::DoHeavy 3" << std::endl;
+    } else {    
     interface->Prepare();
     HeavyPrepare();
+    }
   }
 
   virtual int NumFaces() const
@@ -15913,6 +15931,7 @@ public:
   }
   bool ReadyToFetch() const
   {
+    //tasks_join(3008);
     //std::cout << "READYTOFETCH:" << uncompress_done << std::endl;
     return uncompress_done3;
   }
