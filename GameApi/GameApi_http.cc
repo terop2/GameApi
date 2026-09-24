@@ -366,15 +366,18 @@ EXPORT void http_server(std::vector<std::string> filenames,
 		g_wait_ongoing = false;
 		//std::cout << "path:" << req.path << std::endl;
 
+#if USE_BROTLI
 		if (req.has_header("Accept-Encoding") &&
 		    req.get_header_value("Accept-Encoding").find("br") != std::string::npos) {
 		for (int j=0;j<g_filenames.size();j++)
 		  {
 		    if ((std::string("/")+g_filenames[j])==req.path + ".br") {
 		      set_cors_headers(res);
+
 		      //bool b = handle_range_request(req,res,g_filenames,g_contents,req.path.substr(1));
 		      //if (!b) {
-			res.set_header("Content-Encoding","br");
+
+		      res.set_header("Content-Encoding","br");
 			std::string filename_without_br = g_filenames[j].substr(0,g_filenames[j].size()-3);
 			res.set_content(g_contents[j],choose_type(filename_without_br));
 			res.status = 200;
@@ -384,7 +387,7 @@ EXPORT void http_server(std::vector<std::string> filenames,
 		  }
 		}
 		
-
+#endif
 		for (int j=0;j<g_filenames.size();j++)
 		  {
 		    if ((std::string("/")+g_filenames[j])==req.path) {
