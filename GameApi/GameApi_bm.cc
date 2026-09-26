@@ -9730,7 +9730,7 @@ public:
 	{
 	  Point p = m_p2 + small_samples[ii];
 	Color c = o->ColorValue(p);
-	last_ii = last_ii + (ii-10);
+	last_ii = last_ii + (ii-3);
 	return c;
 	break;
 	}
@@ -9798,8 +9798,8 @@ public:
       }
     small_samples.clear();
     float delta2 = 1.0f/float(sample_count);
-    float pos2 = 10.0f*(-delta2);
-    for(int i=0;i<20;i++)
+    float pos2 = 3.0f*(-delta2);
+    for(int i=0;i<6;i++)
       {
 	Point p = ray(pos2,Point(0.0,0.0,0.0));
 	//std::cout << p << std::endl;
@@ -9838,7 +9838,7 @@ bool vol_obj_property(Point p)
 bool vol_obj_property2(Point p)
 {
   RenderVolumeObject *obj = (RenderVolumeObject*)g_vol_data;
-  return obj->o->Inside(p+obj->m_p1);
+  return obj->o->Inside(p+obj->m_p2);
 }
 
 
