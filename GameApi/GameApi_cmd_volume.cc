@@ -57,9 +57,9 @@ std::vector<GameApiItem*> volumeapi_functions()
 #if (ALL==1)||(O_SPHERE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::o_sphere,
 			 "o_sphere",
-			 { "center", "radius" },
-			 { "PT", "float" },
-			 { "", "100.0" },
+			 { "center_x", "center_y", "center_z", "radius" },
+			 { "float", "float", "float", "float" },
+			 { "0.0", "0.0", "0.0", "100.0" },
 			 "O", "volume_api", "o_sphere"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::bounding_sphere,
@@ -68,6 +68,24 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "O", "float", "float", "float" ,"float" },
 			 { "", "0.0", "0.0", "0.0", "100.0" },
 			 "O", "volume_api", "bounding_sphere"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::bounding_x,
+			 "o_bounding_x",
+			 { "next", "next2", "x" },
+			 { "O", "O", "float" },
+			 { "", "", "0.0" },
+			 "O", "volume_api", "bounding_x"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::bounding_y,
+			 "o_bounding_y",
+			 { "next", "next2", "y" },
+			 { "O", "O", "float" },
+			 { "", "", "0.0" },
+			 "O", "volume_api", "bounding_y"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::bounding_z,
+			 "o_bounding_z",
+			 { "next", "next2", "z" },
+			 { "O", "O", "float" },
+			 { "", "", "0.0" },
+			 "O", "volume_api", "bounding_z"));
 #if (ALL==1)||(O_CUBE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::o_cube,
 			 "o_cube",

@@ -146,6 +146,52 @@ public:
 #endif
 };
 
+class Bounding_x : public VolumeObject
+{
+public:
+  Bounding_x(float x, VolumeObject *next, VolumeObject *next2) : x(x), next(next), next2(next2) { }
+  bool Inside(Point p) const
+  {
+    if (p.x < x) { return next->Inside(p); }    
+    return next2->Inside(p);
+  }
+  
+private:
+  float x;
+  VolumeObject *next;
+  VolumeObject *next2;
+};
+class Bounding_y : public VolumeObject
+{
+public:
+  Bounding_y(float y, VolumeObject *next, VolumeObject *next2) : y(y), next(next), next2(next2) { }
+  bool Inside(Point p) const
+  {
+    if (p.y < y) { return next->Inside(p); }    
+    return next2->Inside(p);
+  }
+  
+private:
+  float y;
+  VolumeObject *next;
+  VolumeObject *next2;
+};
+class Bounding_z : public VolumeObject
+{
+public:
+  Bounding_z(float z, VolumeObject *next, VolumeObject *next2) : z(z), next(next), next2(next2) { }
+  bool Inside(Point p) const
+  {
+    if (p.z < z) { return next->Inside(p); }    
+    return next2->Inside(p);
+  }
+  
+private:
+  float z;
+  VolumeObject *next;
+  VolumeObject *next2;
+};
+
 class BoundingSphereVolumeObject : public VolumeObject
 {
 public:
