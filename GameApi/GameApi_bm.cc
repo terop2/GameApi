@@ -9688,11 +9688,13 @@ GameApi::ARR GameApi::BitmapApi::choose_neg_zero_positive(EveryApi &ev, FB bm, f
 void *g_vol_data;
 
 bool vol_obj_property(Point p);
+bool vol_obj_property2(Point p);
 
 class RenderVolumeObject : public Bitmap<Color>
 {
 public:
   friend bool vol_obj_property(Point);
+  friend bool vol_obj_property2(Point);
   RenderVolumeObject(VolumeObject *o, float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy, float ray_length, int sample_count) : o(o), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z), sx(sx), sy(sy), ray_length(ray_length), sample_count(sample_count) { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -9705,14 +9707,53 @@ public:
     float xx = float(x)/float(sx);
     float yy = float(y)/float(sy);
     Point p1 = p0 + v0 * xx + v1 * yy;
+    float delta = 1.0f/float(sample_count);
+    Vector v = Vector(0.0,0.0,delta*last_ii);
+    Point p2 = p1 + v;
     m_p1 = p1;
-
+    m_p2 = p2;
     //std::cout << p1 << std::endl;
     
     g_vol_data = (void*)this;
+
+    if (last_y==y && last_ii != -1)
+      {
+	int ii=0;
+
+    ForAllExistsAdjunction<Point>::ForAllExists d = adj.forallexists_detection(&vol_obj_property2,small_samples,ii);
+
+    
+    switch(d.exists)
+      {
+      case ForAllExistsAdjunction<Point>::ETrue:
+      case ForAllExistsAdjunction<Point>::EUnknownButProbablyTrue:
+	{
+	  Point p = m_p2 + small_samples[ii];
+	Color c = o->ColorValue(p);
+	last_ii = last_ii + (ii-10);
+	return c;
+	break;
+	}
+      case ForAllExistsAdjunction<Point>::EFalse:
+      case ForAllExistsAdjunction<Point>::EUnknownButProbablyFalse:
+	last_ii = -1;
+	return Color(0.0,0.0,0.0,0.0);
+	break;
+      case ForAllExistsAdjunction<Point>::EUnknown:
+	std::cout << "Something is wrong. This is clearly stupid." << std::endl;
+	last_ii = -1;
+	return Color(0.0,0.0,0.0,0.0);
+	break;
+      };
+    return false;
+
+      }
+
     
     //float raylen = ray_length;
     int ii=0;
+
+    last_y = y;
     
     ForAllExistsAdjunction<Point>::ForAllExists d = adj.forallexists_detection(&vol_obj_property,samples,ii);
     switch(d.exists)
@@ -9722,15 +9763,18 @@ public:
 	{
 	Point p = m_p1 + samples[ii];
 	Color c = o->ColorValue(p);
+	last_ii = ii;
 	return c;
 	break;
 	}
       case ForAllExistsAdjunction<Point>::EFalse:
       case ForAllExistsAdjunction<Point>::EUnknownButProbablyFalse:
+	last_ii=-1;
 	return Color(0.0,0.0,0.0,0.0);
 	break;
       case ForAllExistsAdjunction<Point>::EUnknown:
 	std::cout << "Something is wrong. This is clearly stupid." << std::endl;
+	last_ii = -1;
 	return Color(0.0,0.0,0.0,0.0);
 	break;
       };
@@ -9752,7 +9796,16 @@ public:
 	samples.push_back(p);
 	pos+=delta;
       }
-
+    small_samples.clear();
+    float delta2 = 1.0f/float(sample_count);
+    float pos2 = 10.0f*(-delta2);
+    for(int i=0;i<20;i++)
+      {
+	Point p = ray(pos2,Point(0.0,0.0,0.0));
+	//std::cout << p << std::endl;
+	small_samples.push_back(p);
+	pos2+=delta2;
+      }
 
   }
   virtual void Collect(CollectVisitor &vis) {
@@ -9769,11 +9822,20 @@ private:
   float ray_length;
   int sample_count;
   mutable Point m_p1;
+  mutable Point m_p2;
   mutable ForAllExistsAdjunction<Point> adj;
   std::vector<Point> samples;
+  std::vector<Point> small_samples;
+  mutable int last_y=-1;
+  mutable int last_ii=-1;
 };
 
 bool vol_obj_property(Point p)
+{
+  RenderVolumeObject *obj = (RenderVolumeObject*)g_vol_data;
+  return obj->o->Inside(p+obj->m_p1);
+}
+bool vol_obj_property2(Point p)
 {
   RenderVolumeObject *obj = (RenderVolumeObject*)g_vol_data;
   return obj->o->Inside(p+obj->m_p1);
