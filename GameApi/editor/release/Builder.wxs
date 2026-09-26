@@ -132,11 +132,17 @@
 </File>
 <File Id='example_expr_e.mp' Name="example_expr_e.mp" DiskId='1' Source='editor\gameapi_content\example_expr_e.mp' KeyPath='no'>
 </File>
+<File Id='li_example.mp' Name="li_example.mp" DiskId='1' Source='editor\gameapi_content\li_example.mp' KeyPath='no'>
+</File>
 <File Id='map.txt' Name="map.txt" DiskId='1' Source='editor\gameapi_content\map.txt' KeyPath='no'>
 </File>
 <File Id='move.sm' Name="move.sm" DiskId='1' Source='editor\gameapi_content\move.sm' KeyPath='no'>
 </File>
 <File Id='steam_fix1.png' Name="steam_fix1.png" DiskId='1' Source='editor\gameapi_content\steam_fix1.png' KeyPath='no'>
+</File>
+<File Id='SwabseaBold-DBox.ttf' Name="SwabseaBold-DBox.ttf" DiskId='1' Source='editor\gameapi_content\SwabseaBold-DBox.ttf' KeyPath='no'>
+</File>
+<File Id='text_test.txt' Name="text_test.txt" DiskId='1' Source='editor\gameapi_content\text_test.txt' KeyPath='no'>
 </File>
 </Component>
 </Directory>
