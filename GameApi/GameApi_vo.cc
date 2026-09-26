@@ -5,6 +5,11 @@
 
 #if (FEATURE_VOLUME==1)
 
+EXPORT GameApi::O GameApi::VolumeApi::bounding_sphere(O next, float cx, float cy, float cz, float radius)
+{
+  VolumeObject *next_ = find_volume(e,next);
+  return add_volume(e,new BoundingSphereVolumeObject(Point(cx,cy,cz),radius,next_));
+}
 EXPORT GameApi::O GameApi::VolumeApi::from_bool_bitmap(BB b, float dist)
 {
   BoolBitmap *c = find_bool_bitmap(e,b);

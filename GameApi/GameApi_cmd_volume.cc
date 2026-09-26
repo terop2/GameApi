@@ -62,6 +62,12 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "", "100.0" },
 			 "O", "volume_api", "o_sphere"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::bounding_sphere,
+			 "o_bounding_sphere",
+			 { "next", "cx", "cy", "cz", "radius" },
+			 { "O", "float", "float", "float" ,"float" },
+			 { "", "0.0", "0.0", "0.0", "100.0" },
+			 "O", "volume_api", "bounding_sphere"));
 #if (ALL==1)||(O_CUBE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::o_cube,
 			 "o_cube",

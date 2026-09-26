@@ -1671,6 +1671,7 @@ class VolumeApi
 public:
   IMPORT VolumeApi(Env &e);
 	IMPORT ~VolumeApi();
+  IMPORT O bounding_sphere(O next, float cx, float cy, float cz, float radius);
   IMPORT BB volumeprojection(O o, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int numsamples);
   IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
 	IMPORT O subvolume(std::function<float(float x, float y, float z)> f, float start_range, float end_range);

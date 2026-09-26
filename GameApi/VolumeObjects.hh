@@ -146,6 +146,25 @@ public:
 #endif
 };
 
+class BoundingSphereVolumeObject : public VolumeObject
+{
+public:
+  BoundingSphereVolumeObject(Point center, float radius,
+			     VolumeObject *next) : center(center), radius(radius), next(next) { }
+  bool Inside(Point p) const
+  {
+    Point p2 = p;
+    p2-=Vector(center);
+    if (p2.Dist() < radius) { return next->Inside(p); }
+    return false;
+  }
+private:
+  Point center;
+  float radius;
+  VolumeObject *next;
+};
+
+
 
 class BitmapVolume; // see Graph.hh
 
