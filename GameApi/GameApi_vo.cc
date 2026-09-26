@@ -5,6 +5,25 @@
 
 #if (FEATURE_VOLUME==1)
 
+EXPORT GameApi::O GameApi::VolumeApi::bounding_x(O next, O next2, float x)
+{
+  VolumeObject *n0 = find_volume(e,next);
+  VolumeObject *n1 = find_volume(e,next2);
+  return add_volume(e,new Bounding_x(x,n0,n1));
+}
+EXPORT GameApi::O GameApi::VolumeApi::bounding_y(O next, O next2, float y)
+{
+  VolumeObject *n0 = find_volume(e,next);
+  VolumeObject *n1 = find_volume(e,next2);
+  return add_volume(e,new Bounding_y(y,n0,n1));
+}
+EXPORT GameApi::O GameApi::VolumeApi::bounding_z(O next, O next2, float z)
+{
+  VolumeObject *n0 = find_volume(e,next);
+  VolumeObject *n1 = find_volume(e,next2);
+  return add_volume(e,new Bounding_z(z,n0,n1));
+}
+
 EXPORT GameApi::O GameApi::VolumeApi::bounding_sphere(O next, float cx, float cy, float cz, float radius)
 {
   VolumeObject *next_ = find_volume(e,next);
@@ -66,10 +85,11 @@ EXPORT GameApi::O GameApi::VolumeApi::move(O obj, float dx, float dy, float dz)
 EXPORT GameApi::VolumeApi::VolumeApi(Env &e) : e(e) { }
 EXPORT GameApi::VolumeApi::~VolumeApi() { }
 
-EXPORT GameApi::O GameApi::VolumeApi::o_sphere(PT center, float radius)
+EXPORT GameApi::O GameApi::VolumeApi::o_sphere(float center_x, float center_y, float center_z, float radius)
 {
-  Point *p = find_point(e, center);
-  return add_volume(e, new SphereVolume(*p, radius));
+  //Point *p = find_point(e, center);
+  Point p(center_x, center_y, center_z);
+  return add_volume(e, new SphereVolume(p, radius));
 }
 EXPORT GameApi::O GameApi::VolumeApi::o_cone(PT p1, PT p2, float rad1, float rad2)
 {

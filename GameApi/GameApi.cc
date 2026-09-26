@@ -1001,7 +1001,7 @@ EXPORT GameApi::BO GameApi::BooleanOps::sphere_bo(GameApi::EveryApi &ev, PT cent
 {
 #if (FEATURE_VOLUME==1)
   P mesh = ev.polygon_api.sphere(center, radius, numfaces1, numfaces2);
-  O bools = ev.volume_api.o_sphere(center, radius);
+  O bools = ev.volume_api.o_sphere(ev.point_api.pt_x(center),ev.point_api.pt_y(center),ev.point_api.pt_z(center), radius);
   FD fd = ev.dist_api.fd_sphere(center, radius);
   return create_bo(mesh, bools, fd);
 #endif

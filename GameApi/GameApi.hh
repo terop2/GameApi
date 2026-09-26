@@ -1671,6 +1671,9 @@ class VolumeApi
 public:
   IMPORT VolumeApi(Env &e);
 	IMPORT ~VolumeApi();
+  IMPORT O bounding_x(O next, O next2, float x);
+  IMPORT O bounding_y(O next, O next2, float y);
+  IMPORT O bounding_z(O next, O next2, float z);
   IMPORT O bounding_sphere(O next, float cx, float cy, float cz, float radius);
   IMPORT BB volumeprojection(O o, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int numsamples);
   IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
@@ -1679,7 +1682,7 @@ public:
   IMPORT O from_polygon(P p, float x, float y, float z);  // point outside of shape.
         IMPORT O from_bool_bitmap(BB b, float dist);
 	IMPORT O link_areas(O o, PT p1, PT p2, float d);
-	IMPORT O o_sphere(PT center, float radius);
+  IMPORT O o_sphere(float center_x, float center_y, float center_z, float radius);
 	IMPORT O o_cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
 	IMPORT O o_cone(PT p1, PT p2, float rad1, float rad2);
 	IMPORT O o_torus(PT center, PT u_x, PT u_y, float dist1, float dist2);
