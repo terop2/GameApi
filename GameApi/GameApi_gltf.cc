@@ -685,6 +685,8 @@ public:
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
     //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
 
+    g_cached_serv->set_cached(url);
+    
     g_loadgltf_uni_id++;
     m_loadgltf_unique_id = g_loadgltf_uni_id + 600000;
     g_shadow_uni_id=m_loadgltf_unique_id;
@@ -733,6 +735,7 @@ public:
   // in sketchfab zips.
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary, void (*fptr2)(void (*f)(void*), void* d)) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
     //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
+    g_cached_serv->set_cached(url);
 
     g_loadgltf_uni_id++;
     m_loadgltf_unique_id = g_loadgltf_uni_id + 600000;
@@ -1312,7 +1315,8 @@ public:
   void set_urls(std::string burl, std::string url2) {
     e.async_rem_callback(url);
     base_url=burl; url=url2;
-    e.async_load_url(url,homepage);
+    if (!g_cached_serv->is_cached(url))
+      e.async_load_url(url,homepage);
   }
   void splitter_cb()
   {
@@ -15841,9 +15845,12 @@ public:
   }
   void UncompressZip()
   {
+    if (g_cached_serv->is_cached(zip_url)) return;
+    
     if (uncompress_started) return;
     if (uncompress_done) return;
     uncompress_started=true;
+    g_cached_serv->set_cached(zip_url);
 #ifndef EMSCRIPTEN
     e.async_load_url(zip_url, homepage);
 #endif

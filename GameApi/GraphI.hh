@@ -59,6 +59,14 @@ namespace GameApi
 };
 
 
+class CachedFileService
+{
+public:
+  virtual void set_cached(std::string url)=0;
+  virtual bool is_cached(std::string url) const=0;
+};
+extern CachedFileService *g_cached_serv;
+
 class BlockBase
 {
 public:

@@ -46342,3 +46342,36 @@ GameApi::MT GameApi::MaterialsApi::choose_material(EveryApi &ev,int i)
   GameApi::MT I4 = ev.materials_api.gltf_material_from_file(ev,url,-400.0,400.0,400.0);
   return I4;
 }
+
+class GlobalCachedFileService : public CachedFileService
+{
+public:
+  void set_cached(std::string url) {
+    //std::cout << "set_cached:" << url << std::endl;
+    int s = urls.size();
+    for(int i=0;i<s;i++)
+      {
+	if (urls[i]==url) {
+	  return;
+	}
+      }
+    urls.push_back(url);
+  }
+  bool is_cached(std::string url) const
+  {
+    //std::cout << "is_cached:" << url << std::endl;
+    int s = urls.size();
+    for(int i=0;i<s;i++)
+      {
+	if (find_str(url,urls[i])!=-1) {
+	  return true;
+	}
+      }
+    return false;
+  }
+private:
+  std::vector<std::string> urls;
+};
+
+GlobalCachedFileService serv;
+IMPORT CachedFileService *g_cached_serv = &serv;

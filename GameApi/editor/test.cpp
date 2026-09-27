@@ -50,6 +50,15 @@ using namespace GameApi;
 #include <dbus/dbus.h>
 #endif
 
+class CachedFileService
+{
+public:
+  virtual void set_cached(std::string url)=0;
+  virtual bool is_cached(std::string url) const=0;
+};
+IMPORT extern CachedFileService *g_cached_serv;
+
+
 
 #define HTML_RUN_HTTP_SERVER_IMPL 1
 
@@ -1692,6 +1701,18 @@ public:
 		  //for(int i=0;i<s6;i++) { std::cout << "test.cpp:urls:" << urls[i] << std::endl; }
 		  
 		  // printing
+
+		  int s5 = urls.size();
+		  for(int i=0;i<s5;i++)
+		    {
+		      if (g_cached_serv->is_cached(urls[i]))
+			{
+			  //std::cout << "Url removed:" << urls[i] << std::endl;
+			  urls.erase(urls.begin()+i);
+			  i--;
+			}
+		    }
+
 		  
 		  env->env->async_load_all_urls(urls, gameapi_homepageurl);
 		}
