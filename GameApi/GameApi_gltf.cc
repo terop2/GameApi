@@ -1315,7 +1315,7 @@ public:
   void set_urls(std::string burl, std::string url2) {
     e.async_rem_callback(url);
     base_url=burl; url=url2;
-    if (!g_cached_serv->is_cached(url))
+    //if (!g_cached_serv->is_cached(url))
       e.async_load_url(url,homepage);
   }
   void splitter_cb()
