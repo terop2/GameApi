@@ -23758,6 +23758,7 @@ public:
     if (start_y2>end_y2) std::swap(start_y2,end_y2);
     if (ncd_z_start2>ncd_z_end2) std::swap(ncd_z_start2,ncd_z_end2);
     firsttime = true;
+    sort_firsttime=true;
   }
 
   void Collect(CollectVisitor &vis)
@@ -23766,11 +23767,17 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
-    int s = points->Size();
-    allpoints.clear();
-    for(int i=0;i<s;i++)
+
+    if (sort_firsttime)
       {
-	allpoints.push_back(i);
+	sort_firsttime=false;
+	
+	int s = points->Size();
+	allpoints.clear();
+	for(int i=0;i<s;i++)
+	  {
+	    allpoints.push_back(i);
+	  }
       }
     g_pts_matrix = points;
     //std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y_matrix);
@@ -23904,6 +23911,7 @@ private:
   mutable float max_ppx,max_ppz;
   mutable float y_rot_cache=0.0;
   mutable Matrix in_mv_cache;
+  mutable bool sort_firsttime;
 };
 
 
