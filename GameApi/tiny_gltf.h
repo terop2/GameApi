@@ -643,6 +643,7 @@ struct Image {
   int pixel_type;  // pixel type(TINYGLTF_COMPONENT_TYPE_***). usually
                    // UBYTE(bits = 8) or USHORT(bits = 16)
   std::vector<unsigned char, ::GameApiAllocator<unsigned char> > image;
+  unsigned char *data=0;
   int bufferView;        // (required if no uri)
   std::string mimeType;  // (required if no uri) ["image/jpeg", "image/png",
                          // "image/bmp", "image/gif"]

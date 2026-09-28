@@ -23588,6 +23588,7 @@ public:
     if (start_y2>end_y2) std::swap(start_y2,end_y2);
     if (ncd_z_start2>ncd_z_end2) std::swap(ncd_z_start2,ncd_z_end2);
     firsttime = true;
+    sort_firsttime = true;
   }
 
   void Collect(CollectVisitor &vis)
@@ -23599,13 +23600,16 @@ public:
     //std::cout << "HeavyPrepare called" << std::endl;
     int s = points->NumPoints();
     //std::cout << "HeavyPrepare numpoints=" << s << std::endl;
-    allpoints.clear();
-    if (s>0)
-      allpoints.reserve(s);
-    for(int i=0;i<s;i++)
-      {
-	allpoints.push_back(i);
-      }
+    if (sort_firsttime) {
+      sort_firsttime = false;
+      allpoints.clear();
+      if (s>0)
+	allpoints.reserve(s);
+      for(int i=0;i<s;i++)
+	{
+	  allpoints.push_back(i);
+	}
+    }
     g_pts = points;
     //std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y);
     insertion_sort(allpoints,ComparePTSObj_y);
@@ -23739,6 +23743,7 @@ private:
   mutable int max_size=0;
   float x_mult;
   Matrix in_mv_cache;
+  mutable bool sort_firsttime;
 };
 
 
