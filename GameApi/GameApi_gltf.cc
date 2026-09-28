@@ -14,15 +14,15 @@ int hhhh_gggg=1;
 #include "MaterialI.hh"
 
 #ifdef EMSCRIPTEN
-//#define ASYNC_JOIN 1
+#define ASYNC_JOIN 1
 #else
 #undef ASYNC_JOIN
 #endif
 
 // this currently doesn't work
-//#define TINYGLTF_ASYNC_JOIN 1
+#define TINYGLTF_ASYNC_JOIN 1
 // this is current working.
-//#define BITMAP_THREAD_ASYNC_JOIN 1
+#define BITMAP_THREAD_ASYNC_JOIN 1
 
 //#define RELOAD_TEST 1
 
