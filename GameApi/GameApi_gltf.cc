@@ -140,8 +140,8 @@ public:
   std::vector<FETCHID> fetch_ids(const std::vector<std::string> &filenames);
   void fetch_all_files(GameApi::Env &e, const std::vector<FETCHID> &ids);
   void set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fptr)(void*), void *user_data);
-  std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_file(GameApi::Env &e, FETCHID id);
-  FILEID add_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec, std::string filename);
+  GameApi::ASyncVec *get_file(GameApi::Env &e, FETCHID id);
+  FILEID add_file(GameApi::ASyncVec *vec, std::string filename);
   FILEID find_file(std::string filename);
   void start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height, int m_decode_mutex_id);
   //void decode_file(FILEID id);
@@ -159,7 +159,7 @@ public:
   std::map<FETCHID,std::vector<unsigned char, GameApiAllocator<unsigned char> > *> files;
   std::map<FETCHID,void (*)(void*)> fetch_cb;
   std::map<FILEID, std::string> filenames2;
-  std::map<FILEID, std::vector<unsigned char, GameApiAllocator<unsigned char> > *> files2;
+  std::map<FILEID, GameApi::ASyncVec *> files2;
   std::map<FILEID, std::vector<unsigned char, GameApiAllocator<unsigned char> > *> decoded_files;
   std::map<FILEID, tinygltf::Image*> decoded_image;
   std::map<FILEID, void (*)(void*)> decode_cb;
@@ -1051,7 +1051,7 @@ public:
     //std::cout << "PrePrePrepare" << i << std::endl;
     if (url.substr(url.size()-3,3)!="glb") {
     prepreprepare_done = true;
-    std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = decoder->get_file(e,id);
+    GameApi::ASyncVec *vec = decoder->get_file(e,id);
     if (!vec) return;
     //std::cout << "PrePrePrepare vecsize=" << vec->size() << std::endl;
     std::string filename = decoder->get_fetch_filename(id);
@@ -1497,7 +1497,7 @@ public:
     if (!decoder) return;
     if (url.substr(url.size()-3,3)!="glb") {
     prepreprepare_done = true;
-    std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = decoder->get_file(e,id);
+    GameApi::ASyncVec *vec = decoder->get_file(e,id);
     if (!vec) return;
     //std::cout << "PrePrePrepare vecsize=" << vec->size() << std::endl;
     std::string filename = decoder->get_fetch_filename(id);
@@ -15859,8 +15859,8 @@ public:
 
     InstallProgress(1010,"ZipDecode",30);
     
-    vec2 = std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(), vec->end());
-    mz_ulong size = vec2.end()-vec2.begin();
+    //vec2 = std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(), vec->end());
+    mz_ulong size = vec->end()-vec->begin();
 
     //mz_ulong size = vec->end()-vec->begin();
     
@@ -15882,7 +15882,7 @@ public:
     // memset clearly fixes something.
     std::memset(&pZip,0,sizeof(mz_zip_archive));
 
-    mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
+    mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec->operator[](0), size, 0);
 
     //std::cout << "ZIP STATUS:" << b2 << std::endl;
     
@@ -16079,7 +16079,7 @@ public:
   void (*fptr)(void*);
   void *data;
   bool uncompress_started=false;
-  std::vector<unsigned char,GameApiAllocator<unsigned char> > vec2;
+  //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec2;
   int m_zip_mutex_id=-1;
 };
 void Zip_callback(void* ptr)
@@ -17030,7 +17030,7 @@ void GLTFImageDecoder::set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fp
 }
 
 
-std::vector<unsigned char,GameApiAllocator<unsigned char> > *GLTFImageDecoder::get_file(GameApi::Env &e, FETCHID id)
+GameApi::ASyncVec *GLTFImageDecoder::get_file(GameApi::Env &e, FETCHID id)
 {
   std::string url = filenames[id];
   //std::cout << "get_file:" << url << std::endl;
@@ -17038,7 +17038,7 @@ std::vector<unsigned char,GameApiAllocator<unsigned char> > *GLTFImageDecoder::g
   if (!vec) vec=e.get_loaded_async_url(remove_dirs(url));
   if (!vec) { std::cout << "GLTFImageDecoder async not ready!" << std::endl; return 0; }
   //std::cout << "FILE SIZE:" << vec->size() << std::endl;
-  return new std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(),vec->end());
+  return vec; /*new std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(),vec->end());*/
 }
 FILEID GLTFImageDecoder::find_file(std::string filename)
 {
@@ -17054,7 +17054,7 @@ FILEID GLTFImageDecoder::find_file(std::string filename)
   //std::cout << "ERROR, GLTFImageDecoder::find_file()" << std::endl;
   return id;
 }
-FILEID GLTFImageDecoder::add_file(std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec, std::string filename)
+FILEID GLTFImageDecoder::add_file(GameApi::ASyncVec *vec, std::string filename)
 {
   //std::cout << "add_file:" << filename << std::endl;
   FILEID id = get_new_file_id();
