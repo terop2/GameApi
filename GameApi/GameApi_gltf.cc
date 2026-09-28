@@ -2235,7 +2235,7 @@ void *thread_func_gltf_bitmap(void *data2)
     int new_h = h/reduce;
     //std::cout << "reducing with mult=" << reduce << " to " << new_w << "*" << new_h << std::endl;
 
-    //image->image.resize(static_cast<uint64_t>(new_w*new_h*comp) * size_t(bits/8));
+    image->image.resize(static_cast<uint64_t>(new_w*new_h*comp) * size_t(bits/8));
     for(int y=0;y<new_h;y++)
       for(int x=0;x<new_w;x++)
 	{
@@ -2248,6 +2248,7 @@ void *thread_func_gltf_bitmap(void *data2)
     image->height= new_h;
     
   }
+  image->data = 0;
   stbi_image_free(data);
 
 
@@ -2300,7 +2301,7 @@ void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int 
   image->component = 3;
   image->bits = 8;
   image->pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
-  image->data = (unsigned char*)bytes;
+  //image->data = (unsigned char*)bytes;
   
   ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
   info->url = url;
@@ -2333,7 +2334,7 @@ void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int 
   image->component = 3;
   image->bits = 8;
   image->pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
-  image->data = (unsigned char*)bytes;
+  //image->data = (unsigned char*)bytes;
   
   ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
   info->url = url;
@@ -2399,6 +2400,7 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
     //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
     //image->image = std::vector<unsigned char>(ptr2->data,ptr2->data+ptr2->width*ptr2->height*ptr2->component*(ptr2->bits/8)); //*ptr2;
     image->data = ptr2->data;
+    image->image = ptr2->image;
     image->width = dt->decoder->decoded_image[id]->width;
     image->height = dt->decoder->decoded_image[id]->height;
     image->component = dt->decoder->decoded_image[id]->component;
@@ -2407,7 +2409,7 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
     decode_mutex_unlock(dt->m_decode_mutex_id);
     //std::cout << "OUTPUT:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
   } else { 
-      std::cout << "REAL JOIN 3008" << std::endl;
+      //std::cout << "REAL JOIN 3008" << std::endl;
     tasks_join(3008);
     goto repeat_label;
   }
@@ -2441,6 +2443,7 @@ bool LoadImageData_from_string(tinygltf::Image *image, const int image_idx, std:
     //std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr2 = 
     //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
     //image->image = std::vector<unsigned char,GameApiAllocator<unsigned char> >(ptr2->data+ptr2->width*ptr2->height*ptr2->component*(ptr2->bits/8));//*ptr2;
+    image->image = ptr2->image;
     image->data = ptr2->data;
     image->width = dt->decoder->decoded_image[id]->width;
     image->height = dt->decoder->decoded_image[id]->height;
@@ -2505,6 +2508,7 @@ public:
       ptr = &img->image[0];
     else
       ptr = img->data;
+    if (!ptr) return Color(255,250,250,255);
     //const unsigned char *ptr = img->data;
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
@@ -17128,7 +17132,7 @@ void GLTFImageDecoder::set_decode_callback(FILEID id, void (*fptr)(void*), void 
 bool GLTFImageDecoder::is_decoded(FILEID id, int m_decode_mutex_id)
 {
   decode_mutex_lock(m_decode_mutex_id);
-  bool b = decoded_files[id]->data!=0;
+  bool b = decoded_files[id]->data!=0 || decoded_files[id]->image.size()!=0;
   decode_mutex_unlock(m_decode_mutex_id);
   return b;
 }
