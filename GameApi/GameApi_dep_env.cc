@@ -1481,8 +1481,8 @@ public:
     
     std::stringstream ss(res);
     totalSize = 0;
-    chunkSize = 1024*300; //1048576;
     ss >> totalSize;
+    chunkSize = totalSize/15; /*1024*1024*5;*/ //1048576;
 
     //std::cout << "TOTALSIZE:" << res << " " << totalSize << std::endl;
     //ss >> chunkSize;
