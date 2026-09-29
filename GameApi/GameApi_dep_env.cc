@@ -1482,8 +1482,24 @@ public:
     std::stringstream ss(res);
     totalSize = 0;
     ss >> totalSize;
-    chunkSize = 1024*3048; /*totalSize/15;*/ /*1024*1024*5;*/ //1048576;
+    //chunkSize = 1024*3048; /*totalSize/15;*/ /*1024*1024*5;*/ //1048576;
 
+    if (totalSize>=0 && totalSize<1024*1024)
+      {
+	chunkSize=1024*1024;
+      }
+    else if (totalSize>=1024*1024 && totalSize<=150*1024*1024)
+      {
+	chunkSize=1024*3048;
+      }
+    else
+      {
+	chunkSize=30*1024*1024;
+      }
+    
+
+
+    
     //std::cout << "TOTALSIZE:" << res << " " << totalSize << std::endl;
     //ss >> chunkSize;
 
@@ -1661,13 +1677,13 @@ private:
     //current_id = id;
     start = id*chunkSize;
     end = (id+1)*chunkSize;
-    if (start>=totalSize) start=totalSize-1;
-    if (end>=totalSize) end=totalSize-1;
+    if (start>=totalSize) start=totalSize;
+    if (end>=totalSize) end=totalSize;
     //if (start==end) return;
     //std::cout << "START CHUNK" << id << " " << start << " " << end << " " << totalSize << std::endl;
     std::stringstream ss;
     //std::cout << start << " " << end << std::endl;
-    ss << "bytes=" << start << "-" << end;
+    ss << "bytes=" << start << "-" << end-1;
     std::string res = ss.str();
     delete [] buf;
     buf = new char[res.size()+1];
@@ -1719,6 +1735,7 @@ private:
 public:
   void fetch_success(emscripten_fetch_t *fetch)
   {
+    
     async_pending_count--;
     // std::cout << "fetch_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << " " << fetch->status << std::endl;
     if (!fetch || !fetch->data || !fetch->numBytes) { fetch_failed(fetch); return; } 
@@ -1736,11 +1753,11 @@ public:
 	for(int i=0;i<blocks_ready.size();i++)
 	  {
 	    //std::cout << blocks_ready[i] << " ";
-	    if (blocks_ready[i]!=1) {
+	    if (blocks_ready[i]==2) {
 	      start = i*chunkSize;
 	      end = (i+1)*chunkSize;
-	      if (start>totalSize) start=totalSize;
-	      if (end>totalSize) end=totalSize;
+	      if (start>=totalSize) start=totalSize;
+	      if (end>=totalSize) end=totalSize;
 	      int dataOffset = fetch->dataOffset;
 	      int numBytes = fetch->numBytes;
 	      if (fetch->status==206||mode==1)
@@ -1748,11 +1765,11 @@ public:
 		  dataOffset+=ptr->start;
 		}
 	      //std::cout << "FETCH:" << start << " " << end << " " << dataOffset << " " << numBytes << std::endl;
-	      if (dataOffset<=start && dataOffset+numBytes>=end-1)
+	      if (dataOffset<=start && dataOffset+numBytes>=end)
 		{
 		  int offset = start-dataOffset;
 		  // this is because our "/50000" error case.
-		  if (result.size() < end) { result.resize(end+1); }
+		  if (result.size() < end) { result.resize(end); }
 		  std::copy(&fetch->data[offset], &fetch->data[offset+(end-start)], &result[start]);
 		  blocks_ready[i]=1;
 		  //std::cout << "BLOCK READY: " << i << std::endl;
@@ -1786,7 +1803,7 @@ public:
 	if (blocks_ready[i]==0) { fail=true; next.push_back(i); continue; }
 	if (blocks_ready[i]==2) { fail=true; continue; }
       }
-    //std::cout << "kk" << std::endl;
+    //std::cout << "kk" << url << std::endl;
     if (!fail)
       {
 	//std::cout << "Exiting via Success" << std::endl;
@@ -3037,7 +3054,7 @@ void idb_onerror_async_cb(void *ptr)
 
 #ifdef EMSCRIPTEN
 void fetch_download_succeed(emscripten_fetch_t *fetch) {
-  std::cout << "Fetch success: " << fetch->numBytes << std::endl;
+  //std::cout << "Fetch success: " << fetch->numBytes << std::endl;
   //std::cout << "Fetch data:" << (unsigned char*)fetch->data << std::endl;
   LoadData *data =(LoadData*)fetch->userData;
   const char *url = data->buf3;
@@ -3156,6 +3173,7 @@ void fetch_success(void *data)
 {
   LoadData *dt = (LoadData*)data;
   const char *url = dt->buf3;
+  // std::cout << "fetch success: " << url << std::endl;
   const std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = dt->obj->get();
   onload_async_cb(333,(void*)url, vec);
 #ifdef EMSCRIPTEN
