@@ -5378,8 +5378,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 
       if (go)
 	{	  
-	  char buf[1024];
-	  int bytes_read = read(fd,buf,1);
+	  char buf[10240];
+	  int bytes_read = read(fd,buf,sizeof(buf));
       if (bytes_read<0) {
 	    if (errno==EAGAIN || errno==EWOULDBLOCK) { continue; }
 	    else {
