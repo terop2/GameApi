@@ -189,8 +189,8 @@ echo "</style>";
 
 echo "<div style=\"left: 80px;\" class=\"media\">\n";
 echo "<div>\n";
-echo "<h1 class=\"customfont hardshadow fontsize orange\" align=\"left\" style=\"position: static; left: -120px;\">MESHPAGE.ORG&reg;</h1>\n";
-echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: 0px; left: 50px; font-size: 22px;\">(A way to display your 3d models on the web -- gltf supported)</h2>\n";
+//echo "<h1 class=\"customfont hardshadow fontsize orange\" align=\"left\" style=\"position: static; left: -120px;\">MESHPAGE.ORG&reg;</h1>\n";
+//echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: 0px; left: 50px; font-size: 22px;\">(A way to display your 3d models on the web -- gltf supported)</h2>\n";
 
 echo "</div>\n";
 echo "</div>\n";
