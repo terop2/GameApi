@@ -6474,15 +6474,32 @@ public:
   bool IsTransparent() const
   {
     int material_id = param->material_id();
+    float rr = 0.0f;
     if (material_id>=0 && material_id<int(interface->materials_size())) {
       const tinygltf::Material &m = interface->get_material(material_id);
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+      int index = r.baseColorTexture.index;
+      GameApi::BM bm = gltf_load_bitmap2(e,ev,interface,index);
+      BitmapHandle *handle = find_bitmap(e, bm);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      int x = b2->SizeX();
+      int y = b2->SizeY();
+      x/=2;
+      y/=2;
+      ::Color c = b2->Map(x,y);
+      if (c.alpha < 250) {
+	//std::cout << "Returning transparent2: " << c.alpha << std::endl;
+	  return true;
+      }
+      
+      rr = r.baseColorFactor[3];
       if (r.baseColorFactor[3]<0.9)
 	{
 	  //std::cout << "Returning transparent: " << r.baseColorFactor[3] << std::endl;
 	  return true;
 	}
     }
+    //std::cout << "Returning not transparent: " << rr << std::endl;
     return false;
   }
   int num_indexes() const {
