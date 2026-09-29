@@ -46,7 +46,25 @@ extern Pipeline *g_last_resize_pipeline;
 
 IMPORT void InstallProgress(int num, std::string label, int max=15);
 IMPORT void ProgressBar(int num, int val, int max, std::string label);
+std::string remove_dirs(std::string url);
+IMPORT std::string stripprefix(std::string s);
 
+
+std::vector<std::string> g_cb_done;
+bool is_cb_done(std::string url)
+{
+  int s = g_cb_done.size();
+  for(int i=0;i<s;i++)
+    if (g_cb_done[i]==url) return true;
+  return false;
+}
+void add_cb_done(std::string url)
+{
+  int s = g_cb_done.size();
+  for(int i=0;i<s;i++)
+    if (g_cb_done[i]==url) return;
+  g_cb_done.push_back(url);
+}
 
 std::map<int,pthread_mutex_t *> g_decode_mutexes;
 
@@ -1153,7 +1171,10 @@ public:
 	dt->id = ii;
 	dt->iid = image_ids[ii];
 	decoder->set_fetch_callback(e, image_ids[ii], &LoadGltf2_cb, (void*)dt);
-
+	std::string url = decoder->get_fetch_filename(image_ids[ii]);
+	if (is_cb_done(remove_dirs(url))) {
+	  LoadGltf2_cb(dt);
+	}
       }
     decoder->fetch_all_files(e,image_ids);
 
@@ -15370,7 +15391,7 @@ public:
       env.async_load_url(url, homepage);
 #endif
       GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
-      if (!vec) { std::cout << "ASyncGltf::async not ready!" << std::endl; done=false; return; }
+      if (!vec) { std::cout << "ASyncGltf::async not ready!" << url << std::endl; done=false; return; }
     std::string ss(vec->begin(),vec->end());
     delete vec;
     std::stringstream s(ss);
@@ -15818,6 +15839,7 @@ public:
   }
   void Zip_cb()
   {
+    //std::cout << "Zip_cb" << zip_url << std::endl;
     if (async) {
 #ifdef EMSCRIPTEN
     async_pending_count--;
@@ -16041,23 +16063,27 @@ public:
 	//std::cout << "callback check: " << oldurl << std::endl;
 	ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
 	if (cb) {
+	  //std::cout << "CB" << std::endl;
 	  //std::cout << "Load cb!" << oldurl << std::endl;
 	(*cb->fptr)(cb->data);
 	}
 	//std::cout << "callback check: " << url_plain << std::endl;
       ASyncCallback *cb2 = rem_async_cb(url_plain); //load_url_callbacks[url];
       if (cb2) {
+	//std::cout << "CB2" << std::endl;
 	//std::cout << "Load cb!2" << url_plain << std::endl;
 	(*cb2->fptr)(cb2->data);
       }
-      //std::cout << "callback check: " << url_only << std::endl;
       ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
       if (cb3) {
 	//std::cout << "Load cb!3" << url_only << std::endl;
 	(*cb3->fptr)(cb3->data);
       }
+      add_cb_done(stripprefix(remove_dirs(url_only)));
+      //std::cout << "callback check: " << url_only << std::endl;
       ASyncCallback *cb4 = rem_async_cb(url_only); //load_url_callbacks[url];
       if (cb4) {
+	// std::cout << "CB4" << std::endl;
 	//std::cout << "Load cb!4" << url_only << std::endl;
 	(*cb4->fptr)(cb4->data);
       }
@@ -17044,7 +17070,6 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
 void GLTFImageDecoder::set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fptr)(void*), void *user_data)
 {
   std::string url = filenames[id];
-  //std::cout << "Set fetch callback:" << remove_dirs(url) << std::endl;
   e.async_load_callback(remove_dirs(url), fptr, user_data);
 }
 
