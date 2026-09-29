@@ -90,7 +90,7 @@ void decode_mutex_unlock(int id)
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
 
 
-std::vector<int> id_list = { 11,1,15, 6, 0 };
+std::vector<int> id_list = { 9,11,1,15, 6, 0 };
 
 unsigned int test_color(int id, unsigned int color)
 {
