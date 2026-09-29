@@ -6479,6 +6479,7 @@ public:
       const tinygltf::Material &m = interface->get_material(material_id);
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
       int index = r.baseColorTexture.index;
+      if (index != -1) {
       GameApi::BM bm = gltf_load_bitmap2(e,ev,interface,index);
       BitmapHandle *handle = find_bitmap(e, bm);
       ::Bitmap<Color> *b2 = find_color_bitmap(handle);
@@ -6491,7 +6492,7 @@ public:
 	//std::cout << "Returning transparent2: " << c.alpha << std::endl;
 	  return true;
       }
-      
+      }
       rr = r.baseColorFactor[3];
       if (r.baseColorFactor[3]<0.9)
 	{
