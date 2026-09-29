@@ -5973,12 +5973,24 @@ void *trans_thread_func(void *data)
 }
 
 
-GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque, bool force_transparent)
+GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque, bool force_transparent, bool force_opaque)
 {
   FaceCollection *coll = find_facecoll(e,p);
   BitmapHandle *handle = find_bitmap(e, bm);
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
 
+  if (force_opaque) {
+    if (opaque)
+      {
+	return p;
+      }
+    else
+      {
+	return p_empty();
+      }
+  }
+
+  
   return add_polygon2(e, new TransparentSeparateFaceCollection(coll, *b2, opaque, force_transparent),1);
 }
 
@@ -6483,8 +6495,8 @@ public:
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent, !is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent, !is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat(p_opaque.id);
@@ -6504,8 +6516,8 @@ public:
   {
 
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent, !is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent, !is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat_inst(p_opaque.id,pts.id);
@@ -6524,8 +6536,8 @@ public:
   virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
   {
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent, !is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent, !is_transparent);
     GameApi::VA va_opaque = ev.polygon_api.create_vertex_array(p_opaque,false);
     GameApi::VA va_trans = ev.polygon_api.create_vertex_array(p_trans,false);
 
@@ -6554,8 +6566,8 @@ public:
   {
 
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent, !is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent, !is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat_inst_matrix(p_opaque.id,ms.id);
@@ -6575,8 +6587,8 @@ public:
   {
 
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent, !is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent, !is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat_inst2(p_opaque.id,pta.id);
@@ -6595,8 +6607,8 @@ public:
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent, !is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent, !is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat_inst_fade(p_opaque.id,pts.id,flip,start_time,end_time);

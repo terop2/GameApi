@@ -3007,7 +3007,7 @@ public:
   IMPORT ARR p_mtl2_materials(EveryApi &ev, P p);
   IMPORT P get_face_count(P p);
   IMPORT P transparent_separate2(P p, std::vector<BM> vec, bool opaque);
-  IMPORT P transparent_separate(P p, BM bm, bool opaque, bool force_transparent);
+  IMPORT P transparent_separate(P p, BM bm, bool opaque, bool force_transparent, bool force_opaque);
   IMPORT void sort_vertices(VA va, M m);
   IMPORT P remove_faces(P p);
   IMPORT P combine_textures(P p1, P p2); 
