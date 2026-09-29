@@ -2508,7 +2508,7 @@ public:
       ptr = &img->image[0];
     else
       ptr = img->data;
-    if (!ptr) return Color(255,250,250,255);
+    if (!ptr) return Color(255,0,250,255);
     //const unsigned char *ptr = img->data;
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }

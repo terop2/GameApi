@@ -1482,7 +1482,7 @@ public:
     std::stringstream ss(res);
     totalSize = 0;
     ss >> totalSize;
-    chunkSize = totalSize/15; /*1024*1024*5;*/ //1048576;
+    chunkSize = 1024*3048; /*totalSize/15;*/ /*1024*1024*5;*/ //1048576;
 
     //std::cout << "TOTALSIZE:" << res << " " << totalSize << std::endl;
     //ss >> chunkSize;
@@ -1661,9 +1661,12 @@ private:
     //current_id = id;
     start = id*chunkSize;
     end = (id+1)*chunkSize;
-    if (end>=totalSize) end=totalSize;
+    if (start>=totalSize) start=totalSize-1;
+    if (end>=totalSize) end=totalSize-1;
+    //if (start==end) return;
     //std::cout << "START CHUNK" << id << " " << start << " " << end << " " << totalSize << std::endl;
     std::stringstream ss;
+    //std::cout << start << " " << end << std::endl;
     ss << "bytes=" << start << "-" << end;
     std::string res = ss.str();
     delete [] buf;
