@@ -2727,6 +2727,11 @@ EM_JS(void, call_exit_fullscreen, (), {
 
 #endif
 
+IMPORT extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
+
+
+
 class FullscreenButton : public MainLoopItem
 {
 public:
@@ -2802,8 +2807,22 @@ public:
     if (req_state!=current_state) {
       if (req_state==true) {
 	//std::cout << "GOING TO FULLSCREEN!" << std::endl;
-	old_sx = g_resize_event_sx;
-	old_sy = g_resize_event_sy;
+	old_sx = ev.mainloop_api.get_screen_width(); //g_event_screen_x; //g_resize_event_sx;
+	old_sy = ev.mainloop_api.get_screen_height(); //g_event_screen_y; //g_resize_event_sy;
+
+EmscriptenFullscreenStrategy strategy = {};
+
+strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;
+strategy.canvasResolutionScaleMode =
+    EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
+strategy.filteringMode =
+    EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+
+emscripten_request_fullscreen_strategy(
+    "#canvas",
+    EM_TRUE,
+    &strategy);
+
 	//emscripten_request_fullscreen("canvas", false);
 	//g_low->sdl->SDL_SetWindowFullscreen(sdl_window, Low_SDL_WINDOW_FULLSCREEN);
 	call_fullscreen();
@@ -2812,6 +2831,8 @@ public:
 	//g_low->sdl->SDL_GetWindowSize(sdl_window, &w,&h);
 	//std::cout << "RESIZING TO:" << w << "x" << h << std::endl; 
 	set_resize_event(w,h);
+	//ev.mainloop_api.set_corner(0,0,w,h);'
+	//ev.mainloop_api.set
 	current_state=true;
       } else
 	{
