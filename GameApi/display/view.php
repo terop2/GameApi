@@ -2380,6 +2380,23 @@ function resize_event(event)
   var wd = window.innerWidth;
   var hd = window.innerHeight;
 
+  var wd2 = wd/800.0;
+  var hd2 = hd/600.0;
+
+  wd2 /= 1.5;
+  hd2 /= 1.5;
+
+
+  if (wd2>hd2) wd2=hd2; else
+  if (hd2>wd2) hd2=wd2;
+  var hd3 = hd2;
+
+
+  wd2 *= 800.0;
+  hd2 *= 600.0;
+  wd=wd2;
+  hd=hd2;
+
   var mobile = false;
   if (navigator.userAgentData!=null && navigator.userAgentData.mobile===true) {
      mobile=true;
@@ -2389,36 +2406,42 @@ function resize_event(event)
      d2.style="width:100%";
   }
 
-  wd-=120;
+  //wd-=120;
   
 
-  var w = 800;
-  var h = 600;
+  //var w = 800;
+  //var h = 600;
 
-  wd/=3.0;
-  wd*=2.0;
+  //wd/=3.0;
+  //wd*=2.0;
   
-  hd/=10.0;
-  hd*=7.5;
+  //hd/=10.0;
+  //hd*=7.5;
 
-  var s_x = wd/w;
-  var s_y = hd/h;
+  //var s_x = wd/w;
+  //var s_y = hd/h;
 
-  var scale;
-  if (s_x<s_y) scale=s_x; else scale=s_y;
+  //var scale;
+  //if (s_x<s_y) scale=s_x; else scale=s_y;
 
-  if (mobile) { scale=wd*3.5/2/w; }
+  //if (mobile) { scale=wd*3.5/2/w; }
 
-  var scale_x = w*scale;
-  var scale_y = h*scale;
+  //var scale_x = w*scale;
+  //var scale_y = h*scale;
 
 
   var elem = document.getElementById("canvas");
-  elem.style.width = scale_x.toString() + "px";
-  elem.style.height = scale_y.toString() + "px";
+  elem.style.width = wd.toString() + "px";
+  elem.style.height = hd.toString() + "px";
   const dpr = window.devicePixelRatio || 2;
-  elem.width = (scale_x)*dpr;
-  elem.height = (scale_y)*dpr;
+  elem.width = (wd)*dpr;
+  elem.height = (hd)*dpr;
+	   try {
+Module.ccall('set_resize_event', null, ['number', 'number'], [wd,hd], {async:true});
+	//Module._set_resize_event(wd,hd);
+	   } catch(e) {
+	     console.log(e);
+	   }
 
 }
 
