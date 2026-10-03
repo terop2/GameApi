@@ -7135,9 +7135,10 @@ void CodeGenLineErrorCheck(CodeGenLine &line, std::vector<GameApiItem*> function
 	      //std::cout << "ERROR: Param arity problem" << std::endl;
 	      //std::cout << "Trying to fix" << std::endl;
 	      int s = item->ParamCount(0) - line.params.size();
+	      int old_size = line.params.size();
 	      if (s>0)
 	      for(int j=0;j<s;j++) {
-		  line.params.push_back(item->ParamDefault(0,line.params.size() + j));
+		  line.params.push_back(item->ParamDefault(0,old_size + j));
 		}
 
 #if 0
