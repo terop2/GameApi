@@ -27844,8 +27844,8 @@ public:
   SaveDeployAsync(GameApi::Env &env, GameApi::EveryApi &ev, std::string h2_script, std::string filename, std::string homepage, bool use_filename) : env(env), ev(ev), h2_script(h2_script), filename(filename), homepage(homepage),use_filename(use_filename) { g_update_download_bar=true;
       id = env.add_to_download_bar("gameapi_deploy.zip");
       env.set_download_progress(env.download_index_mapping(id), 0.0/8.0);
-
-
+      
+      h2_script=deploy_replace_string(h2_script,"\"","");
   }
   virtual int NumTasks() const
   {
@@ -40229,6 +40229,8 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::s
   //std::cout << "EMSCRIPTEN_FRAME" << std::endl;
   std::string gen = is_envparams_arr?do_codegen2(ev,g_codegen_values.mod2,g_codegen_values.id,g_codegen_values.line_uid,g_codegen_values.level):do_codegen(ev);
   //std::cout << "DO_CODEGEN returned:" << gen << std::endl;
+  gen = deploy_replace_string(gen,"\"","");
+  
   std::stringstream ss(gen);
   std::stringstream ss3(gen);
   std::string line;
