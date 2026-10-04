@@ -164,6 +164,9 @@ EXPORT void start_http_listening(std::vector<std::string> filenames,
 			  std::string date,
 			  bool transparent)
 {
+
+  script = deploy_replace_string(script,"\"","");
+  
   HTTP_files *files = new HTTP_files;
   files->filenames = filenames;
   files->contents = contents;
