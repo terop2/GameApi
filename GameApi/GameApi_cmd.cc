@@ -68,8 +68,15 @@ std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<
 	  {
 	    s+=empty_param(param_type[i]);
 	  } 
-	else
-	  s+= param_names[i] ;
+	else {
+	  if (param_type[i]=="std::string")
+	    {
+	      s+='"' + param_names[i] + '"';
+	    }
+	  else {
+	    s+= param_names[i] ;
+	  }
+	}
 	if (i!=int(param_names.size())-1) s+=",";
       }
     s+=");\n";

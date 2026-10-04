@@ -7234,7 +7234,12 @@ CodeGenLine parse_codegen_line(GameApi::EveryApi &ev, std::string line)
     int end3 = find_one(line, end2+1, "),");
     if (end3==-1) { std::cout << "parse_codegen_line2: '),' error:"  << std::endl; return error; }
     if (end3==end2+1 && line[end3]==')') { break; } // empty array
-    params.push_back(line.substr(end2+1, end3-end2-1));
+    std::string p = line.substr(end2+1,end3-end2-1);
+    if (p.size()>0 && p[0]=='"' && p[p.size()-1]=='"')
+      {
+	p=p.substr(1,p.size()-2);
+      }
+    params.push_back(p);
     param_names.push_back(find_param_name(ev,api_name,func_name,ii));
     end2 = end3;
     if (line[end3]==')') { break; }

@@ -588,6 +588,10 @@ public:
   {
     std::string s;
     ss >> s;
+    if (s.size()>0 && s[0]=='"' && s[s.size()-1]=='"')
+      {
+	s=s.substr(1,s.size()-2);
+      }
     if (s=="?") s="";
     return s;
   }
