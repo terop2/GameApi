@@ -1118,7 +1118,7 @@ public:
 	    s = replace_str(s, "&", "&amp;");
 	    s = replace_str(s, ">", "&gt;");
 	    s = replace_str(s, "<", "&lt;");
-	    s = replace_str(s, "\"", "&quot;");
+	    //s = replace_str(s, "\"", "&quot;");
 	    s = replace_str(s, "\'", "&apos;");
 
 	    std::string filename = create_tmp_filename("script_", ".txt");
@@ -1357,7 +1357,7 @@ public:
 	    s = replace_str(s, "&", "&amp;");
 	    s = replace_str(s, ">", "&gt;");
 	    s = replace_str(s, "<", "&lt;");
-	    s = replace_str(s, "\"", "&quot;");
+	    //s = replace_str(s, "\"", "&quot;");
 	    s = replace_str(s, "\'", "&apos;");
 
 	    std::string filename = create_tmp_filename("script_",".txt");

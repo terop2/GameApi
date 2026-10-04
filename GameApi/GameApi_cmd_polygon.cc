@@ -902,9 +902,9 @@ std::vector<GameApiItem*> polygonapi_functions1()
 #if (ALL==1)||(TRANSPARENT_SEPARATE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::transparent_separate,
 			 "transparency_separate",
-			 { "p", "bm", "opaque", "force_transparent" },
-			 { "P", "BM", "bool", "bool" },
-			 { "", "", "true", "false" },
+			 { "p", "bm", "opaque", "force_transparent", "force_opaque" },
+			 { "P", "BM", "bool", "bool", "bool" },
+			 { "", "", "true", "false", "false" },
 			 "P", "polygon_api", "transparent_separate"));
 #endif
 #if (ALL==1)||(TRANSPARENT_SEPARATE2==1)
