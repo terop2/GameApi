@@ -1450,7 +1450,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gl
 #if (ALL==1)||(SCORE_DISPLAY==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_display,
 			 "score_display",
-			 { "ev", "ml", "font" },
+			 { "ev", "ml", "font_url" },
 			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "score_display"));
