@@ -161,7 +161,7 @@ public:
 	  {
 	    selected_item = i;
 	  }
-	if (mouse_pos.y<p.y-80) break;
+	//if (mouse_pos.y<p.y-80) break;
       }
     if (firsttime>0)
       firsttime--;
