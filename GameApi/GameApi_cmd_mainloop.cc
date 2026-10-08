@@ -185,7 +185,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "html_url",
 			 { "url" },
 			 { "std::string" },
-			 { "http://meshpage.org/test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "https://meshpage.org/test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "HML", "mainloop_api", "html_url"));
 #endif
 #if (ALL==1)||(SAVE_SCRIPT==1)
@@ -201,7 +201,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "bm_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://meshpage.org/test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a", "b", "c", "d", "e" },
+			 { "ev", "https://meshpage.org/test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a", "b", "c", "d", "e" },
 			 "BM", "mainloop_api", "load_BM_script"));
 #endif
   /*
@@ -209,7 +209,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "p_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://meshpage.org/assets/blob_p.mp", "a", "b", "c", "d", "e" },
+			 { "ev", "https://meshpage.org/assets/blob_p.mp", "a", "b", "c", "d", "e" },
 			 "P", "mainloop_api", "load_P_script"));
   */
 #if (ALL==1)||(P_SCRIPT2==1)
@@ -258,7 +258,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "bm_script_arr",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://meshpage.org/assets/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 { "ev", "https://meshpage.org/assets/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[BM]", "mainloop_api", "load_BM_script_array"));
 #endif
 #if (ALL==1)||(LOAD_BM_SCRIPT_ARRAY_COMB==1)
@@ -266,7 +266,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "bm_script_comb",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://meshpage.org/assets/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b", "c", "d", "e" },
+			 { "ev", "https://meshpage.org/assets/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b", "c", "d", "e" },
 			 "[BM]", "mainloop_api", "load_BM_script_array_comb"));
 #endif
 #if (ALL==1)||(LOAD_P_SCRIPT_ARRAY==1)
@@ -283,7 +283,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "ml_script_arr",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://meshpage.org/assets/marble_cube_ml.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 { "ev", "https://meshpage.org/assets/marble_cube_ml.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[ML]", "mainloop_api", "load_ML_script_array"));
 #endif
 #if USE_CHAISCRIPT
@@ -291,7 +291,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "ml_chai",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "http://meshpage.org/assets/chai_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "ev", "https://meshpage.org/assets/chai_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "ML", "mainloop_api", "chai_mainloop"));
 #endif
 
@@ -300,7 +300,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "chai_bm",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://meshpage.org/assets/test_bm.chai@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "100", "100" },
+			 { "https://meshpage.org/assets/test_bm.chai@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "100", "100" },
 			 "BM", "bitmap_api", "chai_bm"));
 #endif
 #if 0
@@ -430,7 +430,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "ml_gltf_anim",
 			 { "ev", "base_url", "url", "animation", "channel", "mesh_index", "prim_index", "mat" },
 			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int", "MT" },
-			 { "ev", "http://meshpage.org/assets/", "http://meshpage.org/assets/test.glb", "0", "0", "0", "0", "" },
+			 { "ev", "https://meshpage.org/assets/", "http://meshpage.org/assets/test.glb", "0", "0", "0", "0", "" },
 			 "ML", "mainloop_api", "gltf_anim"));*/
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim4,
@@ -514,7 +514,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "scene_ml",
 			 { "ev", "url", "sx", "sy" },
 			 { "EveryApi&", "std::string", "int", "int" },
-			 { "ev", "http://meshpage.org/assets/landscape.scn@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "600", "600" },
+			 { "ev", "https://meshpage.org/assets/landscape.scn@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "600", "600" },
 			 "ML", "polygon_api", "load_scene"));
 #endif
 #endif
@@ -533,7 +533,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "piechart_ml",
 			 { "ev", "c_x", "c_y", "url", "radius", "numsteps", "start_z", "end_z" },
 			 { "EveryApi&", "float", "float", "std::string", "float", "int", "float", "float" },
-			 { "ev", "0.0", "0.0", "http://meshpage.org/assets/piechart_full.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "350.0", "30", "0.0", "40.0" },
+			 { "ev", "0.0", "0.0", "https://meshpage.org/assets/piechart_full.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "350.0", "30", "0.0", "40.0" },
 			 "ML", "polygon_api", "piechart_full"));
 #endif
 #if (ALL==1)||(SKYBOX==1)
@@ -1342,7 +1342,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "key_playback_ml",
 			 { "ml", "input_url" },
 			 { "ML", "std::string" },
-			 { "", "http://meshpage.org/assets/key_record.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "", "https://meshpage.org/assets/key_record.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "ML", "mainloop_api", "playback_keypresses" ));
 #endif
 #endif
@@ -1469,7 +1469,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "matrix_range_check",
 			 { "ev", "ml", "ml2", "url" },
 			 { "EveryApi&", "ML", "ML", "std::string" },
-			 { "ev", "", "", "http://meshpage.org/assets/test_data.txt" },
+			 { "ev", "", "", "https://meshpage.org/assets/test_data.txt" },
 			 "ML", "mainloop_api", "matrix_range_check"));
 #endif
 #endif
@@ -1678,7 +1678,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "song_ml",
 			 { "ev", "next", "url" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "http://meshpage.org/assets/piano_variations.ogg" },
+			 { "ev", "", "https://meshpage.org/assets/piano_variations.ogg" },
 			 "ML", "mainloop_api", "load_song"));
 #endif
 #if (ALL==1)||(PLAY_WAVE_VIA_KEYPRESS==1)
@@ -1686,7 +1686,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::tracker_api, &GameApi::TrackerApi::pl
 			 "sound_ml",
 			 { "ev", "ml", "url", "key" },
 			 { "EveryApi&", "ML", "std::string", "int" },
-			 { "ev", "", "http://meshpage.org/assets/Clap.wav", "32" },
+			 { "ev", "", "https://meshpage.org/assets/Clap.wav", "32" },
 			 "ML", "tracker_api", "play_wave_via_keypress"));
 #endif
 #if (ALL==1)||(LOAD_MIDI==1)
@@ -1785,7 +1785,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "html_window", 
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "RUN", "std::string" },
-			 { "ev", "", "http://meshpage.org/assets/" },
+			 { "ev", "", "https://meshpage.org/assets/" },
 			 "HML", "mainloop_api", "emscripten_frame"));
 #endif
 #endif
@@ -1930,7 +1930,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "pkg_window",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "http://meshpage.org/assets/game1.pkg" },
+			 { "ev", "https://meshpage.org/assets/game1.pkg" },
 			 "ML", "mainloop_api", "memmap_window2"));
 #endif
 #endif
@@ -1940,7 +1940,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "pkg_window2",
 			 { "ev", "url_1", "url_2", "url_3", "url_4", "url_5", "url_6" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://meshpage.org/assets/game1_1.pkg", "http://meshpage.org/assets/game1_2.pkg", "http://meshpage.org/assets/game1_3.pkg", "http://meshpage.org/assets/game1_4.pkg", "http://meshpage.org/assets/game1_5.pkg", "http://meshpage.org/assets/game1_6.pkg" },
+			 { "ev", "https://meshpage.org/assets/game1_1.pkg", "https://meshpage.org/assets/game1_2.pkg", "https://meshpage.org/assets/game1_3.pkg", "https://meshpage.org/assets/game1_4.pkg", "https://meshpage.org/assets/game1_5.pkg", "https://meshpage.org/assets/game1_6.pkg" },
 			 "ML", "mainloop_api", "memmap_window3"));
 #endif
 #endif  

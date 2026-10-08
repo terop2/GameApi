@@ -18,7 +18,7 @@
 			 "fr_sprite_array",
 			 { "name", "url", "bms", "mn", "x", "y", "fmt", "start_time" },
 			 { "std::string", "std::string", "[BM]", "MN", "int", "int", "int", "float" },
-			 { "a_tmp1", "http://meshpage.org/assets/pos_lst.sp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "", "", "0", "0", "1", "0.0" },
+			 { "a_tmp1", "https://meshpage.org/assets/pos_lst.sp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "", "", "0", "0", "1", "0.0" },
 			 "FML", "low_frame_api", "low_sprite_array"));
 #endif
 #if (ALL==1)||(DYNAMIC_CHARACTER_FRAME==1)
@@ -58,7 +58,7 @@
 			 "fr_build_world",
 			 { "ml", "url", "chars", "x", "y" },
 			 { "FML", "std::string", "std::string", "int", "int" },
-			 { "", "http://meshpage.org/assets/map.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", ".#", "0", "0" },
+			 { "", "https://meshpage.org/assets/map.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", ".#", "0", "0" },
 			 "FML", "low_frame_api", "low_build_world"));
 #endif
 #if (ALL==1)||(LOW_ENEMY_DRAW==1)
@@ -66,7 +66,7 @@
 			 "fr_enemy_draw",
 			 { "bm", "url", "fmt", "speed" },
 			 { "BM", "std::string", "int", "float" },
-			 { "", "http://meshpage.org/assets/enemy0.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "1", "0.03" },
+			 { "", "https://meshpage.org/assets/enemy0.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "1", "0.03" },
 			 "FML", "low_frame_api", "low_enemy_draw"));
 #endif
 #if (ALL==1)||(LOW_ENEMY_DRAW2==1)
@@ -74,7 +74,7 @@
 			 "fr_enemy_draw2",
 			 { "bm", "url", "fmt", "speed", "time_delta", "time_duration" },
 			 { "[BM]", "std::string", "int", "float", "int", "int" },
-			 { "", "http://meshpage.org/assets/enemy0.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "1", "0.03", "1", "8" },
+			 { "", "https://meshpage.org/assets/enemy0.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "1", "0.03", "1", "8" },
 			 "FML", "low_frame_api", "low_enemy_draw2"));
 #endif
 #if (ALL==1)||(ARRAY_FML==1)
@@ -150,7 +150,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBuff
 			 "w_layout",
 			 { "vec", "url" },
 			 { "[W]", "std::string" },
-			 { "", "http://meshpage.org/assets/testlayout.lay@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "", "https://meshpage.org/assets/testlayout.lay@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "W", "low_frame_api", "w_layout"));
 #endif
 #if (ALL==1)||(W_RECT==1)

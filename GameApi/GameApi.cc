@@ -29394,10 +29394,12 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
+	/*
 #ifndef EMSCRIPTEN
     if (main2)
 	main2->Prepare();
 #endif
+	*/
 	//#ifdef EMSCRIPTEN
 	//if (async_taken)
 	//  async_pending_count--;
@@ -29406,9 +29408,9 @@ public:
 	//async_taken = false;
 	//main2->execute(e3);
 	//firsttime = false;
-    g_progress_lock_assets=false;
-    unasync();
-    g_progress_script_num = -1;
+	// g_progress_lock_assets=false;
+	// unasync();
+	// g_progress_script_num = -1;
 	return;
       }
       //GameApi::P pp;
@@ -29434,16 +29436,19 @@ public:
       main2->Collect(vis);    
 #endif
     g_progress_script_num=-1;
+    vis.register_obj(this);
   }
   void HeavyPrepare() {
+    if (main2)
+	main2->Prepare();
   }
 	      
   void Prepare() {
     g_progress_script_num = process_script_num;
-#ifdef EMSCRIPTEN
+   //#ifdef EMSCRIPTEN
     if (main2)
 	main2->Prepare();
-#endif
+    //#endif
     g_progress_script_num = -1;
   }
   virtual void execute(MainLoopEnv &e3)
