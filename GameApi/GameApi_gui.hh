@@ -139,9 +139,11 @@ public:
     for(int i=i2;i<s;i++)
       {
 	GuiWidget *w = sorted[i];
-	if (firsttime>0) 
+	bool b = false;
+	if (firsttime>0) { 
 	  w->update(mouse_pos, button,ch, type, mouse_wheel_y);
-	
+	  b=true;
+	}
 	Point2d p = w->get_pos();
 	Vector2d s = w->get_size();
 	/*
@@ -150,6 +152,7 @@ public:
 	   ||
 	    (old_mouse.x >= p.x-80 && old_mouse.x < p.x+s.dx+80 &&
 	    old_mouse.y >= p.y-80 && old_mouse.y < p.y+s.dy+80))*/
+	if (!b)
 	  {
 	    w->update(mouse_pos, button,ch, type, mouse_wheel_y);
 	  }
