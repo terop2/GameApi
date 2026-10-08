@@ -29408,9 +29408,9 @@ public:
 	//async_taken = false;
 	//main2->execute(e3);
 	//firsttime = false;
-	// g_progress_lock_assets=false;
-	// unasync();
-	// g_progress_script_num = -1;
+	 g_progress_lock_assets=false;
+	 unasync();
+	 g_progress_script_num = -1;
 	return;
       }
       //GameApi::P pp;
