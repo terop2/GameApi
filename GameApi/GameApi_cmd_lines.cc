@@ -211,7 +211,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "li_import_icf",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "http://meshpage.org/assets/" },
+			 { "ev", "https://meshpage.org/assets/" },
 			 "LI", "lines_api", "import_ifc"));
 #endif
 #if (ALL==1)||(LINE==1)
