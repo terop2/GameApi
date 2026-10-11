@@ -116,6 +116,13 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 "ML", "float_scene_api", "o_to_ml4"));
 
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::render_with_lipschitz_and_forallexists,
+			 "fs_o_lipschitz",
+			 { "ev", "bounding_spheres", "obj", "z", "z_dist", "bg_color", "sample_rate", "start_x", "end_x", "start_y", "end_y", "sx", "sy" },
+			 { "EveryApi&", "FS", "O", "float", "float", "unsigned int", "float", "float", "float", "float", "float", "int", "int" },
+			 { "ev", "", "", "-400.0", "800.0", "ff000000", "0.5", "-450.0", "450.0", "-450.0", "450.0", "800", "800" },
+			 "BM", "float_scene_api", "render_with_lipschitz_and_forallexists"));
+  
   
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::fs_to_ml2,

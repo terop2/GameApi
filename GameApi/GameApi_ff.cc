@@ -1071,4 +1071,67 @@ GameApi::ML GameApi::MainLoopApi::random_game_seq(float time_step,
     }
   return add_main_loop(e, new RandomGameSeq(time_step,move,true_vec2,false_vec2, perc,num_levels));
 }
-						  
+
+class LipschitzExistsBitmap : public Bitmap<Color>
+{
+public:
+  LipschitzExistsBitmap(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::FS fs, GameApi::O obj, float z, float z_dist, unsigned int bg_color, float per_pixel_sample_rate,
+			float start_x, float end_x,
+			float start_y, float end_y, int sx, int sy) : e(e), ev(ev), bounding_spheres(fs), obj(obj), z(z), z_dist(z_dist), bg_color(bg_color),sample_rate(per_pixel_sample_rate), start_x(start_x),end_x(end_x), start_y(start_y), end_y(end_y),sx(sx),sy(sy) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  void Prepare() { }
+  
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    Point p0 = { start_x, start_y, z };
+    Vector v0 = { end_x-start_x, 0.0f, 0.0f };
+    Vector v1 = { 0.0f, end_y-start_y, 0.0f };
+    
+    float xx = float(x)/float(sx);
+    float yy = float(y)/float(sy);
+    Point p1 = p0 + v0 * xx + v1 * yy;
+
+    FloatScene *scene = find_float_scene(e,bounding_spheres);
+    Point m_p1 = p1;
+    Point m_p2 = m_p1 + Vector(0.0,0.0,z_dist);
+    FF_Ray ray(m_p1,m_p2);
+    FF_RayField r_field(ray,*scene);
+    RootFinding_Lipschitz root(r_field,0.0f,1.0f,30,1.0f);
+    bool found=false;
+    float pos = root.root(found);
+    if (found) {
+      RootFinding_Lipschitz root2(r_field,pos+0.01*2.0,1.0f,30,1.0f);
+      bool found2=false;
+      float pos2 = root2.root(found2);
+      Point p = ray.Ray(pos);
+      Point p2 = ray.Ray(pos);
+      GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,int(sample_rate*(p2.z-p.z)));
+      BitmapHandle *handle = find_bitmap(e, bm);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      return b2->Map(x,y);
+    } else
+      {
+	return Color(bg_color);
+      }
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::FS bounding_spheres;
+  GameApi::O obj;
+  unsigned int bg_color;
+  float sample_rate;
+  float start_x,end_x;
+  float start_y,end_y;
+  float z,z_dist;
+  int sx,sy;
+};
+
+
+GameApi::BM GameApi::FloatSceneApi::render_with_lipschitz_and_forallexists(EveryApi &ev, FS bounding_spheres, O obj, float z, float z_dist, unsigned int bg_color, float per_pixel_sample_rate, float start_x, float end_x, float start_y, float end_y, int sx, int sy)
+{
+  return add_color_bitmap(e, new LipschitzExistsBitmap(e,ev,bounding_spheres,obj,z,z_dist, bg_color, per_pixel_sample_rate,start_x, end_x,start_y,end_y,sx,sy));
+}
