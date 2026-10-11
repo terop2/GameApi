@@ -53,15 +53,15 @@ public:
     float x = x_start;
     for(int i=0;i<maxiter;i++) {
       //std::cout << "Step:" << i << std::endl;
-      if (std::isnan(x)) { found=true; break; }
+      //if (std::isnan(x)) { found=true; break; }
       float val = func.Index(x);
       //std::cout << "x=" << x << "val=" << val << std::endl;
 
       float fval = fabs(val);
       if (fval < 0.00001f) { found = true; /*std::cout << i << "::" << x << " " << val << std::endl;*/ break; }
       x += neg * c * fval;
-      if (neg>0.0 && x >= x_end) { found = false; /*std::cout << i << "::" << "++" << std::endl;*/ break; }
-      if (neg<0.0 && x <= x_end) { found = false; /*std::cout << i << "::" << "--" << std::endl;*/ break; }
+      //if (neg>0.0 && x >= x_end) { found = false; /*std::cout << i << "::" << "++" << std::endl;*/ break; }
+      //if (neg<0.0 && x <= x_end) { found = false; /*std::cout << i << "::" << "--" << std::endl;*/ break; }
     }
     return x;
   }
