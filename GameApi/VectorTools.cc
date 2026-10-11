@@ -143,6 +143,7 @@ float Vector::Dist() const
   float r = dx*dx;
   r+= dy*dy;
   r+= dz*dz;
+  //std::cout << "dist=" << r << std::endl;
   float r2 = sqrt(r);
   return r2;
 }

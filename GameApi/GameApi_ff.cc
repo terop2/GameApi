@@ -8,7 +8,9 @@ class FF_Ray : public FloatRay
 {
 public:
   FF_Ray(Point p1, Point p2) : p1(p1), p2(p2) { }
-  Point Ray(float x) const { return p1 + x*Vector(p2-p1); }
+  Point Ray(float x) const {
+    //std::cout << "Ray2:" << p1 << " " << p2 << " " << x << std::endl;
+    return p1 + x*Vector(p2-p1); }
 
 private:
   Point p1,p2;
@@ -51,12 +53,15 @@ public:
     float x = x_start;
     for(int i=0;i<maxiter;i++) {
       //std::cout << "Step:" << i << std::endl;
+      if (std::isnan(x)) { found=true; break; }
       float val = func.Index(x);
-      
-      if (fabs(val) < 0.0001f) { found = true; /*std::cout << i << "::" << x << " " << val << std::endl;*/ break; }
-      //if (neg>0.0 && x >= x_end) { found = false; /*std::cout << i << "::" << "++" << std::endl;*/ break; }
-      //if (neg<0.0 && x <= x_end) { found = false; /*std::cout << i << "::" << "--" << std::endl;*/ break; }
-      x += neg * c * val; 
+      //std::cout << "x=" << x << "val=" << val << std::endl;
+
+      float fval = fabs(val);
+      if (fval < 0.00001f) { found = true; /*std::cout << i << "::" << x << " " << val << std::endl;*/ break; }
+      x += neg * c * fval;
+      if (neg>0.0 && x >= x_end) { found = false; /*std::cout << i << "::" << "++" << std::endl;*/ break; }
+      if (neg<0.0 && x <= x_end) { found = false; /*std::cout << i << "::" << "--" << std::endl;*/ break; }
     }
     return x;
   }
@@ -475,7 +480,11 @@ public:
   void HeavyPrepare() { }
   void Prepare() { }
   
-  float Field(Point p) const { return (p-center).Dist()-radius; }
+  float Field(Point p) const {
+    //std::cout << "prefield=" << p << " " << center << std::endl;
+    float val = (p-center).Dist()-radius;
+    //std::cout << "field=" << val << std::endl;
+    return val; }
   virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
   virtual unsigned int MetalRoughnessColor(Point p) const { return 0xff000000; }
   virtual unsigned int NormalColor(Point p) const { return 0xff000000; }
@@ -1097,17 +1106,19 @@ public:
     FloatScene *scene = find_float_scene(e,bounding_spheres);
     Point m_p1 = p1;
     Point m_p2 = m_p1 + Vector(0.0,0.0,z_dist);
+    //std::cout << "Ray:" << m_p1 << " " << m_p2 << std::endl;
     FF_Ray ray(m_p1,m_p2);
     FF_RayField r_field(ray,*scene);
-    RootFinding_Lipschitz root(r_field,0.0f,1.0f,30,1.0f);
+    RootFinding_Lipschitz root(r_field,0.0f,1.0f,300,1.0f/(m_p2.z-m_p1.z));
     bool found=false;
     float pos = root.root(found);
     if (found) {
-      RootFinding_Lipschitz root2(r_field,pos+0.01*2.0,1.0f,30,1.0f);
+      //return Color(0xffffffff);
+      RootFinding_Lipschitz root2(r_field,pos+0.01*2.0,1.0f,300,1.0f/(m_p2.z-m_p1.z));
       bool found2=false;
       float pos2 = root2.root(found2);
       Point p = ray.Ray(pos);
-      Point p2 = ray.Ray(pos);
+      Point p2 = ray.Ray(pos2);
       int old_id = get_current_block();
       int id = add_block();
       set_current_block(id);
