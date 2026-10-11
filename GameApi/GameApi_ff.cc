@@ -1160,6 +1160,109 @@ GameApi::BM GameApi::FloatSceneApi::render_with_lipschitz_and_forallexists(Every
   return add_color_bitmap(e, new LipschitzExistsBitmap(e,ev,bounding_spheres,obj,z,z_dist, bg_color, per_pixel_sample_rate,start_x, end_x,start_y,end_y,sx,sy));
 }
 
+class BoundingXFloatScene : public FloatScene
+{
+public:
+  BoundingXFloatScene(FloatScene &scene_left, FloatScene &scene_right, float x) : x(x), scene_left(scene_left), scene_right(scene_right) { }
+
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }  
+  virtual float Field(Point p) const
+  {
+    if (p.x < x) { return scene_left.Field(p); }
+    return scene_right.Field(p);
+  }
+  virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
+  virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int MetalRoughnessColor(Point p) const {return 0xffffffff; }
+  virtual unsigned int NormalColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int OcculsionColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int EmissiveColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int SheenColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int SpecGlossiColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int DiffuseColor(Point p) const { return 0xffffffff; }
+private:
+  FloatScene &scene_left;
+  FloatScene &scene_right;
+  float x;
+};
+GameApi::FS GameApi::FloatSceneApi::fs_bound_x(FS left, FS right, float x)
+{
+  FloatScene *left_a = find_float_scene(e,left);
+  FloatScene *right_a = find_float_scene(e,right);
+  return add_float_scene(e,new BoundingXFloatScene(*left_a, *right_a, x));
+}
+
+
+class BoundingYFloatScene : public FloatScene
+{
+public:
+  BoundingYFloatScene(FloatScene &scene_left, FloatScene &scene_right, float y) : y(y), scene_left(scene_left), scene_right(scene_right) { }
+
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }  
+  virtual float Field(Point p) const
+  {
+    if (p.y < y) { return scene_left.Field(p); }
+    return scene_right.Field(p);
+  }
+  virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
+  virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int MetalRoughnessColor(Point p) const {return 0xffffffff; }
+  virtual unsigned int NormalColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int OcculsionColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int EmissiveColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int SheenColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int SpecGlossiColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int DiffuseColor(Point p) const { return 0xffffffff; }
+private:
+  FloatScene &scene_left;
+  FloatScene &scene_right;
+  float y;
+};
+GameApi::FS GameApi::FloatSceneApi::fs_bound_y(FS left, FS right, float y)
+{
+  FloatScene *left_a = find_float_scene(e,left);
+  FloatScene *right_a = find_float_scene(e,right);
+  return add_float_scene(e,new BoundingYFloatScene(*left_a, *right_a, y));
+}
+
+class BoundingZFloatScene : public FloatScene
+{
+public:
+  BoundingZFloatScene(FloatScene &scene_left, FloatScene &scene_right, float z) : z(z), scene_left(scene_left), scene_right(scene_right) { }
+
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }  
+  virtual float Field(Point p) const
+  {
+    if (p.z < z) { return scene_left.Field(p); }
+    return scene_right.Field(p);
+  }
+  virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
+  virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int MetalRoughnessColor(Point p) const {return 0xffffffff; }
+  virtual unsigned int NormalColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int OcculsionColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int EmissiveColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int SheenColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int SpecGlossiColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int DiffuseColor(Point p) const { return 0xffffffff; }
+private:
+  FloatScene &scene_left;
+  FloatScene &scene_right;
+  float z;
+};
+GameApi::FS GameApi::FloatSceneApi::fs_bound_z(FS left, FS right, float z)
+{
+  FloatScene *left_a = find_float_scene(e,left);
+  FloatScene *right_a = find_float_scene(e,right);
+  return add_float_scene(e,new BoundingZFloatScene(*left_a, *right_a, z));
+}
+
 class MinFloatScene : public FloatScene
 {
 public:
