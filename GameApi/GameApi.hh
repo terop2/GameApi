@@ -2860,6 +2860,7 @@ class FloatSceneApi
 {
 public:
   IMPORT FloatSceneApi(Env &e);
+  BM render_with_lipschitz_and_forallexists(EveryApi &ev, FS bounding_spheres, O obj, float z, float z_dist, unsigned int bg_color, float per_pixel_sample_rate, float start_x, float end_x, float start_y, float end_y, int sx, int sy);
   FS fs_sphere(float center_x, float center_y, float center_z, float radius);
   FS color_scene(FS scene, unsigned int color, int fptr_enum);
   FS fd_to_fs(EveryApi &ev, FD fd);
