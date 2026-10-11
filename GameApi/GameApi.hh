@@ -2865,6 +2865,10 @@ public:
   FS fs_sphere(float center_x, float center_y, float center_z, float radius);
   FS fs_min(FS a1, FS a2);
   FS fs_min_arr(std::vector<FS> arr);
+  FS fs_bound_x(FS left, FS right, float x);
+  FS fs_bound_y(FS left, FS right, float y);
+  FS fs_bound_z(FS left, FS right, float z);
+ 
   FS color_scene(FS scene, unsigned int color, int fptr_enum);
   FS fd_to_fs(EveryApi &ev, FD fd);
   VX fs_to_vx(EveryApi &ev, int sx, int sy, int sz, float ssx, float ssy, float ssz, FS obj, float pos);
