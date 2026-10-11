@@ -1153,3 +1153,48 @@ GameApi::BM GameApi::FloatSceneApi::render_with_lipschitz_and_forallexists(Every
 {
   return add_color_bitmap(e, new LipschitzExistsBitmap(e,ev,bounding_spheres,obj,z,z_dist, bg_color, per_pixel_sample_rate,start_x, end_x,start_y,end_y,sx,sy));
 }
+
+class MinFloatScene : public FloatScene
+{
+public:
+  MinFloatScene(FloatScene &a1, FloatScene &a2) : a1(a1), a2(a2) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }  
+  virtual float Field(Point p) const
+  {
+    return std::min(a1.Field(p),a2.Field(p));
+  }
+  virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
+  virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int MetalRoughnessColor(Point p) const {return 0xffffffff; }
+  virtual unsigned int NormalColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int OcculsionColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int EmissiveColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int SheenColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int SpecGlossiColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int DiffuseColor(Point p) const { return 0xffffffff; }
+private:
+  FloatScene &a1;
+  FloatScene &a2;
+};
+GameApi::FS GameApi::FloatSceneApi::fs_min(FS a1, FS a2)
+{
+  FloatScene *aa1 = find_float_scene(e,a1);
+  FloatScene *aa2 = find_float_scene(e,a2);
+  return add_float_scene(e,new MinFloatScene(*aa1,*aa2));
+}
+GameApi::FS GameApi::FloatSceneApi::fs_min_arr(std::vector<FS> arr)
+{
+  while(arr.size()>1) {
+    std::vector<FS> small;
+    int s = arr.size();
+    for(int i=0;i<s;i+=2)
+      {
+	small.push_back(fs_min(arr[i],arr[i+1]));
+      }
+    if (s%1==1) { small.push_back(arr[s-1]); }
+    arr = small;
+  }
+  return arr[0];
+}
