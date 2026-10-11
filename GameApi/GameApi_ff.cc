@@ -1108,10 +1108,16 @@ public:
       float pos2 = root2.root(found2);
       Point p = ray.Ray(pos);
       Point p2 = ray.Ray(pos);
+      int old_id = get_current_block();
+      int id = add_block();
+      set_current_block(id);
       GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,int(sample_rate*(p2.z-p.z)));
       BitmapHandle *handle = find_bitmap(e, bm);
       ::Bitmap<Color> *b2 = find_color_bitmap(handle);
-      return b2->Map(x,y);
+      Color c =b2->Map(x,y); 
+      clear_block(id);
+      set_current_block(old_id);
+      return c;
     } else
       {
 	return Color(bg_color);
