@@ -9740,7 +9740,7 @@ public:
 	return Color(0.0,0.0,0.0,0.0);
 	break;
       case ForAllExistsAdjunction<Point>::EUnknown:
-	std::cout << "Something is wrong. This is clearly stupid." << std::endl;
+	//std::cout << "Something is wrong. This is clearly stupid." << std::endl;
 	last_ii = -1;
 	return Color(0.0,0.0,0.0,0.0);
 	break;
@@ -9773,7 +9773,7 @@ public:
 	return Color(0.0,0.0,0.0,0.0);
 	break;
       case ForAllExistsAdjunction<Point>::EUnknown:
-	std::cout << "Something is wrong. This is clearly stupid." << std::endl;
+	//std::cout << "Something is wrong. This is clearly stupid." << std::endl;
 	last_ii = -1;
 	return Color(0.0,0.0,0.0,0.0);
 	break;
