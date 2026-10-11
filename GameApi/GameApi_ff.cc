@@ -1171,7 +1171,7 @@ public:
   virtual float Field(Point p) const
   {
     if (p.x < x) { return scene_left.Field(p); /*return std::min(scene_left.Field(p),fabs(p.x-x));*/ }
-    return scene_right.Field(p); /*std::min(scene_right.Field(p),fabs(p.x-x));*/
+    return scene_right.Field(p); /*return std::min(scene_right.Field(p),fabs(p.x-x));*/
   }
   virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
   virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
