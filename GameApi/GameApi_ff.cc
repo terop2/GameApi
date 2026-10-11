@@ -51,7 +51,7 @@ public:
     //std::cout << "ROOTFINDING: " << x_start << " " << x_end << " " << maxiter << std::endl;
     found = false;
     float x = x_start;
-    for(int i=0;i<maxiter;i++) {
+    for(int i=0;i<maxiter&&((neg>0.0f&&x<=x_end)||(neg<0.0f&&x>=x_end));i++) {
       //std::cout << "Step:" << i << std::endl;
       //if (std::isnan(x)) { found=true; break; }
       float val = func.Index(x);
