@@ -41,6 +41,18 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "0.0", "0.0", "0.0", "300.0" },
 			 "FS", "float_scene_api", "fs_sphere"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::fs_min,
+			 "fs_min",
+			 { "a1", "a2" },
+			 { "FS", "FS" },
+			 { "", "" },
+			 "FS", "float_scene_api", "fs_min"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::fs_min_arr,
+			 "fs_min_arr",
+			 { "arr" },
+			 { "[FS]" },
+			 { "" },
+			 "FS", "float_scene_api", "fs_min_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::color_scene,
 			 "fs_color",
 			 { "scene", "color", "enum" },
