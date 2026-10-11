@@ -1103,37 +1103,43 @@ public:
     float yy = float(y)/float(sy);
     Point p1 = p0 + v0 * xx + v1 * yy;
 
-    FloatScene *scene = find_float_scene(e,bounding_spheres);
-    Point m_p1 = p1;
-    Point m_p2 = m_p1 + Vector(0.0,0.0,z_dist);
-    //std::cout << "Ray:" << m_p1 << " " << m_p2 << std::endl;
-    FF_Ray ray(m_p1,m_p2);
-    FF_RayField r_field(ray,*scene);
-    RootFinding_Lipschitz root(r_field,0.0f,1.0f,300,1.0f/(m_p2.z-m_p1.z));
-    bool found=false;
-    float pos = root.root(found);
-    if (found) {
-      //return Color(0xffffffff);
-      RootFinding_Lipschitz root2(r_field,pos+0.01*2.0*1.0f/(m_p2.z-m_p1.z),1.0f,300,1.0f/(m_p2.z-m_p1.z));
-      bool found2=false;
-      float pos2 = root2.root(found2);
-      Point p = ray.Ray(pos);
-      Point p2 = ray.Ray(pos2);
-      int old_id = get_current_block();
-      int id = add_block();
-      set_current_block(id);
-      GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,int(sample_rate*(p2.z-p.z)));
-      BitmapHandle *handle = find_bitmap(e, bm);
-      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
-      b2->Prepare();
-      Color c =b2->Map(x,y); 
-      clear_block(id);
-      set_current_block(old_id);
-      return c;
-    } else
-      {
-	return Color(bg_color);
-      }
+    float start_pos = 0.0f;
+    Color c;
+    while(1) {
+      FloatScene *scene = find_float_scene(e,bounding_spheres);
+      Point m_p1 = p1;
+      Point m_p2 = m_p1 + Vector(0.0,0.0,z_dist);
+      //std::cout << "Ray:" << m_p1 << " " << m_p2 << std::endl;
+      FF_Ray ray(m_p1,m_p2);
+      FF_RayField r_field(ray,*scene);
+      RootFinding_Lipschitz root(r_field,start_pos,1.0f,300,1.0f/(m_p2.z-m_p1.z));
+      bool found=false;
+      float pos = root.root(found);
+      if (found) {
+	//return Color(0xffffffff);
+	RootFinding_Lipschitz root2(r_field,pos+0.01*2.0*1.0f/(m_p2.z-m_p1.z),1.0f,300,1.0f/(m_p2.z-m_p1.z));
+	bool found2=false;
+	float pos2 = root2.root(found2);
+	Point p = ray.Ray(pos);
+	Point p2 = ray.Ray(pos2);
+	int old_id = get_current_block();
+	int id = add_block();
+	set_current_block(id);
+	GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,int(sample_rate*(p2.z-p.z)));
+	BitmapHandle *handle = find_bitmap(e, bm);
+	::Bitmap<Color> *b2 = find_color_bitmap(handle);
+	b2->Prepare();
+	c =b2->Map(x,y); 
+	clear_block(id);
+	set_current_block(old_id);
+	if (c.alpha==0)
+	  {
+	    start_pos = pos2+0.01*2.0*1.0f/(m_p2.z-m_p1.z);
+	    continue;
+	  } else break;
+      } else { return Color(bg_color); }
+    }
+    return c;
   }
 private:
   GameApi::Env &e;
