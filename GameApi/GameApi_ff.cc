@@ -1114,6 +1114,7 @@ public:
       GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,int(sample_rate*(p2.z-p.z)));
       BitmapHandle *handle = find_bitmap(e, bm);
       ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      b2->Prepare();
       Color c =b2->Map(x,y); 
       clear_block(id);
       set_current_block(old_id);
