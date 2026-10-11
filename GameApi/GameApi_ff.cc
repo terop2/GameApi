@@ -1125,7 +1125,7 @@ public:
 	int old_id = get_current_block();
 	int id = add_block();
 	set_current_block(id);
-	GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,int(sample_rate*(p2.z-p.z)));
+	GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,std::max(2,int(sample_rate*(p2.z-p.z))));
 	BitmapHandle *handle = find_bitmap(e, bm);
 	::Bitmap<Color> *b2 = find_color_bitmap(handle);
 	b2->Prepare();
@@ -1170,8 +1170,8 @@ public:
   virtual void Prepare() { }  
   virtual float Field(Point p) const
   {
-    if (p.x < x) { return scene_left.Field(p); }
-    return scene_right.Field(p);
+    if (p.x < x) { return scene_left.Field(p); /*return std::min(scene_left.Field(p),fabs(p.x-x));*/ }
+    return scene_right.Field(p); /*std::min(scene_right.Field(p),fabs(p.x-x));*/
   }
   virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
   virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
@@ -1205,8 +1205,10 @@ public:
   virtual void Prepare() { }  
   virtual float Field(Point p) const
   {
-    if (p.y < y) { return scene_left.Field(p); }
-    return scene_right.Field(p);
+    if (p.y < y) { return scene_left.Field(p); /*return std::min(scene_left.Field(p),fabs(p.x-x));*/ }
+    return scene_right.Field(p); /*std::min(scene_right.Field(p),fabs(p.x-x));*/
+    //if (p.y < y) { return std::min(scene_left.Field(p),fabs(p.y-y)); }
+    //return std::min(scene_right.Field(p),fabs(p.y-y));
   }
   virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
   virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
@@ -1239,8 +1241,10 @@ public:
   virtual void Prepare() { }  
   virtual float Field(Point p) const
   {
-    if (p.z < z) { return scene_left.Field(p); }
-    return scene_right.Field(p);
+    if (p.z < z) { return scene_left.Field(p); /*return std::min(scene_left.Field(p),fabs(p.x-x));*/ }
+    return scene_right.Field(p); /*std::min(scene_right.Field(p),fabs(p.x-x));*/
+    //if (p.z < z) { return std::min(scene_left.Field(p),fabs(p.z-z)); }
+    //return std::min(scene_right.Field(p),fabs(p.z-z));
   }
   virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
   virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
