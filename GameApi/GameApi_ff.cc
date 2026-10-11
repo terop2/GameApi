@@ -1114,7 +1114,7 @@ public:
     float pos = root.root(found);
     if (found) {
       //return Color(0xffffffff);
-      RootFinding_Lipschitz root2(r_field,pos+0.01*2.0,1.0f,300,1.0f/(m_p2.z-m_p1.z));
+      RootFinding_Lipschitz root2(r_field,pos+0.01*2.0*1.0f/(m_p2.z-m_p1.z),1.0f,300,1.0f/(m_p2.z-m_p1.z));
       bool found2=false;
       float pos2 = root2.root(found2);
       Point p = ray.Ray(pos);
