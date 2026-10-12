@@ -158,9 +158,22 @@ private:
 
 extern int g_current_block;
 
+//extern pthread_mutex_t g_block_mutex;
+//extern bool g_mutex_firsttime;
+
+
 template<class T>
 void add_b(T *ptr)
 {
+  /*
+  if (g_mutex_firsttime)
+    {
+      pthread_mutex_init(&g_block_mutex, NULL);
+      g_mutex_firsttime=false;
+    }
+  pthread_mutex_lock(&g_block_mutex);
+  */
+  
   if ((g_current_block>=0 && g_current_block<g_blocks.g_blocks.size()) && !g_blocks.g_blocks[g_current_block])
     {
       recreate_block(g_current_block);
@@ -169,6 +182,8 @@ void add_b(T *ptr)
     g_blocks.g_blocks[g_current_block]->vec.push_back(new BlockImpl(ptr));
   else
     g_rest.g_rest.push_back(new BlockImpl(ptr)); // these will never be released
+
+  //pthread_mutex_unlock(&g_block_mutex);
 }
 
 

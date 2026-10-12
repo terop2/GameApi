@@ -1086,7 +1086,7 @@ class LipschitzExistsBitmap : public Bitmap<Color>
 public:
   LipschitzExistsBitmap(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::FS fs, GameApi::O obj, float z, float z_dist, unsigned int bg_color, float per_pixel_sample_rate,
 			float start_x, float end_x,
-			float start_y, float end_y, int sx, int sy) : e(e), ev(ev), bounding_spheres(fs), obj(obj), z(z), z_dist(z_dist), bg_color(bg_color),sample_rate(per_pixel_sample_rate), start_x(start_x),end_x(end_x), start_y(start_y), end_y(end_y),sx(sx),sy(sy) { }
+			float start_y, float end_y, int sx, int sy) : e(e), ev(ev), bounding_spheres(fs), obj(obj), z(z), z_dist(z_dist), bg_color(bg_color),sample_rate(per_pixel_sample_rate), start_x(start_x),end_x(end_x), start_y(start_y), end_y(end_y),sx(sx),sy(sy) /*,block_mutex(PTHREAD_MUTEX_INITIALIZER)*/ { }
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   void Prepare() { }
@@ -1123,6 +1123,12 @@ public:
 	if (found2) {
 	  Point p = ray.Ray(pos);
 	  Point p2 = ray.Ray(pos2);
+	  //if (mutex_firsttime)
+	  //  {
+	  //   pthread_mutex_init(&block_mutex,NULL);
+	  //   mutex_firsttime = false;
+	  // }
+	  //pthread_mutex_lock(&block_mutex);
 	  int old_id = get_current_block();
 	  int id = add_block();
 	  set_current_block(id);
@@ -1131,8 +1137,9 @@ public:
 	  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
 	  b2->Prepare();
 	  c =b2->Map(x,y); 
-	  clear_block(id);
+	  //clear_block(id);
 	  set_current_block(old_id);
+	  //pthread_mutex_unlock(&block_mutex);
 	  if (c.alpha==0)
 	    {
 	      start_pos = pos2+0.01*2.0*1.0f/(m_p2.z-m_p1.z);
@@ -1156,6 +1163,8 @@ private:
   float start_y,end_y;
   float z,z_dist;
   int sx,sy;
+  //mutable pthread_mutex_t block_mutex;
+  //mutable bool mutex_firsttime=true;
 };
 
 

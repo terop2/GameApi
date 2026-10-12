@@ -28,18 +28,39 @@ G_BLOCK g_blocks;
 
 Rest g_rest;
 int g_current_block=-1;
+//pthread_mutex_t g_block_mutex = PTHREAD_MUTEX_INITIALIZER;
+//bool g_mutex_firsttime = true;
 IMPORT int add_block()
 {
+  /*
+  if (g_mutex_firsttime)
+    {
+      pthread_mutex_init(&g_block_mutex,NULL);
+      g_mutex_firsttime=false;
+    }
+  pthread_mutex_lock(&g_block_mutex);
+  */
   g_blocks.g_blocks.push_back(new Block2);
-  return g_blocks.g_blocks.size()-1;
+  int val = g_blocks.g_blocks.size()-1;
+  //pthread_mutex_unlock(&g_block_mutex);
+  return val;
 }
 void recreate_block(int id)
 {
+  /*
+  if (g_mutex_firsttime)
+    {
+      pthread_mutex_init(&g_block_mutex,NULL);
+      g_mutex_firsttime=false;
+    }
+  pthread_mutex_lock(&g_block_mutex);
+  */
   if (id>=0 && id<g_blocks.g_blocks.size()) {
     //if (g_blocks.g_blocks[id])
     //  delete g_blocks.g_blocks[id];
     g_blocks.g_blocks[id]=new Block2;
   }
+  /*  pthread_mutex_unlock(&g_block_mutex);*/
 }
 IMPORT void set_current_block(int id)
 {
@@ -47,6 +68,14 @@ IMPORT void set_current_block(int id)
 }
 void delete_item_from_block(void *ptr, Block2 *blk)
 {
+  /*
+  if (g_mutex_firsttime)
+    {
+      pthread_mutex_init(&g_block_mutex,NULL);
+      g_mutex_firsttime=false;
+    }
+  pthread_mutex_lock(&g_block_mutex);
+  */
   int s = blk->vec.size();
   for(int i=0;i<s;i++) {
     //void *ptr2 = blk->vec[i].get();
@@ -55,16 +84,28 @@ void delete_item_from_block(void *ptr, Block2 *blk)
       //blk->vec[i].reset();
     }
   }
+  //pthread_mutex_unlock(&g_block_mutex);
 }
 void delete_item(void *ptr)
 {
+  /*
+  if (g_mutex_firsttime)
+    {
+      pthread_mutex_init(&g_block_mutex,NULL);
+      g_mutex_firsttime=false;
+    }
+  pthread_mutex_lock(&g_block_mutex);
+  */
   int ks = g_blocks.g_blocks.size();
   for(int i=0;i<ks;i++) {
     Block2 *blk = g_blocks.g_blocks[i];
+    //pthread_mutex_unlock(&g_block_mutex);
     if (blk)
     delete_item_from_block(ptr, blk);
+    //pthread_mutex_lock(&g_block_mutex);
   }
   g_rest.delete_item_from_rest(ptr);
+  //pthread_mutex_unlock(&g_block_mutex);
 }
 int get_current_block()
 {
@@ -72,11 +113,20 @@ int get_current_block()
 }
 IMPORT void clear_block(int id)
 {
+  /*
+  if (g_mutex_firsttime)
+    {
+      pthread_mutex_init(&g_block_mutex,NULL);
+      g_mutex_firsttime=false;
+    }
+  pthread_mutex_lock(&g_block_mutex);
+  */
   if (id>=0 && id<g_blocks.g_blocks.size()) {
     //std::cout << "Deleting pointer " << (long)g_blocks.g_blocks[id] << std::endl;
     delete g_blocks.g_blocks[id];
     g_blocks.g_blocks[id]=0;
   }
+  //pthread_mutex_unlock(&g_block_mutex);
 }
 
 
