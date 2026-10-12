@@ -1120,23 +1120,27 @@ public:
 	RootFinding_Lipschitz root2(r_field,pos+0.01*2.0*1.0f/(m_p2.z-m_p1.z),1.0f,300,1.0f/(m_p2.z-m_p1.z));
 	bool found2=false;
 	float pos2 = root2.root(found2);
-	Point p = ray.Ray(pos);
-	Point p2 = ray.Ray(pos2);
-	int old_id = get_current_block();
-	int id = add_block();
-	set_current_block(id);
-	GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,std::max(2,int(sample_rate*(p2.z-p.z))));
-	BitmapHandle *handle = find_bitmap(e, bm);
-	::Bitmap<Color> *b2 = find_color_bitmap(handle);
-	b2->Prepare();
-	c =b2->Map(x,y); 
-	clear_block(id);
-	set_current_block(old_id);
-	if (c.alpha==0)
-	  {
-	    start_pos = pos2+0.01*2.0*1.0f/(m_p2.z-m_p1.z);
-	    continue;
-	  } else break;
+	if (found2) {
+	  Point p = ray.Ray(pos);
+	  Point p2 = ray.Ray(pos2);
+	  int old_id = get_current_block();
+	  int id = add_block();
+	  set_current_block(id);
+	  GameApi::BM bm = ev.bitmap_api.render_volume_object(obj,start_x,end_x,start_y,end_y,z,sx,sy,z_dist-z,std::max(2,int(sample_rate*(p2.z-p.z))));
+	  BitmapHandle *handle = find_bitmap(e, bm);
+	  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+	  b2->Prepare();
+	  c =b2->Map(x,y); 
+	  clear_block(id);
+	  set_current_block(old_id);
+	  if (c.alpha==0)
+	    {
+	      start_pos = pos2+0.01*2.0*1.0f/(m_p2.z-m_p1.z);
+	      continue;
+	    } else break;
+	} else {
+	  return Color(bg_color);
+	}
       } else { return Color(bg_color); }
     }
     return c;
@@ -1170,7 +1174,7 @@ public:
   virtual void Prepare() { }  
   virtual float Field(Point p) const
   {
-    if (p.x < x) { return scene_left.Field(p); /*return std::min(scene_left.Field(p),fabs(p.x-x));*/ }
+    if (p.x < x) { return scene_left.Field(p); /* return std::min(scene_left.Field(p),fabs(p.x-x));*/ }
     return scene_right.Field(p); /*return std::min(scene_right.Field(p),fabs(p.x-x));*/
   }
   virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const { }
