@@ -4746,6 +4746,8 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 		std::cout << "  --vr oculus  (choose oculus for vr)" << std::endl;
 		std::cout << "  --vr vive    (choose vive for vr)" << std::endl;
 		std::cout << "  --dump (list all functions)" << std::endl;
+		std::cout << "  --dump_get 0 (list functions from api #0)" << std::endl;
+		std::cout << "  --dump_count (list api count)" << std::endl;
 		std::cout << "  --tempdir <dir> (choose temporary dir)" << std::endl;
 		std::cout << "  --script script.txt -o mod.txt  (convert from script to mod.txt)" << std::endl;
 		std::cout << "  --httpaddr 127.0.0.1:50000 (will scan up to 50040 for free port)" << std::endl;
@@ -4774,6 +4776,19 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 		g_http_server_ip = httpaddr;
 		g_http_server_port = port;
 		i++;
+	      }
+	    if (std::string(argv[i])=="--dump")
+	      {
+		int s = ev.mod_api.dump_functions_count();
+		std::cout << "[" << std::endl;
+		for(int i=0;i<s;i++)
+		  {
+		    std::string s2 = ev.mod_api.dump_functions(ev,i);
+		    std::cout << s2;
+		    if (i!=s-1) std::cout << ",";
+		  }
+		std::cout << "]" << std::endl;
+		exit(0);
 	      }
 	    if (std::string(argv[i])=="--dump_count")
 	      {

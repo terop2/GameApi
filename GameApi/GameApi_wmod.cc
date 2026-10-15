@@ -2515,7 +2515,7 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
       std::string json_funcname = json_string(funcname);
       
       std::vector<std::string> vec;
-      vec.push_back(json_name);
+      //vec.push_back(json_name);
       vec.push_back(json_rettype);
       vec.push_back(json_apiname);
       vec.push_back(json_funcname);
@@ -2524,8 +2524,9 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
       int pcount = functions[i]->ParamCount(0);
       std::string json_pcount = json_number(pcount);
 
-      vec.push_back(json_pcount);
-      
+      //vec.push_back(json_pcount);
+
+      std::vector<std::string> paramvec;
       //ss << "(";
       for(int j=0;j<pcount;j++) {
 	//if (j!=0) ss<< ", ";
@@ -2536,14 +2537,26 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
 	std::string json_paramname = json_string(paramname);
 	std::string json_paramtype = json_string(paramtype);
 	std::string json_paramdefault = json_string(paramdefault);
-
-	vec.push_back(json_paramname);
-	vec.push_back(json_paramtype);
-	vec.push_back(json_paramdefault);
 	
+	NameValue pname;
+	NameValue ptype;
+	NameValue pdefault;
+	pname.name = json_string("paramname");
+	pname.value = json_paramname;
+	ptype.name = json_string("paramtype");
+	ptype.value = json_paramtype;
+	pdefault.name = json_string("paramdefault");
+	pdefault.value = json_paramdefault;
+	std::vector<NameValue> vec2;
+	vec2.push_back(pname);
+	vec2.push_back(ptype);
+	vec2.push_back(pdefault);
+	paramvec.push_back(json_object(vec2));
 	//ss << paramtype << " " << paramname << " = " << paramdefault;
       }
-
+      std::string parr = json_array(paramvec);
+      vec.push_back(parr);
+      
       std::string array = json_array(vec);
 
       NameValue nv;
