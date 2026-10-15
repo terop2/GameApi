@@ -1298,6 +1298,7 @@ public:
   IMPORT FF span_key_fetcher(float start_x, float end_x, float speed_x, int down_key, int up_key);
   IMPORT ARR choose_screen(float left_x, float right_x, int min_screen, int max_screen);
   IMPORT IF quake_area_fetcher(float start_x, float end_x, float start_z, float end_z);
+  IMPORT IF world_area_fetcher(float x, float z, float r, float duration);
   IMPORT Ft newfont(std::string filename, int sx, int sy);
   IMPORT BM glyph(Ft font, long idx);
   IMPORT LI glyph_outline(Ft font, long idx, float sx, float sy);

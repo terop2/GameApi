@@ -1230,6 +1230,52 @@ GameApi::IF GameApi::FontApi::key_move_2_area_fetcher(float start_x, float end_x
   return add_int_fetcher(e, new KeyMoveAreaFetcher(start_x,end_x,start_z,end_z));
 }
 
+
+class WorldAreaIntFetcher : public Fetcher<int>
+{
+public:
+  WorldAreaIntFetcher(float x, float z, float r, float duration) : x(x), z(z), r(r),duration(duration) { duration*=10.0; }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) {
+    in_MV = e.in_MV;
+    in_T = e.in_T;
+    current_time = e.time;
+  }  
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+    Point2d p = { x,z };
+    Point p3d = { p.x,0.0,p.y };
+    Point p3d_transform = p3d * in_MV * in_T;
+    Point2d p2 = { p3d_transform.x, p3d_transform.z };
+
+    float dist = sqrt((p.x-p2.x)*(p.x-p2.x) + (p.y-p2.y)*(p.y-p2.y));
+    if (dist<r) {
+      if (timer_started && current_time < start_time+duration)
+	{
+	  return 0;
+	}
+      if (timer_started==false) { start_time = current_time; timer_started=true; }
+      return 1;
+    }
+    return 0;
+  }
+private:
+  float x,z,r;
+  Matrix in_MV = Matrix::Identity();
+  Matrix in_T = Matrix::Identity();
+  mutable bool timer_started=false;
+  mutable float current_time = 0.0f;
+  mutable float start_time=0.0f;
+  float duration=0.0f;
+};
+GameApi::IF GameApi::FontApi::world_area_fetcher(float x, float z, float r, float duration)
+{
+  return add_int_fetcher(e,new WorldAreaIntFetcher(x,z,r,duration));
+}
+
 class MovementIntFetcher : public Fetcher<int>
 {
 public:
