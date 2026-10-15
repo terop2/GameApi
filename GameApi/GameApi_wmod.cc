@@ -2465,6 +2465,8 @@ EXPORT void GameApi::WModApi::dump_functions_for_docs(GameApi::EveryApi &ev, int
 
 EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i)
 {
+  std::string res;
+  
   static std::vector<GameApiItem*> functions; // = all_functions();
 
   switch(i) {
@@ -2498,7 +2500,8 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
   };
   
 
-  
+  std::stringstream ss;
+      
   int s = functions.size();
   std::vector<NameValue> vec2;
   for(int i=0;i<s;i++)
@@ -2509,22 +2512,11 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
       std::string apiname = functions[i]->ApiName(0);
       std::string funcname = functions[i]->FuncName(0);
 
-      std::string json_name = json_string(name);
-      std::string json_rettype = json_string(rettype);
-      std::string json_apiname = json_string(apiname);
-      std::string json_funcname = json_string(funcname);
+      ss << rettype << " I0=ev." << apiname << "." << funcname << "(";
       
-      std::vector<std::string> vec;
-      //vec.push_back(json_name);
-      vec.push_back(json_rettype);
-      vec.push_back(json_apiname);
-      vec.push_back(json_funcname);
-      
-      //ss << name << ": " << rettype << " " << apiname << "::" << funcname;
-      int pcount = functions[i]->ParamCount(0);
-      std::string json_pcount = json_number(pcount);
 
-      //vec.push_back(json_pcount);
+      int pcount = functions[i]->ParamCount(0);
+
 
       std::vector<std::string> paramvec;
       //ss << "(";
@@ -2533,42 +2525,36 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
 	std::string paramname = functions[i]->ParamName(0,j);
 	std::string paramtype = functions[i]->ParamType(0,j);
 	std::string paramdefault = functions[i]->ParamDefault(0,j);
-
-	std::string json_paramname = json_string(paramname);
-	std::string json_paramtype = json_string(paramtype);
-	std::string json_paramdefault = json_string(paramdefault);
+	//ss << paramname << ":" << paramtype;
+	if (paramdefault != "") {
+	  if (paramtype=="std::string") {
+	    ss << "\"" << paramdefault << "\"";
+	  }
+	  else
+	    {
+	      ss << "" << paramdefault;
+	    }
+	}
+	else
+	  ss << "" << "I0";
+	if (j!=pcount-1) ss << ",";
 	
-	NameValue pname;
-	NameValue ptype;
-	NameValue pdefault;
-	pname.name = json_string("paramname");
-	pname.value = json_paramname;
-	ptype.name = json_string("paramtype");
-	ptype.value = json_paramtype;
-	pdefault.name = json_string("paramdefault");
-	pdefault.value = json_paramdefault;
-	std::vector<NameValue> vec2;
-	vec2.push_back(pname);
-	vec2.push_back(ptype);
-	vec2.push_back(pdefault);
-	paramvec.push_back(json_object(vec2));
-	//ss << paramtype << " " << paramname << " = " << paramdefault;
       }
-      std::string parr = json_array(paramvec);
-      vec.push_back(parr);
-      
-      std::string array = json_array(vec);
+      ss << ");";
 
-      NameValue nv;
-      nv.name = json_string(name);
-      nv.value = array;
-      vec2.push_back(nv);
-      
-      //ss << ");" << std::endl;
-      //ss << "]";
-      
+	ss << " // ";
+      for(int j=0;j<pcount;j++)
+	{
+	std::string paramname = functions[i]->ParamName(0,j);
+	std::string paramtype = functions[i]->ParamType(0,j);
+	ss << paramname << ":" << paramtype;
+	if (j!=pcount-1) ss << ", ";
+	}
+	
+      ss << std::endl;
     }
-  return json_object(vec2);
+  res+=ss.str();
+  return res;
 }
 
 
