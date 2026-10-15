@@ -482,20 +482,20 @@ $display_labels[$ii] = $label;
    echo "<div class=\"flex-item col-12 col-sm-6 col-md-4 col-lg-3 p-3 m-0 w-18 h-18 text-center\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
    echo "<div class=\"highlight hover-red child-div top-0 start-0 w-100 h-100\" style=\"border-style: solid; border-width: 2px; border-color: black;\">";
    echo "<div style=\"display: flex; align-items: center;\"><div style=\"display: flex; padding: 8px; width: 100%; font-size: 150%; height: 60px; font-family: 'calibri', sans-serif; line-height: 0.95;\" class=\"label align-items-center justify-content-center\" align=\"center\"><div style=\"display:flex; justify-content: center;\"><div style=\"text-align: center;\"><b>$ii</b></div><div style=\"margin-left: 6px; margin-right: 6px;\"><b> : </b></div><div style=\"text-align: left;\"><b>$label</b></div></div></div></div>";
-   echo "<div class=\"hover-red\">";
-   echo "<div class=\"image hover-red\">";
+   echo "<div class=\"\">";
+   echo "<div class=\"image\">";
    // BACKGROUND CHANGE
    //echo "<layer width=\"200\" height=\"150\">";
    //echo "<div style=\"width: 200; height:150; background: rgba(0,0,0,1);\"></div>";
    //echo "</layer>";
    //echo "<layer width=\"200\" height=\"150\">";
-   echo "<a class=\"label hover-red\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
+   echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
 
    if (file_exists("user_data/user_terop/screenshot" . $ii . ".webp"))
    {
-   echo "<img class=\"hover-red object-fit-cover\" loading=\"lazy\" src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" style=\"width: 100%; aspect-ratio: 4 / 3;\" width=\"200\" height=\"150\" draggable=\"false\"   crossorigin/>";
+   echo "<img class=\"object-fit-cover screenshot displayimage\" loading=\"lazy\" src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage screenshot\" style=\"width: 100%; aspect-ratio: 4/3; image-rendering: crisp-edges;  transform: scale(1.0);\" width=\"200\" height=\"180\" draggable=\"false\"   crossorigin/>";
    } else {
-   echo "<img class=\"hover-red object-fit-cover\" loading=\"lazy\" src=\"unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" style=\"width: 100%; aspect-ratio: 4 / 3;\" width=\"200\" height=\"150\" draggable=\"false\"  crossorigin/>";
+   echo "<img class=\"object-fit-cover screenshot displayimage\" loading=\"lazy\" src=\"unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage screenshot\" style=\"width: 100%; aspect-ratio: 4/3; image-rendering: crisp-edges; transform: scale(1.0);\" width=\"200\" height=\"180\" draggable=\"false\"  crossorigin/>";
    }
    //echo "</layer>";
    // src=\"" . $filename . "\"
@@ -600,6 +600,9 @@ echo "<button class=\"btn btn-danger btn-sm btn-light py-1 px-1 hover-red rounde
 echo "<br>";
 echo "<style>";
 echo ".preload-hidden { display:none; }";
+echo "</style>";
+echo "<style>";
+//echo ".screenshot { image-rendering: auto; !important; }";
 echo "</style>";
 
 echo "<style>";
