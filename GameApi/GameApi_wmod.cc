@@ -2512,13 +2512,37 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
       std::string apiname = functions[i]->ApiName(0);
       std::string funcname = functions[i]->FuncName(0);
 
+      ss << rettype << " " << funcname << "(";
+
+      int pcount = functions[i]->ParamCount(0);
+
+      
+      for(int j=0;j<pcount;j++) {
+	//if (j!=0) ss<< ", ";
+	std::string paramname = functions[i]->ParamName(0,j);
+	std::string paramtype = functions[i]->ParamType(0,j);
+	std::string paramdefault = functions[i]->ParamDefault(0,j);
+	//ss << paramname << ":" << paramtype;
+	ss << paramtype << " " << paramname;
+	if (j!=pcount-1) ss << ",";
+	
+      }
+      ss << ");" << std::endl;
+    }
+  
+  for(int i=0;i<s;i++) {
+      std::string name = functions[i]->Name(0);
+      //ss << name << std::endl;
+      std::string rettype = functions[i]->ReturnType(0);
+      std::string apiname = functions[i]->ApiName(0);
+      std::string funcname = functions[i]->FuncName(0);
+
       ss << rettype << " I0=ev." << apiname << "." << funcname << "(";
       
 
       int pcount = functions[i]->ParamCount(0);
 
 
-      std::vector<std::string> paramvec;
       //ss << "(";
       for(int j=0;j<pcount;j++) {
 	//if (j!=0) ss<< ", ";
@@ -2541,15 +2565,6 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
 	
       }
       ss << ");";
-
-	ss << " // ";
-      for(int j=0;j<pcount;j++)
-	{
-	std::string paramname = functions[i]->ParamName(0,j);
-	std::string paramtype = functions[i]->ParamType(0,j);
-	ss << paramname << ":" << paramtype;
-	if (j!=pcount-1) ss << ", ";
-	}
 	
       ss << std::endl;
     }

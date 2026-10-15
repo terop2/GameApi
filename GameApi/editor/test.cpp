@@ -4780,14 +4780,11 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 	    if (std::string(argv[i])=="--dump")
 	      {
 		int s = ev.mod_api.dump_functions_count();
-		std::cout << "[" << std::endl;
 		for(int i=0;i<s;i++)
 		  {
 		    std::string s2 = ev.mod_api.dump_functions(ev,i);
 		    std::cout << s2;
-		    if (i!=s-1) std::cout << ",";
 		  }
-		std::cout << "]" << std::endl;
 		exit(0);
 	      }
 	    if (std::string(argv[i])=="--dump_count")
