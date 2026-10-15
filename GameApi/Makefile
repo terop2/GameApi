@@ -485,6 +485,9 @@ install:
 	cp editor/arrow.ppm $(DESTDIR)/usr/share/arrow.ppm
 	@echo "Install Done."
 
+makedocs:
+	clang-doc $(CFiles)
+
 clean:
 	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
 	@echo Clean.

@@ -29549,7 +29549,7 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
-	main2->Prepare();
+	//main2->Prepare(); // doesn't work with async callbacks executed in threads
 #ifdef EMSCRIPTEN
 	if (async_taken)
 	  async_pending_count--;
@@ -29576,10 +29576,15 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() { Prepare(); }
 	      
-  void Prepare() {}
+  void Prepare() {
+    if (main2) {
+      main2->Prepare(); // doesn't work with async callbacks executed in thr
+    }
+  }
   virtual void execute(MainLoopEnv &e3)
   {
     g_progress_lock_assets=true;
