@@ -3915,6 +3915,10 @@ public:
   IMPORT ARR voxel_instancing(VX voxel, int count, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   IMPORT ML voxel_render(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec);
   IMPORT ML voxel_bind(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, MT material);
+  IMPORT ML voxel_bind_inst(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, PTS instances, MT material);
+  IMPORT ML voxel_bind_inst_matrix(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, MS instances, MT material);
+  IMPORT ML voxel_static_inst(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, PTS instances, bool color_from_pts);
+  IMPORT ML voxel_static_inst_matrix(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, MS instances, bool color_from_matrix);
   IMPORT P voxel_static(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec);
   IMPORT VX voxel_landscape_from_fbm(FB bitmap, int height, int false_val, int true_val);
   IMPORT VX convert_p_to_vx(P p, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int value);

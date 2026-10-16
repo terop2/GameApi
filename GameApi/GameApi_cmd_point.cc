@@ -246,6 +246,22 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "ev", "", "" },
 			  "ML", "voxel_api", "voxel_render"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_static_inst,
+			 "vx_render_inst",
+			 { "ev", "objs", "ptss", "instances", "color_from_pts" },
+			 { "EveryApi&", "[P]", "[PTS]", "PTS", "bool" },
+			 { "ev", "", "", "", "false" },
+			 "ML", "voxel_api", "voxel_static_inst"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_static_inst_matrix,
+			 "vx_render_inst_matrix",
+			 { "ev", "objs", "vec", "instances", "color_from_matrix" },
+			 { "EveryApi&", "[P]", "[PTS]", "MS", "bool" },
+			 { "ev", "", "", "", "false" },
+			 "ML", "voxel_api", "voxel_static_inst_matrix"));
+
+
+  
+
 #if (ALL==1)||(VOXEL_BIND==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_bind,
 			 "vx_bind",
@@ -254,6 +270,21 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "ev", "", "", "" },
 			 "ML", "voxel_api", "voxel_bind"));
 #endif
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_bind_inst,
+			 "vx_bind_inst",
+			 { "ev", "objs", "ptss", "instances", "mat" },
+			 { "EveryApi&", "[P]", "[PTS]", "PTS", "MT" },
+			 { "ev", "", "", "", "" },
+			 "ML", "voxel_api", "voxel_bind_inst"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_bind_inst_matrix,
+			 "vx_bind_inst_matrix",
+			 { "ev", "objs", "vec", "instances", "mat" },
+			 { "EveryApi&", "[P]", "[PTS]", "MS", "MT" },
+			 { "ev", "", "", "", "" },
+			 "ML", "voxel_api", "voxel_bind_inst_matrix"));
+
+
 #if (ALL==1)||(VOXEL_STATIC==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_static,
 			 "vx_static",
