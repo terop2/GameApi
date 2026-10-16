@@ -8212,7 +8212,7 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
       //LoadUrls_async(env,l, homepage);
       vec.push_back(l);
       line_num++;
-#if 1
+#if 0
       if (line_num > 1800) {
 	// quick exit if line_num is larger than 400, for line number misuse.
 	std::cout << "Number of lines in CodeGen is limited to 1800 lines" << std::endl;
