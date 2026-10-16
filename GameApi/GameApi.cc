@@ -6826,6 +6826,71 @@ public:
 private:
   GameApi::EveryApi &ev;
 };
+#if 0
+class PChooserMaterial : public MaterialForward
+{
+public:
+  PChooserMaterial(EveryApi &ev, std::vector<GameApi::MT> mat, GameApi::IF fetcher) : ev(ev), mat(mat), fetcher(fetcher) { }
+
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+#ifndef HAS_INSTANCING
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+#else
+    GameApi::PTS pts = ev.points_api.single_pts();
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p,pts);
+#endif
+    return ml;
+  }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    return ev.polygon_api.create_vertex_array(p,false);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    // TODO, does this implementation work?
+    GameApi::PTA pta = ev.points_api.prepare(pts,false);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    // END OF TODO.
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p, pts);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML ml = ev.materials_api.render_instanced_ml_matrix(ev, p, ms);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p, pts, flip, start_time, end_time);
+    return ml;
+  }
+
+private:
+  EveryApi &ev;
+  std::vector<GameApi::MT> mat;
+  GameApi::IF fetcher;
+};
+
+GameApi::MT GameApi::FontApi::p_chooser_material
+#endif
 
 class BevelMaterial : public MaterialForward
 {
@@ -22412,6 +22477,30 @@ GameApi::P GameApi::VoxelApi::voxel_static(EveryApi &ev, std::vector<P> objs, st
     }
   return ev.polygon_api.or_array2(mls);
 }
+
+GameApi::ML GameApi::VoxelApi::voxel_static_inst(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, PTS instances, bool color_from_pts)
+{
+  GameApi::P p = voxel_static(ev,objs,vec);
+  return ev.materials_api.render_instanced_ml(ev,p,instances,color_from_pts);
+}
+GameApi::ML GameApi::VoxelApi::voxel_static_inst_matrix(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, MS instances, bool color_from_matrix)
+{
+  GameApi::P p = voxel_static(ev,objs,vec);
+  return ev.materials_api.render_instanced_ml_matrix(ev,p,instances,color_from_matrix);
+}
+
+GameApi::ML GameApi::VoxelApi::voxel_bind_inst(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, PTS instances, MT material)
+{
+  GameApi::P p = voxel_static(ev,objs,vec);
+  return ev.materials_api.bind_inst(p,instances,material);
+}
+GameApi::ML GameApi::VoxelApi::voxel_bind_inst_matrix(EveryApi &ev, std::vector<P> objs, std::vector<PTS> vec, MS instances, MT material)
+{
+  GameApi::P p = voxel_static(ev,objs,vec);
+  return ev.materials_api.bind_inst_matrix(p,instances,material);
+}
+
+
 
 // VOX file loader
 struct VoxAcc {
