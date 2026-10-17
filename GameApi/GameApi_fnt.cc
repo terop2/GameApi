@@ -1486,6 +1486,64 @@ private:
   float duration;
 };
 
+class CancelKeyPressIntFetcher : public Fetcher<int>
+{
+public:
+  CancelKeyPressIntFetcher(Fetcher<int> &next, int key, int key_down_value, int key_up_value) : next(next), key(key), key_down_value(key_down_value), key_up_value(key_up_value) {
+    key_down = false;
+  }
+  virtual void draw_event(FrameLoopEvent &e) { 
+    int ch = e.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (e.type==0x300 && ch==key) {
+      key_down = true;
+    }
+    if (e.type==0x301 && ch==key) {
+      key_down = false;
+    }
+
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { 
+
+  }
+
+  virtual void event(MainLoopEvent &e) {
+    int ch = e.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (e.type==0x300 && ch==key) {
+      key_down = true;
+    }
+    if (e.type==0x301 && ch==key) {
+      key_down = false;
+    }
+  }
+  virtual void frame(MainLoopEnv &e) { }
+  void set(int i) { }
+  int get() const {
+    if (key_down) { state_down=true; }
+    if (state_down==true) { return key_down_value; }
+    return next.get();
+  }
+  
+private:
+  int key;
+  int key_down_value, key_up_value;
+  bool key_down;
+  mutable bool state_down=false;
+private:
+  Fetcher<int> &next;
+};
+
 class KeyPressIntFetcher : public Fetcher<int>
 {
 public:
@@ -2367,6 +2425,12 @@ EXPORT GameApi::IF GameApi::FontApi::repeat_int_fetcher(IF fetcher, float durati
   Fetcher<int> *fetch = find_int_fetcher(e, fetcher);
   return add_int_fetcher(e, new RepeatIntFetcher(fetch, duration));
 }
+EXPORT GameApi::IF GameApi::FontApi::cancel_keypress_int_fetcher(GameApi::IF next, int key, int key_down_value, int key_up_value)
+{
+  Fetcher<int> *fetch = find_int_fetcher(e, next);  
+  return add_int_fetcher(e, new CancelKeyPressIntFetcher(*fetch,key, key_down_value, key_up_value));
+}
+
 EXPORT GameApi::IF GameApi::FontApi::keypress_int_fetcher(int key, int key_down_value, int key_up_value)
 {
   return add_int_fetcher(e, new KeyPressIntFetcher(key, key_down_value, key_up_value));
