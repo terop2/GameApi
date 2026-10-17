@@ -1344,6 +1344,7 @@ public:
   IMPORT IF toggle_button_fetcher(float start_x, float end_x, float start_y, float end_y);
   IMPORT IF hmd_state_fetcher();
   IMPORT IF keypress_int_fetcher(int key, int key_down_value, int key_up_value);
+  IMPORT IF cancel_keypress_int_fetcher(IF next, int key, int key_down_value, int key_up_value);
   IMPORT IF x_comp(PF point_fetcher, float start_x, float end_x, int num_steps);
   IMPORT IF y_comp(PF point_fetcher, float start_y, float end_y, int num_steps);
   IMPORT IF z_comp(PF point_fetcher, float start_z, float end_z, int num_steps);
