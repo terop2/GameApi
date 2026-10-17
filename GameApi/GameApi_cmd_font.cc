@@ -316,6 +316,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "IF", "font_api", "quake_area_fetcher"));
 #endif
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::world_area_fetcher,
+			 "if_world_area",
+			 { "x", "z", "r", "duration" },
+			 { "float", "float", "float", "float" },
+			 { "0.0", "0.0", "50.0", "10.0" },
+			 "IF", "font_api", "world_area_fetcher"));
 #if (ALL==1)||(KEY_MOVE_2_AREA_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::key_move_2_area_fetcher,
 			 "if_char_move_area",
