@@ -4020,7 +4020,9 @@ EXPORT GameApi::ML GameApi::MovementNode::key_printer_ml(GameApi::ML ml)
 class RepeatML : public MainLoopItem
 {
 public:
-  RepeatML(MainLoopItem *next, float duration) : next(next), duration(duration) { }
+  RepeatML(MainLoopItem *next, float duration) : next(next), duration(duration) {
+    duration*=10.0;
+  }
   void Collect(CollectVisitor &vis)
   {
     if (next) next->Collect(vis);
