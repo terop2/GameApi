@@ -4021,7 +4021,6 @@ class RepeatML : public MainLoopItem
 {
 public:
   RepeatML(MainLoopItem *next, float duration) : next(next), duration(duration) {
-    duration*=10.0;
   }
   void Collect(CollectVisitor &vis)
   {
@@ -4050,7 +4049,7 @@ private:
 EXPORT GameApi::ML GameApi::MovementNode::repeat_ml(EveryApi &ev, GameApi::ML ml, float duration)
 {
   MainLoopItem *item = find_main_loop(e, ml);
-  return add_main_loop(e, new RepeatML(item, duration/10.0));  
+  return add_main_loop(e, new RepeatML(item, duration));  
 }
 EXPORT GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int clone_count, float time_delta)
 {
