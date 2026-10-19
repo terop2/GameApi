@@ -3369,6 +3369,18 @@ void GameApi::MainLoopApi::set_homepage_url(std::string url)
   std::cout << "Homepage set to: " << url << std::endl;
   gameapi_homepageurl = url;
 }
+struct PlayOggData
+{
+  void *ptr2;
+  GameApi::EveryApi *ev;
+};
+void *play_ogg_process(void *data)
+{
+  PlayOggData *dt = (PlayOggData*)data;
+  dt->ev->tracker_api.play_ogg(dt->ptr2);
+  return 0;
+}
+
 class SongML : public MainLoopItem
 {
 public:
@@ -3419,7 +3431,11 @@ public:
       //ss.close();
       //#ifndef EMSCRIPTEN
       //ev.tracker_api.play_ogg("song.ogg");
-      ev.tracker_api.play_ogg(ptr2);
+      PlayOggData *dt = new PlayOggData;
+      dt->ptr2 = ptr2;
+      dt->ev = &ev;
+      tasks_add(7711, play_ogg_process, (void*)dt);
+      //ev.tracker_api.play_ogg(ptr2);
       //#else
 	// std::cout << "Warning: ogg playing disabled since it didn't work in emscripten." << std::endl;
       //#endif
