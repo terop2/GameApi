@@ -49,6 +49,12 @@ IMPORT void ProgressBar(int num, int val, int max, std::string label);
 std::string remove_dirs(std::string url);
 IMPORT std::string stripprefix(std::string s);
 
+static bool prim_has_skin_attribs(const tinygltf::Primitive &p)
+{
+  return p.attributes.find("JOINTS_0") != p.attributes.end() &&
+    p.attributes.find("WEIGHTS_0") != p.attributes.end();
+}
+
 
 std::vector<std::string> g_cb_done;
 bool is_cb_done(std::string url)
@@ -9624,7 +9630,10 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       GameApi::MT mat3 = par->border_width()>=0.5?ev.materials_api.toon_border(ev,mat2,par->border_width(),par->border_color(),!colour):mat2;
 
       GameApi::MT mat2_anim;
-      if (interface->animations_size()!=0 && keys.size()>0) {
+      if (interface->animations_size()!=0 && keys.size()>0
+	  && interface->skins_size()>0
+	  && prim_has_skin_attribs(m.primitives[i])
+	  ) {
 	//int ssz = interface->animations_size();
 	int maxtimeindexes=0;
 	//for(int iu=0;iu<ssz;iu++) {
@@ -9731,7 +9740,10 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       GameApi::MT mat2_anim;
       // THEN-BRANCH OF THIS IF STATEMENT FAILS TO RENDER,
       // code review didn't reveal why. Breaks animation instancing.
-      if (interface->animations_size()!=0 && keys.size()>0) {
+      if (interface->animations_size()!=0 && keys.size()>0
+	  && interface->skins_size()>0
+	  && prim_has_skin_attribs(m.primitives[i])
+	  ) {
 	//int ssz = interface->animations_size();
 	int maxtimeindexes=0;
 	//for(int iu=0;iu<ssz;iu++) {
@@ -9873,7 +9885,9 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       GameApi::MT mat3 = par->border_width()>=0.5?ev.materials_api.toon_border(ev,mat2,par->border_width(),par->border_color(),!colour):mat2;
 
       GameApi::MT mat2_anim;
-      if (interface->animations_size()!=0 && keys.size()>0) {
+      if (interface->animations_size()!=0 && keys.size()>0
+	  && interface->skins_size()>0 && prim_has_skin_attribs(m.primitives[i])
+	  ) {
 	int ssz = interface->animations_size();
 	int maxtimeindexes = 0;
 	//for(int iu=0;iu<ssz;iu++) {
