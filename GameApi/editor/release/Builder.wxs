@@ -140,7 +140,7 @@
 </File>
 <File Id='steam_fix1.png' Name="steam_fix1.png" DiskId='1' Source='editor\gameapi_content\steam_fix1.png' KeyPath='no'>
 </File>
-<File Id='SwabseaBold-DBox.ttf' Name="SwabseaBold-DBox.ttf" DiskId='1' Source='editor\gameapi_content\SwabseaBold-DBox.ttf' KeyPath='no'>
+<File Id='SwabseaBoldDBox' Name="SwabseaBold-DBox.ttf" DiskId='1' Source='editor\gameapi_content\SwanseaBold-D0ox.ttf' KeyPath='no'>
 </File>
 <File Id='text_test.txt' Name="text_test.txt" DiskId='1' Source='editor\gameapi_content\text_test.txt' KeyPath='no'>
 </File>
