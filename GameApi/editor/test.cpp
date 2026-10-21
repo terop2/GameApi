@@ -1608,7 +1608,7 @@ public:
 	    authors.push_back(author);
 	    }
 	    ss.close();
-	    int s = g_license_filenames.size();
+	    int s = std::min(std::min(g_license_filenames.size(),g_license_urls.size()),g_license_authors.size());
 	    int pos = -1;
 	    for(int i=0;i<s;i++)
 	      {
@@ -2775,10 +2775,11 @@ public:
 	
       }
   
-    
-    if (update)
+    static int old_wheel = 0;
+    if (update && old_wheel != e.mouse_wheel_y) {
+      old_wheel=e.mouse_wheel_y;
        env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
-    
+    }
     //int area_y = env->gui->size_y(env->array);
     //std::cout << area_y << std::endl;
     //env->gui->set_dynamic_param(env->txt2, 0, area_y);
