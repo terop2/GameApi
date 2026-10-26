@@ -3109,6 +3109,8 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   float scale_x = 1.0;
   float scale_y = 1.0;
 
+  float move_x = 50.0f;
+  
   std::string s;
   BM I7A;
   if (!g_external_logo) {
@@ -3125,7 +3127,7 @@ BM I2=ev.bitmap_api.scale_bitmap(ev,I7aA,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
- MN I6=ev.move_api.trans2(I5,(220-40-15+30)*scale_x,(250-20+100)*scale_y,0);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30+move_x)*scale_x,(250-20+100)*scale_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
  ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0*scale_x,600.0*scale_y);
@@ -3151,7 +3153,7 @@ BM I2=ev.bitmap_api.scale_bitmap(ev,I7aB,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
- MN I6=ev.move_api.trans2(I5,(220-40-15+30)*scale_x,(250-20+100)*scale_y,0);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30+move_x)*scale_x,(250-20+100)*scale_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
  ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0*scale_x,600.0*scale_y);
@@ -3175,7 +3177,7 @@ BM I2=ev.bitmap_api.scale_bitmap(ev,I7aC,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
- MN I6=ev.move_api.trans2(I5,(220-40-15+30)*scale_x,(250-20+100)*scale_y,0);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30+move_x)*scale_x,(250-20+100)*scale_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
  
