@@ -4747,6 +4747,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 		std::cout << "  --vr oculus  (choose oculus for vr)" << std::endl;
 		std::cout << "  --vr vive    (choose vive for vr)" << std::endl;
 		std::cout << "  --dump (list all functions)" << std::endl;
+		std::cout << "  --context (context for AI tools)" << std::endl;
 		std::cout << "  --dump_get 0 (list functions from api #0)" << std::endl;
 		std::cout << "  --dump_count (list api count)" << std::endl;
 		std::cout << "  --tempdir <dir> (choose temporary dir)" << std::endl;
@@ -4778,7 +4779,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 		g_http_server_port = port;
 		i++;
 	      }
-	    if (std::string(argv[i])=="--dump")
+	    if (std::string(argv[i])=="--dump" || std::string(argv[i])=="--context")
 	      {
 		int s = ev.mod_api.dump_functions_count();
 		for(int i=0;i<s;i++)
