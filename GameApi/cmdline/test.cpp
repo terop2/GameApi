@@ -726,6 +726,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 	  std::cout << "   --code data" << std::endl;
 	  std::cout << "   --generate-logo" << std::endl;
 	  std::cout << "   --store dir (for AI features)" << std::endl;
+	  std::cout << "   --file script.txt" << std::endl;
 	  exit(0);
 	}
     }
