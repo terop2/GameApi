@@ -1461,7 +1461,9 @@ GameApi::IF GameApi::FontApi::quake_area_fetcher(float start_x, float end_x, flo
 class RepeatIntFetcher : public Fetcher<int>
 {
 public:
-  RepeatIntFetcher(Fetcher<int> *fetch, float duration) : fetch(fetch), duration(duration) { }
+  RepeatIntFetcher(Fetcher<int> *fetch, float duration) : fetch(fetch), duration(duration) {
+
+  }
   virtual void draw_event(FrameLoopEvent &e) { 
     fetch->draw_event(e);
   }
