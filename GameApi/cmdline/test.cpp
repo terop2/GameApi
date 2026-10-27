@@ -441,13 +441,20 @@ IMPORT extern std::string g_store_directory;
 IMPORT extern const char * g_html_dir;
 IMPORT const char * get_html_directory2();
 
+double getDevicePixelRatio() { return 1.0; }
+extern double g_dpr;
 
 #ifdef ANDROID
 int main(int ac, char *ag[]) {
 #else
 int main(int argc, char *argv[]) {
 #endif
+
+  
   g_html_dir=get_html_directory2();
+
+  tasks_init();
+
 #ifdef ANDROID
   int argc=3;
   char *argv[] = { "./SDLAPP", "--file", "script.txt" };
@@ -509,7 +516,8 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
   tasks_init();
 #ifdef ANDROID
   SDL_Log("Tero3");  
-#endif  
+#endif
+
   call_count++;
   //std::cout << "CALL COUNT" << call_count << std::endl;
 #ifndef ANDROID
@@ -534,11 +542,14 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
   //EveryApi ev(e);
 
   g_everyapi = &ev;
+
+  double dpr = getDevicePixelRatio();
+  g_dpr = dpr;
   
-  int w_width = 800;
-  int w_height = 600;
-  sprite_screen_width=1200;
-  sprite_screen_height=900;
+  int w_width = 800*dpr;
+  int w_height = 600*dpr;
+  //sprite_screen_width=1200;
+  //sprite_screen_height=900;
   std::string seamless_url="";
   int current_arg = 1; // start after the current filename
 #ifdef ANDROID
@@ -731,8 +742,8 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
       set_status(2,6);
       ev.mainloop_api.init_window(w_width,w_height,"GameApi", vr_init);
       set_status(3,6);
-      g_event_screen_x = w_width; // was -1
-      g_event_screen_y = w_height;
+      g_event_screen_x = -1; //w_width; // was -1
+      g_event_screen_y = -1; //w_height;
 #ifdef ANDROID      
   SDL_Log("Tero8");  
 #endif
