@@ -202,7 +202,7 @@ echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
 
 echo "<h1>We have shovels for AI gold rush: claude CONTEXTs for OpenGL rendering using our 3d engine</h1>";
-echo "<h3>./gameapi-builder --dump</h3>\n";
+echo "<h3>./gameapi-builder --context &gt;gameapi.context</h3>\n";
 echo "<h4><a href=\"https://gameapibuilder.com\">Buy here</a></h4>\n";
 echo "</div>\n";
 echo "</div>\n";

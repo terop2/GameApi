@@ -1019,6 +1019,25 @@ list_end();
 <li><a style="font-size:large;" href="<?php echo $https ?>://<?php echo $assetsite ?>/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
 <li><a style="font-size:large;" href="<?php echo $https ?>://<?php echo $site ?>/engine2/index.html">ENJOY</a>: Then open the animation in your browser
 </ul>
+
+<h2>What is the AI/claude workflow?</h2>
+<ol>
+<li>Get gameapi-builder from <a href="https://gameapibuilder.com">gameapibuilder.com</a>
+<li><div><code style="border: 1px solid black; background-color: #ddd; padding: 5px; color: #000;">gameapi-builder --context &gt;gameapi.context</code></div>
+<li>give context to claude
+<li>give <a href="https://meshpage.org/claude_gameapi_example.txt">example</a> to claude.
+<li>ask some 3d scene via prompting
+<li>save result to script.txt file
+<li><div><code style="border: 1px solid black; background-color: #ddd; padding: 5px; color: #000;">gameapi-builder --script script.txt -o mod_script.txt</code></div>
+<li><div><code style="border: 1px solid black; background-color: #ddd; padding: 5px; color: #000;">gameapi-builder --file mod_script.txt</code></div>
+<li><b>run_window->html_run->save_deploy</b> display menu
+<li>unzip zip file to new web server directory
+<li>display.html has the script and can be changed there
+<li>put <div><code style="border: 1px solid black; background-color: #ddd; padding: 5px; color: #000;">&lt;iframe src="mywebdir/display.html" scrolling="no" width="830" height="630"/&gt;</code></div> tag pointing to display.html to web page of your choice
+<li>enjoy 3d graphics with artificial intelligence and web browser
+</ol>
+
+
 <h2>What are the advantages in your approach?</h2>
 <ul>
 <li>OpenGL based software-only solution, so no need to buy a camera

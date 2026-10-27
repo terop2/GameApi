@@ -46327,8 +46327,12 @@ GameApi::ML GameApi::MainLoopApi::AI_modified(EveryApi &ev, GameApi::ML ml, std:
 //MN I37=ev.move_api.trans2(I36,-510,-466,0); // 333,360
 //ML I38=ev.move_api.move_ml(ev,I35,I37,1,10.0); // 486,242
 
- ML I29=ev.mainloop_api.or_elem_ml(ev,ml,I28);
- return I29;
+  ML I290=ev.mainloop_api.or_elem_ml(ev,ml,I28);
+
+  IF I29=ev.font_api.timed_int_fetcher(ev,0,1,0,45); // 10,31
+  ML I30=ev.font_api.ml_chooser(std::vector<ML>{I290,ml},I29); // 185,10
+
+  return I30;
   
 }
 GameApi::ML GameApi::MainLoopApi::AI_generated(EveryApi &ev, GameApi::ML ml, std::string url)
@@ -46349,8 +46353,13 @@ GameApi::ML GameApi::MainLoopApi::AI_generated(EveryApi &ev, GameApi::ML ml, std
   //MN I16=ev.move_api.mn_empty(); // 175,351
   //MN I17=ev.move_api.trans2(I16,-540,-476,0); // 301,360
   //ML I18=ev.move_api.move_ml(ev,I15,I17,1,10.0); // 454,242
-  ML I13=ev.mainloop_api.or_elem_ml(ev,ml,I12);
- return I13;
+
+  ML I130=ev.mainloop_api.or_elem_ml(ev,ml,I12);
+
+  IF I13=ev.font_api.timed_int_fetcher(ev,0,1,0,45); // 10,31
+  ML I14=ev.font_api.ml_chooser(std::vector<ML>{I130,ml},I13); // 185,10
+
+  return I14;
 }
 
 std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
