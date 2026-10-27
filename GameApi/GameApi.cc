@@ -46329,7 +46329,7 @@ GameApi::ML GameApi::MainLoopApi::AI_modified(EveryApi &ev, GameApi::ML ml, std:
 
   ML I290=ev.mainloop_api.or_elem_ml(ev,ml,I28);
 
-  IF I29=ev.font_api.timed_int_fetcher(ev,0,1,0,45); // 10,31
+  IF I29=ev.font_api.timed_int_fetcher(ev,0,1,0,100); // 10,31
   ML I30=ev.font_api.ml_chooser(std::vector<ML>{I290,ml},I29); // 185,10
 
   return I30;
@@ -46356,7 +46356,7 @@ GameApi::ML GameApi::MainLoopApi::AI_generated(EveryApi &ev, GameApi::ML ml, std
 
   ML I130=ev.mainloop_api.or_elem_ml(ev,ml,I12);
 
-  IF I13=ev.font_api.timed_int_fetcher(ev,0,1,0,45); // 10,31
+  IF I13=ev.font_api.timed_int_fetcher(ev,0,1,0,100); // 10,31
   ML I14=ev.font_api.ml_chooser(std::vector<ML>{I130,ml},I13); // 185,10
 
   return I14;
