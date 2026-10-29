@@ -270,7 +270,12 @@ public:
       ee.env = Matrix::Scale(330.0*g_dpr/1200.0,247.0*g_dpr/900.0,1.0);
     }
 #else
-    ee.in_MV = Matrix::Identity();
+#ifdef ANDROID
+    ee.in_MV = Matrix::Translate(-600.0,-450.0,0.0)*Matrix::Scale((800)*g_dpr/1200.0,(600.0+600.0/4)*g_dpr/900.0,1.0)*Matrix::ZRotation(1.5708)* Matrix::Translate(600.0,450.0,0.0)*Matrix::Translate(-300.0+100,0.0,0.0);
+    ee.env = Matrix::Translate(-600.0,-450.0,0.0)*Matrix::Scale((800)*g_dpr/1200.0,(600.0+600.0/4)*g_dpr/900.0,1.0)*Matrix::ZRotation(1.5708)* Matrix::Translate(600.0,450.0,0.0)*Matrix::Translate(-300+100.0,0.0,0.0);
+#else
+      ee.in_MV = Matrix::Identity();
+#endif
 #endif
     //ee.env = e.env * Matrix::Translate(0.0,0.0,400.0);
     ee.is_2d = true;
