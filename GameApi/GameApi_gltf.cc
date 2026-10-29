@@ -16779,6 +16779,7 @@ bool load_zip(GameApi::Env &e, GameApi::EveryApi &ev, std::string url_to_zip)
       ev.blocker_api.run(b);
     } else
     {
+      std::cout << "INFO:" << blk.second << std::endl;
       std::cout << "ERROR: internal error" << std::endl;
       return false;
     }

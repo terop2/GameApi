@@ -225,8 +225,8 @@ WARN = -Wno-undefined-bool-conversion -Wno-self-assign-field -Wno-mismatched-tag
 #-I/usr/include/freetype2 -I/usr/include/SDL2
 # -Ichai/ChaiScript-6.1.0/include
 #
-CCFLAGS = $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./androidobjs-$(ARCH)/objs   -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
-CC2FLAGS = $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./androidobjs-$(ARCH)/objs -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CCFLAGS = -DDEFINE_ALL $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++17 -fPIC -Wall -I./androidobjs-$(ARCH)/objs   -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CC2FLAGS = -DDEFINE_ALL $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++17 -Wall -I./androidobjs-$(ARCH)/objs -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -311,7 +311,7 @@ endif
 
 libGameApi_android-$(ARCH).so: $(OFiles) Makefile
 	@echo "  LD     libGameApi_android-$(ARCH).so"
-	@$(CC) $(M64) -ggdb -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi_android-$(ARCH).so  $(LDFLAGS) -lstdc++ -static-libstdc++ -lcurl -lssl -lcrypto -lz
+	@$(CC) $(M64) -ggdb -rdynamic -shared $(OFiles) -std=c++17 -o libGameApi_android-$(ARCH).so  $(LDFLAGS) -lstdc++ -static-libstdc++ -lcurl -lssl -lcrypto -lz
 	#-lwayland-client
 
 .PHONY: dirs

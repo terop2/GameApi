@@ -10,8 +10,10 @@
 #include <iostream>
 #include <queue>
 
+#ifndef ANDROID
 #ifdef LINUX
 #define USE_VIDEO 1
+#endif
 #endif
 
 // NOT WORKING
@@ -28563,14 +28565,16 @@ bool exists(const cv::String &path)
 }
 #endif
 
+#endif
 
 GameApi::TXID GameApi::BitmapApi::video_source(std::string filename, int sx, int sy)
 {
+#ifdef USE_VIDEO
 #if (ALL==1)||(VIDEOFILE_TXID_GENERIC==1)
   return add_txid(e,new VideoSource(e,filename,sx,sy));
 #endif
-}
 #endif
+}
 
 class MutableFaceCollImpl : public MutableFaceCollection
 {

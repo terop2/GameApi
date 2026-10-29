@@ -3873,6 +3873,8 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
 	  {
 	    id = dt->num;
 	    g_pending_loads_vec.erase(g_pending_loads_vec.begin()+i);
+	    i--;
+	    s--;
 	  }
       }
     pthread_mutex_unlock(m);
