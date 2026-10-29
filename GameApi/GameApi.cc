@@ -46378,6 +46378,7 @@ public:
       {
 	m_all_functions = all_functions(ev);
 	is_available=true;
+	std::cout << "GET_ALL_FUNCTIONS:" << m_all_functions.size() << std::endl;
       }
     return m_all_functions;
   }

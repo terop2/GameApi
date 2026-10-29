@@ -628,6 +628,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_SetHint("SDL_OPENGL_ES_DRIVER", "1");
 #else
 
+#ifndef ANDROID
 #ifndef LINUX
 #ifndef EMSCRIPTEN
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -635,12 +636,15 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_FLAGS, Low_SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 #endif
+#endif
+#ifndef ANDROID
 #ifndef EMSCRIPTEN
 #ifdef LINUX
 #ifndef RASPI
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLESAMPLES, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_FLAGS, Low_SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
 #endif
 #endif
 #endif

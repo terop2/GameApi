@@ -7117,7 +7117,7 @@ struct CodeGenLine {
   std::vector<std::string> param_names;
   std::vector<std::string> params_linkage;
   std::vector<int> j; // -1 = check array
-  GameApiItem *item;
+  GameApiItem *item=0;
   int x,y;
 };
 void CodeGenLineErrorCheck(CodeGenLine &line, std::vector<GameApiItem*> functions)
@@ -7189,7 +7189,7 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
 std::string find_param_name(GameApi::EveryApi &ev, std::string api_name, std::string func_name, int ii)
 {
   //static std::vector<GameApiItem*> lst = all_functions(ev);
-
+  
   std::vector<GameApiItem*> &lst = g_all_functions_service->get_all_functions(ev);
 int s = lst.size();
   for(int i=0;i<s;i++)
@@ -7200,6 +7200,7 @@ int s = lst.size();
 	  return lst[i]->ParamName(0,ii);
 	}
     }
+  std::cout << "FIND_PARAM_NAME lst size:" << s << std::endl;
   std::cout << "find_param_name failed for" << api_name << " " << func_name << std::endl;
   return "@";
 }
@@ -8517,10 +8518,10 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
       
       //std::cout << "Execute: " << params << std::endl;
       std::stringstream sk3;
-      std::string ret_type = l.item->ReturnType(0);
+      std::string ret_type = l.item?l.item->ReturnType(0):"@";
       int count = ret_type_count(ret_type);
       std::string res;
-      int val = l.item->Execute(sk3, ee,ev, params, e,-1);
+      int val = l.item?l.item->Execute(sk3, ee,ev, params, e,-1):0;
       if (count>1) {
 	GameApi::ARR arr;
 	arr.id = val;
@@ -8618,16 +8619,17 @@ DelApiItemF g_api_item_deleter;
 extern DelApiItemF g_api_item_deleter;
 
 
-std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2);
+std::vector<GameApiItem*> append_vectors(const std::vector<GameApiItem*> &vec1, const std::vector<GameApiItem*> &vec2);
 
-std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2)
+std::vector<GameApiItem*> append_vectors(const std::vector<GameApiItem*> &vec1, const std::vector<GameApiItem*> &vec2)
 {
+  std::vector<GameApiItem*> res=vec1;
   int s = vec2.size();
   for(int i=0;i<s;i++)
     {
-      vec1.push_back(vec2[i]);
+      res.push_back(vec2[i]);
     }
-  return vec1;
+  return res;
 }
 
 
@@ -8681,6 +8683,27 @@ std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev)
   std::vector<GameApiItem*> ai = append_vectors(ah, vj);
   std::vector<GameApiItem*> aj = append_vectors(ai, vk);
   std::vector<GameApiItem*> ak = append_vectors(aj, vl);
+  std::cout << "ALL:" << a1.size() << std::endl;
+  std::cout << "ALL:" << a2.size() << std::endl;
+  std::cout << "ALL:" << a3.size() << std::endl;
+  std::cout << "ALL:" << a4.size() << std::endl;
+  std::cout << "ALL:" << a5.size() << std::endl;
+  std::cout << "ALL:" << a51.size() << std::endl;
+  std::cout << "ALL:" << a6.size() << std::endl;
+  std::cout << "ALL:" << a7.size() << std::endl;
+  std::cout << "ALL:" << a8.size() << std::endl;
+  std::cout << "ALL:" << a9.size() << std::endl;
+  std::cout << "ALL:" << aa.size() << std::endl;
+  std::cout << "ALL:" << ab.size() << std::endl;
+  std::cout << "ALL:" << ac.size() << std::endl;
+  std::cout << "ALL:" << ad.size() << std::endl;
+  std::cout << "ALL:" << ae.size() << std::endl;
+  std::cout << "ALL:" << af.size() << std::endl;
+  std::cout << "ALL:" << ag.size() << std::endl;
+  std::cout << "ALL:" << ah.size() << std::endl;
+  std::cout << "ALL:" << ai.size() << std::endl;
+  std::cout << "ALL:" << aj.size() << std::endl;
+  std::cout << "ALL_FUNCTIONS:" << ak.size() << " " << vk.size() << std::endl;
   return ak;
 }
 EXPORT std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)

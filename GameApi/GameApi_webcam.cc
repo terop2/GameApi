@@ -3,7 +3,9 @@
 #include "GameApi_low.hh"
 #include "Buffer.hh"
 
-
+#ifdef ANDROID
+#include <unistd.h>
+#endif
 
 class WebCamBufferRefTexID : public TextureID
 {
