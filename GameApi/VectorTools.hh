@@ -909,6 +909,8 @@ struct Vector2d;
 struct Point2d
 {
   float x,y;
+  Point2d() : x(0.0), y(0.0) { }
+  Point2d(float x, float y) : x(x), y(y) { }
   static Point2d NewPoint(float x, float y) { Point2d p; p.x = x; p.y = y; return p; }
   static Point2d FromVector(const Vector2d &v);
   void operator+=(const Point2d &p)
@@ -971,7 +973,9 @@ Point2d LineLineIntersection(Point2d l1_p1, Point2d l1_p2,
 struct Vector2d
 {
   float dx,dy;
-
+  Vector2d() : dx(0.0),dy(0.0) { }
+  Vector2d(float x, float y) : dx(x), dy(y) { }
+  
   void operator*=(float x)
   {
     dx *= x;

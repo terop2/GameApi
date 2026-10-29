@@ -24,32 +24,34 @@ ARCH = aarch64
 #ARCH = x86
 #ARCH = x86_64
 
+GAMEAPI=/home/terop/cvs/GameApi_newer_features/GameApi
+
 CROSS_COMPILE=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/
 
 ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087/
 
 ifeq ($(ARCH),x86)
 M64=
-ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x86-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
-ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x86-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
+ANDROID_CURL_INCLUDE=-I$(GAMEAPI)/androiddeps/vcpkg/installed/x86-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
+ANDROID_CURL_LIB=-L$(GAMEAPI)/androiddeps/vcpkg/installed/x86-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
 endif
 
 ifeq ($(ARCH),x86_64)
 M64=-m64
-ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x64-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
-ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x64-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
+ANDROID_CURL_INCLUDE=-I$(GAMEAPI)/androiddeps/vcpkg/installed/x64-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
+ANDROID_CURL_LIB=-L$(GAMEAPI)/androiddeps/vcpkg/installed/x64-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
 endif
 
 
 ifeq ($(ARCH),aarch64)
 M64=-m64
-ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm64-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
-ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm64-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
+ANDROID_CURL_INCLUDE=-I$(GAMEAPI)/androiddeps/vcpkg/installed/arm64-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
+ANDROID_CURL_LIB=-L$(GAMEAPI)/androiddeps/vcpkg/installed/arm64-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
 endif
 ifeq ($(ARCH),armv7a-eabi)
 M64=
-ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
-ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
+ANDROID_CURL_INCLUDE=-I$(GAMEAPI)/androiddeps/vcpkg/installed/arm-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
+ANDROID_CURL_LIB=-L$(GAMEAPI)/androiddeps/vcpkg/installed/arm-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
 endif
 
 ANDROID_FLAGS=-DANDROID -D_FORTIFY_SOURCE=2 -I/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
@@ -58,18 +60,18 @@ LIBPATH=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64
 #/usr/lib/x86_64-linux-gnu/
 GL_PATH=$(LIBPATH)
 GL_NAME=libGL.so
-GL_CFLAGS= -I/home/terop/cvs/GameApi/GameApi/androiddeps/freetype-2.13.3/include
+GL_CFLAGS= -I$(GAMEAPI)/androiddeps/freetype-2.13.3/include
 #`pkg-config --cflags gl`
-GL_PKGCONFIG = -L/home/terop/cvs/GameApi/GameApi/androiddeps/freetype-2.13.3/build/.libs
+GL_PKGCONFIG = -L$(GAMEAPI)/androiddeps/freetype-2.13.3/build/.libs
 #`pkg-config --libs gl`
 ifndef GL_PKGCONFIG
 GL_PKGCONFIG = $(GL_PATH)$(GL_NAME)
 endif
 SDL_PATH=$(LIBPATH)
 SDL_NAME=libSDL2-2.0.so
-SDL_CFLAGS= -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/include -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/include-config-release/SDL2 -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/include-config-release -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/include/SDL2
+SDL_CFLAGS= -I$(GAMEAPI)/androiddeps/SDLBuild/include -I$(GAMEAPI)/androiddeps/SDLBuild/include-config-release/SDL2 -I$(GAMEAPI)/androiddeps/SDLBuild/include-config-release -I$(GAMEAPI)/androiddeps/SDLBuild/include/SDL2
 #`pkg-config --cflags sdl2`
-SDL_PKGCONFIG= -L/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/lib
+SDL_PKGCONFIG= -L$(GAMEAPI)/androiddeps/SDLBuild/lib
 #`pkg-config --libs sdl2`
 ifndef SDL_PKGCONFIG
 SDL_PKGCONFIG = $(SDL_PATH)$(SDL_NAME)
@@ -94,9 +96,9 @@ GLEW_PKGCONFIG = $(GLEW_PATH)$(GLEW_NAME)
 endif
 FREETYPE_PATH=$(LIBPATH)
 FREETYPE_NAME=libfreetype.so
-FREETYPE_CFLAGS= -I.
+FREETYPE_CFLAGS= -I. -I$(GAMEAPI)/androiddeps/freetype-2.13.3/include
 #`pkg-config --cflags freetype2`
-FREETYPE_PKGCONFIG= -L.
+FREETYPE_PKGCONFIG= -L. -L$(GAMEAPI)/androiddeps/freetype-2.13.3/build/.libs
 #`pkg-config --libs freetype2`
 ifndef FREETYPE_PKGCONFIG
 FREETYPE_PKGCONFIG = $(FREETYPE_PATH)$(FREETYPE_NAME)
@@ -223,8 +225,8 @@ WARN = -Wno-undefined-bool-conversion -Wno-self-assign-field -Wno-mismatched-tag
 #-I/usr/include/freetype2 -I/usr/include/SDL2
 # -Ichai/ChaiScript-6.1.0/include
 #
-CCFLAGS = $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++17 -fPIC -Wall -I./androidobjs-$(ARCH)/objs   -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
-CC2FLAGS = $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++17 -Wall -I./androidobjs-$(ARCH)/objs -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CCFLAGS = $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./androidobjs-$(ARCH)/objs   -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CC2FLAGS = $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./androidobjs-$(ARCH)/objs -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
 #`pkg-config gtkmm-2.4 --cflags`
 
 

@@ -279,7 +279,9 @@ void map_enums_sdl(int &i) {
   case Low_SDL_GL_CONTEXT_PROFILE_ES: i=SDL_GL_CONTEXT_PROFILE_ES; break;
   case   Low_SDL_GL_CONTEXT_MINOR_VERSION: i=SDL_GL_CONTEXT_MINOR_VERSION; break; 
   case   Low_SDL_GL_CONTEXT_MAJOR_VERSION: i=SDL_GL_CONTEXT_MAJOR_VERSION; break;
+#ifndef ANDROID
   case Low_SDL_GL_CONTEXT_FLAGS: i=SDL_GL_CONTEXT_FLAGS; break;
+#endif    
   case Low_SDL_GL_CONTEXT_DEBUG_FLAG: i=SDL_GL_CONTEXT_DEBUG_FLAG; break;
 #endif
   case   Low_SDL_GL_STENCIL_SIZE: i=SDL_GL_STENCIL_SIZE; break;
@@ -298,9 +300,13 @@ void map_enums_sdl(int &i) {
 void map_enums2(unsigned int &i)
 {
   switch(i) {
+#ifndef ANDROID
   case   Low_GL_CONTEXT_FLAGS: i=GL_CONTEXT_FLAGS; break;
+#endif
+#ifndef ANDROID
   case   Low_GL_DEBUG_OUTPUT: i=GL_DEBUG_OUTPUT; break;
   case  Low_GL_DEBUG_OUTPUT_SYNCHRONOUS: i=GL_DEBUG_OUTPUT_SYNCHRONOUS; break;
+#endif
   case Low_GL_DONT_CARE: i=GL_DONT_CARE; break;
   };
 }
@@ -392,7 +398,9 @@ void map_enums(int &i)
   case    Low_GL_TRUE: i=GL_TRUE; break;
   case    Low_GL_TEXTURE_BINDING_2D:  i=GL_TEXTURE_BINDING_2D; break;
   case    Low_GL_RGBA: i=GL_RGBA; break;
+#ifndef ANDROID
   case    Low_GL_SRGB8_ALPHA8: i=GL_SRGB8_ALPHA8; break;
+#endif
   case Low_GL_RGB: i=GL_RGB; break;
   case    Low_GL_SCISSOR_TEST:  i=GL_SCISSOR_TEST; break;
   case    Low_GL_FRAMEBUFFER_COMPLETE: i=GL_FRAMEBUFFER_COMPLETE; break;
@@ -483,8 +491,10 @@ void map_enums(int &i)
   case   Low_GL_GEOMETRY_OUTPUT_TYPE_EXT: i=GL_GEOMETRY_OUTPUT_TYPE_EXT; break;
 #endif
 #endif
+#ifndef ANDROID
   case Low_GL_FRAMEBUFFER_SRGB: i=GL_FRAMEBUFFER_SRGB; break;
-
+#endif
+    
   default: break;
   };
   // this assert is broken since the values are already in opengl ones,
@@ -1272,11 +1282,13 @@ void glGetIntegerv(int i, int *ptr) {
 							    const void *userParam),
 				      const void *userParam)
   {
+#ifndef ANDROID
 #ifdef GLEW_HACK
 #define glDebugMessageCallback GLEW_GET_FUN(__glewDebugMessageCallback)
 #endif
     
     ::glDebugMessageCallback(f,userParam);
+#endif
   }
   virtual void glDebugMessageControl(unsigned int source,
 				     unsigned int type,
@@ -1285,6 +1297,7 @@ void glGetIntegerv(int i, int *ptr) {
 				     const unsigned int *ids,
 				     int enabled)
   {
+#ifndef ANDROID
     map_enums2(source);
     map_enums2(type);
     map_enums2(severity);
@@ -1293,6 +1306,7 @@ void glGetIntegerv(int i, int *ptr) {
 #define glDebugMessageControl GLEW_GET_FUN(__glewDebugMessageControl)
 #endif
     ::glDebugMessageControl(source,type,severity,count,ids,enabled);
+#endif
   }
 
   

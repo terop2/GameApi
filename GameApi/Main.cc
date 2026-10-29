@@ -499,7 +499,8 @@ void glDebugOutput(unsigned int source,
                             const void *userParam)
 {
     // Ignore some non-significant notification messages
-    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+#ifndef ANDROID
+  if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
         return;
 
     const char *srcStr =
@@ -528,11 +529,13 @@ void glDebugOutput(unsigned int source,
 
     printf("GL Debug: Source=%s Type=%s Sev=%s ID=%u\n  %s\n",
            srcStr, typeStr, sevStr, id, message);
+#endif
 }
 
 void initDebugCallback()
 {
-     GLint flags;
+#ifndef ANDROID
+  GLint flags;
     g_low->ogl->glGetIntegerv(Low_GL_CONTEXT_FLAGS, &flags);
     if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
     {
@@ -542,6 +545,7 @@ void initDebugCallback()
         g_low->ogl->glDebugMessageControl(Low_GL_DONT_CARE, Low_GL_DONT_CARE,
                               Low_GL_DONT_CARE, 0, NULL, Low_GL_TRUE);
     }
+#endif
 }
 
 

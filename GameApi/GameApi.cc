@@ -13,6 +13,12 @@
 #include <emscripten/html5.h>
 #endif
 
+#ifdef ANDROID
+#include <unistd.h>
+#include <limits.h>
+#include <stdio.h>
+#endif
+
 #include "GameApi_h.hh"
 #include "FreeType2.hh"
 #include "Tasks.hh"

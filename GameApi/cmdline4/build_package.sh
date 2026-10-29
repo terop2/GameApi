@@ -5,26 +5,27 @@ if [[ $1 == "" ]]; then
 fi
 
 
+export GAMEAPI=/home/terop/cvs/GameApi_newer_features/GameApi
 export ARCH=armv7a-eabi
 #export ARCH=aarch64
 
 export ANDROID_SDK=/home/terop/Android/Sdk
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-export SDL=/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild
+export SDL=$GAMEAPI/androiddeps/SDLBuild
 export NDK=/home/terop/Android/Sdk/ndk/28.0.12674087
 
 export AARCH_DIR_EABI=armv7a-eabi
 export AARCH_DIR2_EABI=armeabi-v7a
-export ANDROID_CURL_LIB_EABI=/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm-android/lib
+export ANDROID_CURL_LIB_EABI=$GAMEAPI/androiddeps/vcpkg/installed/arm-android/lib
 export AARCH_DIR_ARM64=aarch64
 export AARCH_DIR2_ARM64=arm64-v8a
-export ANDROID_CURL_LIB_ARM64=/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm64-android/lib
+export ANDROID_CURL_LIB_ARM64=$GAMEAPI/androiddeps/vcpkg/installed/arm64-android/lib
 export AARCH_DIR_X86=x86
 export AARCH_DIR2_X86=x86
-export ANDROID_CURL_LIB_X86=/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x86-android/lib
+export ANDROID_CURL_LIB_X86=$GAMEAPI/androiddeps/vcpkg/installed/x86-android/lib
 export AARCH_DIR_X86_64=x86_64
 export AARCH_DIR2_X86_64=x86_64
-export ANDROID_CURL_LIB_X86_64=/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x64-android/lib
+export ANDROID_CURL_LIB_X86_64=$GAMEAPI/androiddeps/vcpkg/installed/x64-android/lib
 
 
 # Assuming ANDROID_SDK is set to your SDK path

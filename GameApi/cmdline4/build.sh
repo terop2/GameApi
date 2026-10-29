@@ -3,29 +3,31 @@ export ARCH2=aarch64
 export ARCH3=x86
 export ARCH4=x86_64
 
+export GAMEAPI=/home/terop/cvs/GameApi_newer_features/GameApi
+
 array1=("$ARCH1" "$ARCH2" "$ARCH3" "$ARCH4")
 for i in "${!array1[@]}"; do
     export ARCH="${array1[$i]}"
     export ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087/
 if [ "$ARCH" = "x86_64" ]; then
-    export SDL=/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild4
+    export SDL=$GAMEAPI/androiddeps/SDLBuild4
     export ARCH2=x86_64
 fi
 if [ "$ARCH" = "x86" ]; then
-    export SDL=/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild3
+    export SDL=$GAMEAPI/androiddeps/SDLBuild3
     export ARCH2=x86
 fi
 
 if [ "$ARCH" = "armv7a-eabi" ]; then
-    export SDL=/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild2
+    export SDL=$GAMEAPI/androiddeps/SDLBuild2
     export ARCH2=armeabi-v7a
 fi
 if [ "$ARCH" = "aarch64" ]; then
-    export SDL=/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild
+    export SDL=$GAMEAPI/androiddeps/SDLBuild
     export ARCH2=arm64-v8a
 fi
 
-export FREETYPE=/home/terop/cvs/GameApi/GameApi/cmdline4/android_cmdline/lib/$ARCH2/
+export FREETYPE=$GAMEAPI/cmdline4/android_cmdline/lib/$ARCH2/
 export SDLLIBS=$SDL
 
 export COMPILE_PATH=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
