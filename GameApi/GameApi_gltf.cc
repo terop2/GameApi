@@ -13,6 +13,7 @@ int hhhh_gggg=1;
 #include <unordered_set>
 #include "MaterialI.hh"
 
+
 #ifdef EMSCRIPTEN
 #define ASYNC_JOIN 1
 #else
@@ -23,6 +24,7 @@ int hhhh_gggg=1;
 #define TINYGLTF_ASYNC_JOIN 1
 // this is current working.
 #define BITMAP_THREAD_ASYNC_JOIN 1
+
 
 //#define RELOAD_TEST 1
 
