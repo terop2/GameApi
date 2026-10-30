@@ -25732,6 +25732,7 @@ public:
 #else
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(rot_y2,trans_y2));
 #endif
+
     GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y +400.0);
     GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
     GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);

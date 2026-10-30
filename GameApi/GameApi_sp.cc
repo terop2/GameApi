@@ -2,6 +2,12 @@
 #include "GameApi_h.hh"
 
 
+#ifdef ANDROID
+#define ANDROID_LANDSCAPE 1
+//#define ANDROID_PORTRAIT 1
+#endif
+
+
 SpritePriv::~SpritePriv()
 {
   int s = arrays.size();
@@ -270,10 +276,14 @@ public:
       ee.env = Matrix::Scale(330.0*g_dpr/1200.0,247.0*g_dpr/900.0,1.0);
     }
 #else
-#ifdef ANDROID
+#ifdef ANDROID_LANDSCAPE
     ee.in_MV = Matrix::Translate(-600.0,-450.0,0.0)*Matrix::Scale((800)*g_dpr/1200.0,(600.0+600.0/4)*g_dpr/900.0,1.0)*Matrix::ZRotation(1.5708)* Matrix::Translate(600.0,450.0,0.0)*Matrix::Translate(-300.0+100,0.0,0.0);
     ee.env = Matrix::Translate(-600.0,-450.0,0.0)*Matrix::Scale((800)*g_dpr/1200.0,(600.0+600.0/4)*g_dpr/900.0,1.0)*Matrix::ZRotation(1.5708)* Matrix::Translate(600.0,450.0,0.0)*Matrix::Translate(-300+100.0,0.0,0.0);
-#else
+#endif
+#ifdef ANDROID_PORTRAIT
+      ee.in_MV = Matrix::Identity();
+#endif
+#if !defined(ANDROID_LANDSCAPE) && !defined(ANDROID_PORTRAIT)
       ee.in_MV = Matrix::Identity();
 #endif
 #endif
