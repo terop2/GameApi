@@ -49,9 +49,9 @@
 #endif
 
 #ifndef RASPI
-#ifndef ANDROID
+//#ifndef ANDROID
 #define HAS_INSTANCING 1
-#endif
+//#endif
 #endif
 
 #ifdef ANDROID

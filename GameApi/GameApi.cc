@@ -19341,8 +19341,10 @@ EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML 
   float screen_y = ev.mainloop_api.get_screen_sy();
   //std::cout << "Use screen:" << screen_x << " " << screen_y << std::endl;
   ml = ev.mainloop_api.display_background(ev,ml);
-#ifdef ANDROID
+#ifdef ANDROID_LANDSCAPE
   ml = ev.mainloop_api.android_landscape_scale(ev,ml);
+#endif
+#ifdef ANDROID_PORTRAIT
 #endif
   Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, screen_x, screen_y);
   return add_splitter(e, spl);
