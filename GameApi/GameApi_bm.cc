@@ -174,6 +174,8 @@ EXPORT GameApi::BM GameApi::BitmapApi::scale_bitmap_fullscreen(EveryApi &ev, BM 
 #endif
 #ifdef ANDROID_LANDSCAPE
   sy=int(float(sy)*4.5/3.0);
+  sy+=30+30+30;
+  sx+=60;
 #endif
 #ifdef ANDROID_PORTRAIT
 #endif
