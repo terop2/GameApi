@@ -4497,6 +4497,8 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
     //std::cout << "popen_curl_replacement 9" << std::endl;
 
+    curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+    
     res = curl_easy_perform(curl);
     //std::cout << "popen_curl_replacement 10" << std::endl;
 
