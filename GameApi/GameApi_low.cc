@@ -61,7 +61,7 @@
 //#include <GL/glext.h>
 #endif
 #else // android
-#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
 #endif
 
 #endif
@@ -840,7 +840,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #endif
 }
   virtual void glVertexAttribDivisor(int a, int b) { 
-#ifndef ANDROID
+    //#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glVertexAttribDivisor GLEW_GET_FUN(__glewVertexAttribDivisor)
@@ -848,10 +848,10 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     COLONCOLON glVertexAttribDivisor(a,b); 
     check_err("glVertexAttribDivisor");
 #endif
-#endif
+    //#endif
   }
   virtual void glGenVertexArrays(int i, unsigned int *arr) { 
-#ifndef ANDROID
+    //#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glGenVertexArrays GLEW_GET_FUN(__glewGenVertexArrays)
@@ -859,20 +859,20 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     COLONCOLON glGenVertexArrays(i,arr); 
     check_err("glGenVertexArrays");
 #endif
-#endif
+    //#endif
   }
   virtual void glDeleteVertexArrays(int count, unsigned int *vao) { 
-#ifndef ANDROID
+    //#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glDeleteVertexArrays GLEW_GET_FUN(__glewDeleteVertexArrays)
 #endif
  COLONCOLON glDeleteVertexArrays(count,vao);
 #endif
-#endif
+ //#endif
   }
   virtual void glBindVertexArray(int vao) { 
-#ifndef ANDROID
+    //#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glBindVertexArray GLEW_GET_FUN(__glewBindVertexArray)
@@ -880,7 +880,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 COLONCOLON glBindVertexArray(vao); 
     check_err("glBindVertexArray");
 #endif
-#endif
+    //#endif
   }
   virtual void glEnableVertexAttribArray(int a) { 
 #ifdef GLEW_HACK
@@ -897,7 +897,7 @@ COLONCOLON glDisableVertexAttribArray(a);
     check_err("glDisableVertexAttribArray");
   }
   virtual void glDrawArraysInstanced(int tri, int a, unsigned int b, unsigned int c) { 
-#ifndef ANDROID
+    //#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glDrawArraysInstanced GLEW_GET_FUN(__glewDrawArraysInstanced)
@@ -908,7 +908,7 @@ COLONCOLON glDrawArraysInstanced(tri,a,b,c);
 #else
     glDrawArrays(tri,a,b);
 #endif
-#endif
+    //#endif
   }
   virtual void glDrawArrays(int tri, int a, unsigned int b) { 
     //#ifdef GLEW_HACK
@@ -927,7 +927,7 @@ COLONCOLON glDrawArraysInstanced(tri,a,b,c);
     check_err("glDrawElements");
   }
   virtual void glDrawElementsInstanced(int tri, int a, int type, void *indices, int size) {
-#ifndef ANDROID
+    //#ifndef ANDROID
     map_enums(tri);
     map_enums(type);
     unsigned int tri2 = (unsigned int)tri;
@@ -941,7 +941,7 @@ COLONCOLON glDrawArraysInstanced(tri,a,b,c);
 #endif
 #endif
     check_err("glDrawElementsInstanced");
-#endif
+    //#endif
   }
   // bitmaps
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr) { 
