@@ -172,8 +172,10 @@ EXPORT GameApi::BM GameApi::BitmapApi::scale_bitmap_fullscreen(EveryApi &ev, BM 
   sx=int(float(sx)*1.5);
   sy=int(float(sy)*1.5);
 #endif
-#ifdef ANDROID
+#ifdef ANDROID_LANDSCAPE
   sy=int(float(sy)*4.5/3.0);
+#endif
+#ifdef ANDROID_PORTRAIT
 #endif
   CBM cbm = ev.cont_bitmap_api.from_bitmap(orig, 1.0, 1.0);
   BM ret = ev.cont_bitmap_api.to_bitmap(cbm, sx,sy /*800,600*/);
