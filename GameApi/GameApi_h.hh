@@ -54,6 +54,12 @@
 #endif
 #endif
 
+#ifdef ANDROID
+#define ANDROID_LANDSCAPE 1
+//#define ANDROID_PORTRAIT 1
+#endif
+
+
 //#ifndef RASPI
 #define HAS_MATRIX_INVERSE 1
 //#endif

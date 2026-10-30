@@ -28,11 +28,6 @@
 #include <iomanip>
 #include <atomic>
 
-#ifdef ANDROID
-#define ANDROID_LANDSCAPE 1
-//#define ANDROID_PORTRAIT 1
-#endif
-
 
 #ifdef LOOKING_GLASS
 #define HP_LOAD_LIBRARY

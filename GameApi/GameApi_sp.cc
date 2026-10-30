@@ -2,10 +2,6 @@
 #include "GameApi_h.hh"
 
 
-#ifdef ANDROID
-#define ANDROID_LANDSCAPE 1
-//#define ANDROID_PORTRAIT 1
-#endif
 
 
 SpritePriv::~SpritePriv()
