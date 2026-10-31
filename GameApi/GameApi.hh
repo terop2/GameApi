@@ -2925,6 +2925,13 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT P sum(std::vector<P> vec);
+  IMPORT P mult(P p, float val);
+  IMPORT P core_interpolate(std::vector<P> vec, std::vector<float> mult);
+  IMPORT P interpolate(P p1, P p2, float val);
+  IMPORT P interpolate_tri(P p1, P p2, P p3, float i1, float i2);
+  IMPORT P interpolate_quad(P p1, P p2, P p3, P p4, float i1, float i2, float i3);
+  IMPORT P interpolate_polygon(P space, P (*fptr)(int face, int point), float i1, float i2, float i3, int face);
   IMPORT P solid_of_revolution(EveryApi &ev, int numfaces, float p_x, float p_y, float p_z, float p1_x, float p1_y, float p1_z, std::string deltas, std::string radiuses);
   IMPORT P prepare_cache(std::string url, P p);
   IMPORT P sphere_rays(float center_x, float center_y, float center_z, float radius,

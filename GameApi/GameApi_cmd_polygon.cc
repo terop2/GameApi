@@ -515,6 +515,27 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "P", "polygon_api", "bitmapsized_quad"));
 #endif
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::interpolate,
+			 "p_interpolate",
+			 { "p1", "p2", "val" },
+			 { "P", "P", "float" },
+			 { "" ,"", "0.5" },
+			 "P", "polygon_api", "interpolate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::interpolate_tri,
+			 "p_interpolate_tri",
+			 { "p1", "p2", "p3", "i1", "i2" },
+			 { "P" ,"P", "P", "float", "float" },
+			 { "", "", "", "0.33", "0.33" },
+			 "P", "polygon_api", "interpolate_tri"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::interpolate_quad,
+			 "p_interpolate_quad",
+			 { "p1", "p2", "p3", "p4", "i1", "i2", "i3" },
+			 { "P", "P", "P", "P", "float", "float", "float" },
+			 { "", "", "" ,"", "0.25", "0.25", "0.25" },
+			 "P", "polygon_api", "interpolate_quad"));
+			 
+
+  
 #if (ALL==1)||(VR_FULLSCREEN_QUAD==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::vr_fullscreen_quad,
 			 "vr_fullscreen_quad",

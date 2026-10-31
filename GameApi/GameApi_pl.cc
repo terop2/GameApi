@@ -31774,6 +31774,162 @@ GameApi::P GameApi::PolygonApi::solid_of_revolution(EveryApi &ev, int numfaces, 
 }
 
 
+class SumFaceCollection : public ForwardFaceCollection
+{
+public:
+  SumFaceCollection(std::vector<FaceCollection*> faces) : ForwardFaceCollection(*(faces[0])),faces(faces) { }
+  virtual std::string name() const { return "SumFaceCollection"; }
+  Point FacePoint(int face, int point) const
+  {
+    int s = faces.size();
+    Point p = { 0.0, 0.0, 0.0 };
+    for(int i=0;i<s;i++)
+      {
+	Point p0 = faces[i]->FacePoint(face,point);
+	p.x+=p0.x;
+	p.y+=p0.y;
+	p.z+=p0.z;
+      }
+    return p;
+  }
+  Vector PointNormal(int face, int point) const
+  {
+    int s = faces.size();
+    Vector p = { 0.0, 0.0, 0.0 };
+    for(int i=0;i<s;i++)
+      {
+	Vector p0 = faces[i]->PointNormal(face,point);
+	p.dx+=p0.dx;
+	p.dy+=p0.dy;
+	p.dz+=p0.dz;
+      }
+    return p;
+  }
+private:
+  std::vector<FaceCollection*> faces;
+};
+GameApi::P GameApi::PolygonApi::sum(std::vector<P> vec)
+{
+  int s = vec.size();
+  std::vector<FaceCollection*> faces;
+  for(int i=0;i<s;i++)
+    {
+      faces.push_back(find_facecoll(e,vec[i]));
+    }
+  return add_polygon2(e, new SumFaceCollection(faces),1);
+}
+class MultFaceCollection : public ForwardFaceCollection
+{
+public:
+  MultFaceCollection(FaceCollection *coll, float val) : ForwardFaceCollection(*coll), coll(coll), val(val) { }
+  virtual std::string name() const { return "MultFaceCollection"; }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    p.x*=val;
+    p.y*=val;
+    p.z*=val;
+    return p;
+  }
+  Vector PointNormal(int face, int point) const
+  {
+    Vector p = coll->PointNormal(face,point);
+    p.dx*=val;
+    p.dy*=val;
+    p.dz*=val;
+    return p;
+  }
+private:
+  FaceCollection *coll;
+  float val;
+};
+GameApi::P GameApi::PolygonApi::mult(P p, float val)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new MultFaceCollection(coll,val),1);
+}
+GameApi::P GameApi::PolygonApi::core_interpolate(std::vector<P> vec, std::vector<float> mult0)
+{
+  assert(vec.size()==mult0.size());
+  int s = std::min(vec.size(),mult0.size());
+  std::vector<GameApi::P> res;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p0 = vec[i];
+      float val = mult0[i];
+      GameApi::P p1 = mult(p0,val);
+      res.push_back(p1);
+    }
+  return sum(res);
+}
+GameApi::P GameApi::PolygonApi::interpolate(P p1, P p2, float val)
+{
+  std::vector<P> vec;
+  vec.push_back(p1);
+  vec.push_back(p2);
+  std::vector<float> vec2;
+  vec2.push_back(val);
+  vec2.push_back(1.0-val);
+  return core_interpolate(vec,vec2);
+}
+GameApi::P GameApi::PolygonApi::interpolate_tri(P p1, P p2, P p3, float i1, float i2)
+{
+  std::vector<P> vec;
+  vec.push_back(p1);
+  vec.push_back(p2);
+  vec.push_back(p3);
+  std::vector<float> vec2;
+  vec2.push_back(i1);
+  vec2.push_back(i2);
+  vec2.push_back(1.0f-i1-i2);
+  return core_interpolate(vec,vec2);  
+}
+
+GameApi::P GameApi::PolygonApi::interpolate_quad(P p1, P p2, P p3, P p4, float i1, float i2, float i3)
+{
+  std::vector<P> vec;
+  vec.push_back(p1);
+  vec.push_back(p2);
+  vec.push_back(p3);
+  vec.push_back(p4);
+  std::vector<float> vec2;
+  vec2.push_back(i1);
+  vec2.push_back(i2);
+  vec2.push_back(i3);
+  vec2.push_back(1.0f-i1-i2-i3);
+  return core_interpolate(vec,vec2);  
+}
+
+
+GameApi::P GameApi::PolygonApi::interpolate_polygon(P space, P (*fptr)(int face, int point), float i1, float i2, float i3, int face)
+{
+  FaceCollection *space_x = find_facecoll(e,space);
+  if (face>=0 && face<space_x->NumFaces()) {
+    int numpoints = space_x->NumPoints(face);
+    std::vector<GameApi::P> vec;
+    for(int i=0;i<numpoints;i++)
+      {
+	vec.push_back(fptr(face,i));
+      }
+    if (numpoints==2) return interpolate(vec[0],vec[1],i1);
+    if (numpoints==3)
+      {
+	return interpolate_tri(vec[0],vec[1],vec[2],i1,i2);
+      }
+    if (numpoints==4)
+      {
+	return interpolate_quad(vec[0],vec[1],vec[2],vec[3], i1,i2,i3);
+      }
+    if (numpoints>4)
+      {
+	std::cout << "INterpolate for polygons not implemented!" << std::endl;
+	return p_empty();
+      }
+  } else {
+    return p_empty();
+  }
+}
+
 #if 0
 class PtsToVX : public Voxel<int>
 {
