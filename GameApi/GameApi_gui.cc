@@ -8683,27 +8683,6 @@ std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev)
   std::vector<GameApiItem*> ai = append_vectors(ah, vj);
   std::vector<GameApiItem*> aj = append_vectors(ai, vk);
   std::vector<GameApiItem*> ak = append_vectors(aj, vl);
-  std::cout << "ALL:" << a1.size() << std::endl;
-  std::cout << "ALL:" << a2.size() << std::endl;
-  std::cout << "ALL:" << a3.size() << std::endl;
-  std::cout << "ALL:" << a4.size() << std::endl;
-  std::cout << "ALL:" << a5.size() << std::endl;
-  std::cout << "ALL:" << a51.size() << std::endl;
-  std::cout << "ALL:" << a6.size() << std::endl;
-  std::cout << "ALL:" << a7.size() << std::endl;
-  std::cout << "ALL:" << a8.size() << std::endl;
-  std::cout << "ALL:" << a9.size() << std::endl;
-  std::cout << "ALL:" << aa.size() << std::endl;
-  std::cout << "ALL:" << ab.size() << std::endl;
-  std::cout << "ALL:" << ac.size() << std::endl;
-  std::cout << "ALL:" << ad.size() << std::endl;
-  std::cout << "ALL:" << ae.size() << std::endl;
-  std::cout << "ALL:" << af.size() << std::endl;
-  std::cout << "ALL:" << ag.size() << std::endl;
-  std::cout << "ALL:" << ah.size() << std::endl;
-  std::cout << "ALL:" << ai.size() << std::endl;
-  std::cout << "ALL:" << aj.size() << std::endl;
-  std::cout << "ALL_FUNCTIONS:" << ak.size() << " " << vk.size() << std::endl;
   return ak;
 }
 EXPORT std::string GameApi::GuiApi::bitmapapi_functions_item_label(int i)

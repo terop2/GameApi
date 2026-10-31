@@ -44847,8 +44847,10 @@ public:
     GameApi::ML I153=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p1,p,I615,mix,self_mult*b0, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent,acesfilm,"",emissive,0);
 
     I154=ev.mainloop_api.array_ml(ev,std::vector<GameApi::ML>{I15,I151,I152,I153});
-    MainLoopItem *item = find_main_loop(env,I154);
-    item->Prepare();
+    if (I154.id != -1) {    
+      MainLoopItem *item = find_main_loop(env,I154);
+      item->Prepare();
+    }
   }
   virtual void Prepare() {
     GLTFModelInterface *interface = find_gltf(env,p);
@@ -44860,17 +44862,23 @@ public:
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
-    MainLoopItem *item = find_main_loop(env,I154);
-    item->execute(e);
+    if (I154.id != -1) {
+      MainLoopItem *item = find_main_loop(env,I154);
+      item->execute(e);
+    }
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    MainLoopItem *item = find_main_loop(env,I154);
-    item->handle_event(e);
+    if (I154.id != -1) {
+      MainLoopItem *item = find_main_loop(env,I154);
+      item->handle_event(e);
+    }
   }
   virtual std::vector<int> shader_id() {
-    MainLoopItem *item = find_main_loop(env,I154);
-    return item->shader_id();
+    if (I154.id != -1) {
+      MainLoopItem *item = find_main_loop(env,I154);
+      return item->shader_id();
+    } else return std::vector<int>();
   }
 
 private:
@@ -44899,7 +44907,7 @@ private:
   bool acesfilm;
   float start_brightness;
   float end_brightness;
-  GameApi::ML I154;
+  GameApi::ML I154 = { -1 };
   bool emissive;
 };
 
@@ -46376,7 +46384,6 @@ public:
       {
 	m_all_functions = all_functions(ev);
 	is_available=true;
-	std::cout << "GET_ALL_FUNCTIONS:" << m_all_functions.size() << std::endl;
       }
     return m_all_functions;
   }
