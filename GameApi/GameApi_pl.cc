@@ -31862,30 +31862,30 @@ GameApi::P GameApi::PolygonApi::core_interpolate(std::vector<P> vec, std::vector
     }
   return sum(res);
 }
-GameApi::P GameApi::PolygonApi::interpolate(P p1, P p2, float val)
+GameApi::P GameApi::PolygonApi::interpolate(P p1, P p2, float val, float val2)
 {
   std::vector<P> vec;
   vec.push_back(p1);
   vec.push_back(p2);
   std::vector<float> vec2;
-  vec2.push_back(val);
-  vec2.push_back(1.0-val);
+  vec2.push_back(val/(val+val2));
+  vec2.push_back(val2/(val+val2));
   return core_interpolate(vec,vec2);
 }
-GameApi::P GameApi::PolygonApi::interpolate_tri(P p1, P p2, P p3, float i1, float i2)
+GameApi::P GameApi::PolygonApi::interpolate_tri(P p1, P p2, P p3, float i1, float i2, float i3)
 {
   std::vector<P> vec;
   vec.push_back(p1);
   vec.push_back(p2);
   vec.push_back(p3);
   std::vector<float> vec2;
-  vec2.push_back(i1);
-  vec2.push_back(i2);
-  vec2.push_back(1.0f-i1-i2);
+  vec2.push_back(i1/(i1+i2+i3));
+  vec2.push_back(i2/(i1+i2+i3));
+  vec2.push_back(i3/(i1+i2+i3));
   return core_interpolate(vec,vec2);  
 }
 
-GameApi::P GameApi::PolygonApi::interpolate_quad(P p1, P p2, P p3, P p4, float i1, float i2, float i3)
+GameApi::P GameApi::PolygonApi::interpolate_quad(P p1, P p2, P p3, P p4, float i1, float i2, float i3, float i4)
 {
   std::vector<P> vec;
   vec.push_back(p1);
@@ -31893,15 +31893,15 @@ GameApi::P GameApi::PolygonApi::interpolate_quad(P p1, P p2, P p3, P p4, float i
   vec.push_back(p3);
   vec.push_back(p4);
   std::vector<float> vec2;
-  vec2.push_back(i1);
-  vec2.push_back(i2);
-  vec2.push_back(i3);
-  vec2.push_back(1.0f-i1-i2-i3);
+  vec2.push_back(i1/(i1+i2+i3+i4));
+  vec2.push_back(i2/(i1+i2+i3+i4));
+  vec2.push_back(i3/(i1+i2+i3+i4));
+  vec2.push_back(i4/(i1+i2+i3+i4));
   return core_interpolate(vec,vec2);  
 }
 
 
-GameApi::P GameApi::PolygonApi::interpolate_polygon(P space, P (*fptr)(int face, int point), float i1, float i2, float i3, int face)
+GameApi::P GameApi::PolygonApi::interpolate_polygon(P space, P (*fptr)(int face, int point), float i1, float i2, float i3, float i4, int face)
 {
   FaceCollection *space_x = find_facecoll(e,space);
   if (face>=0 && face<space_x->NumFaces()) {
@@ -31911,14 +31911,14 @@ GameApi::P GameApi::PolygonApi::interpolate_polygon(P space, P (*fptr)(int face,
       {
 	vec.push_back(fptr(face,i));
       }
-    if (numpoints==2) return interpolate(vec[0],vec[1],i1);
+    if (numpoints==2) return interpolate(vec[0],vec[1],i1,i2);
     if (numpoints==3)
       {
-	return interpolate_tri(vec[0],vec[1],vec[2],i1,i2);
+	return interpolate_tri(vec[0],vec[1],vec[2],i1,i2,i3);
       }
     if (numpoints==4)
       {
-	return interpolate_quad(vec[0],vec[1],vec[2],vec[3], i1,i2,i3);
+	return interpolate_quad(vec[0],vec[1],vec[2],vec[3], i1,i2,i3,i4);
       }
     if (numpoints>4)
       {
