@@ -29,7 +29,7 @@ export ANDROID_CURL_LIB_X86_64=$GAMEAPI/androiddeps/vcpkg/installed/x64-android/
 
 
 hash=$(./fix_android_manifest.sh $2)
-echo "script.txt hash is $hash"
+echo "$2 hash is $hash"
 
 # Assuming ANDROID_SDK is set to your SDK path
 AAPT=$ANDROID_SDK/build-tools/35.0.0/aapt
