@@ -1,6 +1,6 @@
 #!/bin/bash
-if [[ $1 == "" || $2 == "" ]]; then
-    echo "Usage: ./build_package.sh password package_name"
+if [[ $1 == "" || $2 == "" || $3 == "" ]]; then
+    echo "Usage: ./build_package.sh password package_name icon_name"
     exit
 fi
 
@@ -28,7 +28,7 @@ export AARCH_DIR2_X86_64=x86_64
 export ANDROID_CURL_LIB_X86_64=$GAMEAPI/androiddeps/vcpkg/installed/x64-android/lib
 
 
-hash=$(./fix_android_manifest.sh $2)
+hash=$(./fix_android_manifest.sh $2 $3)
 echo "$2 hash is $hash"
 
 # Assuming ANDROID_SDK is set to your SDK path
