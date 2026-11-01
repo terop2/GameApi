@@ -1,6 +1,6 @@
 #!/bin/bash
-if [[ $1 == "" ]]; then
-    echo "Usage: ./build_package.sh password"
+if [[ $1 == "" || $2 == "" ]]; then
+    echo "Usage: ./build_package.sh password package_name"
     exit
 fi
 
@@ -27,6 +27,9 @@ export AARCH_DIR_X86_64=x86_64
 export AARCH_DIR2_X86_64=x86_64
 export ANDROID_CURL_LIB_X86_64=$GAMEAPI/androiddeps/vcpkg/installed/x64-android/lib
 
+
+hash=$(./fix_android_manifest.sh $2)
+echo "script.txt hash is $hash"
 
 # Assuming ANDROID_SDK is set to your SDK path
 AAPT=$ANDROID_SDK/build-tools/35.0.0/aapt
@@ -56,17 +59,18 @@ done
 #cp $NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so android_cmdline/lib/arm64-v8a/libc++_shared.so
 # Add your native library
 
+
 (cd android_cmdline; mkdir -p obj; $JAVAC -classpath "$ANDROID_JAR" -d obj \
 					  src/org/libsdl/app/*.java)
 
 
-(cd android_cmdline; mkdir -p obj; $JAVAC -classpath "obj:$ANDROID_JAR" -d obj src/com/meshpage/gameapi_cmdline/MainActivity.java \
-					  src/com/meshpage/gameapi_cmdline/R.java \
+(cd android_cmdline; mkdir -p obj; $JAVAC -classpath "obj:$ANDROID_JAR" -d obj src/com/meshpage/gameapi_cmdline$hash/MainActivity.java \
+					  src/com/meshpage/gameapi_cmdline$hash/R.java \
     )
 
-(cd android_cmdline; $ANDROID_SDK/build-tools/35.0.0/d8 obj/org/libsdl/app/*.class obj/com/meshpage/gameapi_cmdline/*.class --lib $ANDROID_JAR --output .)
+(cd android_cmdline; $ANDROID_SDK/build-tools/35.0.0/d8 obj/org/libsdl/app/*.class obj/com/meshpage/gameapi_cmdline$hash/*.class --lib $ANDROID_JAR --output .)
 
-(cd android_cmdline ; zip -u ../gameapi_cmdline.apk src/com/meshpage/gameapi_cmdline/MainActivity.java)
+(cd android_cmdline ; zip -u ../gameapi_cmdline.apk src/com/meshpage/gameapi_cmdline$hash/MainActivity.java)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk classes.dex)
 cp script.txt android_cmdline/assets/
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk assets/script.txt)
