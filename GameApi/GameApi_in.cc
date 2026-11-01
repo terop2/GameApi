@@ -190,8 +190,10 @@ void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, f
 #endif
 #endif
 
+#ifndef ANDROID
   if (data.side_left) { pos_y += delta*speed*sin(rot_y); pos_x += delta*speed*cos(rot_y); }
   if (data.side_right) { pos_y += delta*speed*sin(rot_y+3.14159); pos_x += delta*speed*cos(rot_y+3.14159); }
+#endif
   
   speed_x = speed*cos(rot_y+3.14159/2.0);
   speed_y = speed*sin(rot_y+3.14159/2.0);
