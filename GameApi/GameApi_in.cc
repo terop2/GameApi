@@ -113,7 +113,18 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   if ((e.type==1025||e.type==1792) && e.button==0 && cursor.x>scr_x_2 && cursor.x<scr_x_3 && cursor.y>scr_y_2 && cursor.y<scr_y_3) data.side_right=true;
   if ((e.type==1026||e.type==1793) && e.button==-1) data.side_right=false;
 
+#ifdef ANDROID
+  if (e.type==0x300 || ((e.type==1025 || e.type==1792) && e.button==0))
+    {
+      data.timer = 35;
+    }
+  if (e.type==0x301 || ((e.type==1026 || e.type==1793) && e.button==-1))
+    {
+      data.timer=-1;
+    }
+#endif
 
+  
   if (data.mv_mode && e.type==1024)
     {
       //std::cout << "mv mode 1024 event" << std::endl;
@@ -143,7 +154,25 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
 }
 void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, float &pos_y, float &rot_y, Quake_data &data, float &speed_x, float &speed_y, float speed, float rot_speed)
 {
- float delta = ev.mainloop_api.get_delta_time()*7.0;
+
+
+  float delta = ev.mainloop_api.get_delta_time()*7.0;
+
+#ifdef ANDROID
+  data.timer--;
+  data.timer-=int(delta);
+  if (data.timer<0) {
+    data.side_left = false;
+    data.side_right = false;
+    data.left = false;
+    data.right = false;
+    data.forward = false;
+    data.backward = false;
+    data.timer=-1;
+  }
+#endif
+
+
 #ifdef ANDROID
 #ifdef ANDROID_LANDSCAPE
  std::swap(data.backward,data.left);
@@ -163,7 +192,7 @@ void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, f
 
   if (data.side_left) { pos_y += delta*speed*sin(rot_y); pos_x += delta*speed*cos(rot_y); }
   if (data.side_right) { pos_y += delta*speed*sin(rot_y+3.14159); pos_x += delta*speed*cos(rot_y+3.14159); }
-
+  
   speed_x = speed*cos(rot_y+3.14159/2.0);
   speed_y = speed*sin(rot_y+3.14159/2.0);
   if (data.mv_mode) {
@@ -172,4 +201,6 @@ void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, f
     data.forward=false;
     data.backward=false;
   }
+
+  
 }
