@@ -4,6 +4,6 @@ if [[ $1 == "" || $2 == "" || $3 == "" || $4 = "" ]]; then
     exit
 fi
 
-./build.sh "$4"
+./build.sh "$4" "$2"
 ./build_package.sh $1 $2 $3
 adb install gameapi_cmdline.apk

@@ -31,6 +31,9 @@ export ANDROID_CURL_LIB_X86_64=$GAMEAPI/androiddeps/vcpkg/installed/x64-android/
 hash=$(./fix_android_manifest.sh $2 $3)
 echo "$2 hash is $hash"
 
+./android_deploy.sh
+./replace_script_urls_to_local.sh
+
 # Assuming ANDROID_SDK is set to your SDK path
 AAPT=$ANDROID_SDK/build-tools/35.0.0/aapt
 JAVAC="javac"
@@ -72,7 +75,7 @@ done
 
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk src/com/meshpage/gameapi_cmdline$hash/MainActivity.java)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk classes.dex)
-cp script.txt android_cmdline/assets/
+cp script5.txt android_cmdline/assets/script.txt
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk assets/script.txt)
 
 
@@ -85,6 +88,7 @@ for i in "${!array1[@]}"; do
     (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/$AARCH_DIR/libfreetype.so)
     (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/$AARCH_DIR/libc++_shared.so)
     (cd android_cmdline ; zip -u ../gameapi_cmdline.apk store/ground.png)
+    (cd android_cmdline ; zip -u ../gameapi_cmdline.apk assets/data/*)
 done
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk res/values/strings.xml)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk res/mipmap/ic_launcher.png)

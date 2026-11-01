@@ -4419,6 +4419,13 @@ void popen_curl_init() {
   curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+
+
+extern AAssetManager *g_assetManager;
+
+
 std::string popen_curl_replacement(std::string url, bool headeronly)
 {
   if (url.size()>6 && url.substr(0,7)=="file://")
@@ -4442,7 +4449,26 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
       filename = deploy_replace_string(filename, "%29", ")");
 
       std::cout << "Filename for ifstream: " << filename << std::endl;
-      
+
+      AAssetManager *mgr = g_assetManager;
+      AAsset *file = AAssetManager_open(mgr,filename.c_str(),AASSET_MODE_BUFFER);
+      if (headeronly && file)
+	{
+	  std::stringstream ss2;
+	  ss2 << "Content-Length: " << AAsset_getLength(file) << std::endl;
+	  AAsset_close(file);
+	  return ss2.str();
+	}
+      else if (file)
+	{
+	  off_t size = AAsset_getLength(file);
+	  std::vector<unsigned char> vec(size);
+	  AAsset_read(file,vec.data(),size);
+	  AAsset_close(file);
+	  std::string res(vec.begin(),vec.end());
+	  return res;
+	}
+#if 0      
       if (headeronly)
 	{
 	  std::ifstream ss(filename.c_str(), std::ios::binary | std::ios::ate);
@@ -4461,6 +4487,7 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
 	while(ss.get(ch)) { res+=ch; }
 	return res;
       }
+#endif
     }
 
 

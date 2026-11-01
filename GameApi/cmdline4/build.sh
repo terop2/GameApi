@@ -1,7 +1,47 @@
-if [[ $1 == "" ]]; then
-    echo "Usage: ./build.sh package_name"
+if [[ $1 == "" || $2 == "" ]]; then
+    echo "Usage: ./build.sh package_name package_id"
     exit
 fi
+
+hash=$(echo "$2" | sha1sum | awk '{print $1}')
+
+echo "$hash"
+
+cat > "jni_register.cpp" <<EOF
+#include <jni.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+
+AAssetManager *g_assetManager=nullptr;
+
+extern "C"
+JNIEXPORT void JNICALL nativeInit(
+									 JNIEnv *env,
+									 jobject thiz,
+									 jobject mgr_object)
+{
+  g_assetManager = AAssetManager_fromJava(env,mgr_object);
+}
+
+
+static JNINativeMethod methods[] = {
+  {
+    "nativeInit",
+    "(Landroid/content/res/AssetManager;)V",
+    (void*)nativeInit
+  }
+};
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_meshpage_gameapi_1cmdline${hash}_MainActivity_registerNativeMethods(
+    JNIEnv* env,
+    jclass,
+    jclass cls)
+{
+    env->RegisterNatives(cls, methods, sizeof(methods)/sizeof(methods[0]));
+}
+EOF
 
 export ARCH1=armv7a-eabi
 export ARCH2=aarch64
@@ -60,7 +100,8 @@ $C_COMPILER -c $ANDROID_NDK/sources/android/native_app_glue/android_native_app_g
    
 
 # Compile native_app_glue
-sed "s/GameApiCmdLine/$1/g" ../cmdline/test.cpp >test.cpp
+sed "s/GameApiCmdLine/$1/g" ../cmdline/test.cpp >test0.cpp
+cat test0.cpp jni_register.cpp >test.cpp
 
 # Main compilation
 $CPP_COMPILER \
