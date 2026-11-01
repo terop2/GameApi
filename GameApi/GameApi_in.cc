@@ -114,9 +114,9 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   if ((e.type==1026||e.type==1793) && e.button==-1) data.side_right=false;
 
 #ifdef ANDROID
-  if (e.type==0x300 || ((e.type==1025 || e.type==1792) && e.button==0))
+  if (e.type==0x300 || ((e.type==1025 || e.type==1792) && e.button==0) || e.type==1794)
     {
-      data.timer = 35;
+      data.timer = 30;
     }
   if (e.type==0x301 || ((e.type==1026 || e.type==1793) && e.button==-1))
     {
