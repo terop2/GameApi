@@ -272,8 +272,7 @@ function get_apk ( $arr )
 {
   $filename = "./user_data/user_" . $arr["username"] . "/android" . $arr["index"] . ".apk";
   if (file_exists($filename)) {
-     $data = file_get_contents($filename);
-     $apk = $data;
+     $apk = file_get_contents($filename);
    } else { $apk=""; }
    return $apk;
 }
@@ -544,8 +543,10 @@ function js_no_threads()
   preg_match( "#Chrome/(.+?)\.#", $ua, $match );
   $match2 = false;
   preg_match( "#Firefox/(.+?)\.#", $ua, $match2 );
-  $firefox_version = $match2[1];
-  $chrome_version = $match[1];
+  $firefox_version = 0;
+  if ($match2 != false) $firefox_version = $match2[1];
+  $chrome_version = 0;
+  if ($match != false) $chrome_version = $match[1];
   if ($firefox && $firefox_version <=78) { return "yes"; }
   if ($firefox) { return "no"; }
   if ($chrome && $chrome_version >= 70) { return "no"; }

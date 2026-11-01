@@ -2,6 +2,8 @@
 
 require_once("user.php");
 
+ini_set('memory_limit', '4096M');
+
 $data = $_GET["id"];
 $full = $_GET["full"];
 $arr2 = array("username" => "terop",
