@@ -546,8 +546,8 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
   double dpr = getDevicePixelRatio();
   g_dpr = dpr;
   
-  int w_width = 800*dpr;
-  int w_height = 600*dpr;
+  int w_width = 800*dpr; // 800
+  int w_height = 600*dpr; // 600
   //sprite_screen_width=1200;
   //sprite_screen_height=900;
   std::string seamless_url="";

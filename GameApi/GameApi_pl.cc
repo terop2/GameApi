@@ -26196,9 +26196,18 @@ public:
   virtual void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
+
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+#ifdef ANDROID
+  scale_x = float(800)/float(2340);
+  scale_y = float(600)/float(1080);
+#endif
+
+    
     MainLoopEnv &ee = e;
     Matrix old_inP = ee.in_P;
-    Matrix m = Matrix::Perspective(mult, (double)800/(double)600, front_plane, end_plane); 
+    Matrix m = Matrix::Perspective(mult, (double)(800*scale_x)/(double)(600*scale_y), front_plane, end_plane); 
     ee.in_P = m;
 
     Matrix gp = g_in_P;

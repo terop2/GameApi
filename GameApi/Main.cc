@@ -985,7 +985,15 @@ Low_SDL_Surface *InitSDL(int scr_x, int scr_y, bool vblank, bool antialias)
 
   // ORIGINAL
   //gluPerspective(80.0, (double)screenx/screeny, 10.1, 6000.0);
-  Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1, 1600.0);
+
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+#ifdef ANDROID
+  scale_x = float(800)/float(2340);
+  scale_y = float(600)/float(1080);
+#endif
+
+  Matrix m = Matrix::Perspective(80.0, (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 1600.0);
   float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],

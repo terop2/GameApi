@@ -546,7 +546,16 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
 
   Program *prog = find_shader_program(e, sh);
   prog->use(); // 80.0, 10.1, 60000.0
-  Matrix m = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 1600.0); // 10.1 60000.0
+
+
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+#ifdef ANDROID
+  scale_x = float(800)/float(2340);
+  scale_y = float(600)/float(1080);
+#endif
+
+  Matrix m = Matrix::Perspective(90.0*double(screeny*scale_y)/double(screenx*scale_x), (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 1600.0); // 10.1 60000.0
   //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
   prog->set_var("in_P", m);
   Matrix m2 = Matrix::Identity();
@@ -781,7 +790,15 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       //g_low->ogl->glDisable(Low_GL_LIGHTING);
       ogl->glEnable(Low_GL_DEPTH_TEST);
       // 10.1, 60000.0
-      Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1,
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+#ifdef ANDROID
+  scale_x = float(800)/float(2340);
+  scale_y = float(600)/float(1080);
+#endif
+
+      
+  Matrix m = Matrix::Perspective(80.0, (double)(screenx*scale_x)/(screeny*scale_y), 10.1,
 				     1600.0);
       Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
       prog->use();
@@ -2124,6 +2141,14 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   //	}
   ////	screenx=screenx*scale_x;
   //	screeny=screeny*scale_y;
+
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+#ifdef ANDROID
+  scale_x = float(800)/float(2340);
+  scale_y = float(600)/float(1080);
+#endif
+  
   if (ml.id<0) { std::cout << "execute_ml rejected " << ml.id << std::endl; return; }
   MainLoopItem *item = find_main_loop(e, ml);
   if (!item) { std::cout << "execute_ml rejected item=NULL with ml.id=" << ml.id << std::endl; /*check_main_loop_array(e);*/ return; }
@@ -2141,7 +2166,7 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   ek.in_MV = find_matrix(e, in_MV);
   ek.in_T = find_matrix(e, in_T);
   ek.in_N = find_matrix(e, in_N);
-  ek.in_P = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 1600.0); // 10.1, 60000.0
+  ek.in_P = Matrix::Perspective(90.0*double(screeny*scale_y)/double(screenx*scale_x), (double)screenx*scale_x/(screeny*scale_y), 10.1, 1600.0); // 10.1, 60000.0
   ek.time = get_time()/1000.0;
   ek.delta_time = get_delta_time();
   ek.screen_x = 0;
@@ -3310,12 +3335,19 @@ GameApi::M GameApi::MainLoopApi::in_P(EveryApi &ev, bool is_3d)
     }
 
 
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+#ifdef ANDROID
+  scale_x = float(800)/float(2340);
+  scale_y = float(600)/float(1080);
+#endif
 
+  
   int screenx = get_screen_width();
   int screeny = get_screen_height();
   if (is_3d)
     {
-      return ev.matrix_api.perspective(80.0, (double)screenx/screeny, 10.1, 600.0);
+      return ev.matrix_api.perspective(80.0, (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 600.0);
     }
   else
     {

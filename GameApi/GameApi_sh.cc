@@ -49,7 +49,14 @@ void GameApi::ShaderApi::set_default_projection_1(SH shader, std::string name)
   
   int screen_sx = g_everyapi?g_everyapi->mainloop_api.get_screen_sx():800;
   int screen_sy = g_everyapi?g_everyapi->mainloop_api.get_screen_sy():600;
-  Matrix m = Matrix::Perspective(80.0, (double)screen_sx/screen_sy, 10.1, 1600.0);
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+#ifdef ANDROID
+  scale_x = float(800)/float(2340);
+  scale_y = float(600)/float(1080);
+#endif
+
+  Matrix m = Matrix::Perspective(80.0, (double)(screen_sx*scale_x)/(screen_sy*scale_y), 10.1, 1600.0);
   if (shader.id==-1) return;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
