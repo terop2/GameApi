@@ -1613,7 +1613,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "ogl_perspective",
 			 { "ev", "ml", "mult", "front_plane", "end_plane" },
 			 { "EveryApi&", "ML", "float", "float" ,"float" },
-			 { "ev", "", "80.0", "10.1", "60000.0" },
+			 { "ev", "", "90.0", "10.1", "60000.0" },
 			 "ML", "mainloop_api", "perspective"));
 #endif
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::ogl_set_frame_rate,
