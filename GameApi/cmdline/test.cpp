@@ -741,7 +741,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 	vr_init=false;
       }
       set_status(2,6);
-      ev.mainloop_api.init_window(w_width,w_height,"GameApi", vr_init);
+      ev.mainloop_api.init_window(w_width,w_height,"GameApiCmdLine", vr_init);
       set_status(3,6);
       g_event_screen_x = -1; //w_width; // was -1
       g_event_screen_y = -1; //w_height;

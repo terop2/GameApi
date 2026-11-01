@@ -1,9 +1,9 @@
 #!/bin/bash
-if [[ $1 == "" || $2 == "" ]]; then
-    echo "Usage: ./ammake.sh password package_name icons/face.png"
+if [[ $1 == "" || $2 == "" || $3 == "" || $4 = "" ]]; then
+    echo 'Usage: ./ammake.sh password package_name icons/face.png "My Game"'
     exit
 fi
 
-./build.sh
+./build.sh "$4"
 ./build_package.sh $1 $2 $3
 adb install gameapi_cmdline.apk

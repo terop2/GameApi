@@ -1,3 +1,8 @@
+if [[ $1 == "" ]]; then
+    echo "Usage: ./build.sh package_name"
+    exit
+fi
+
 export ARCH1=armv7a-eabi
 export ARCH2=aarch64
 export ARCH3=x86
@@ -55,6 +60,7 @@ $C_COMPILER -c $ANDROID_NDK/sources/android/native_app_glue/android_native_app_g
    
 
 # Compile native_app_glue
+sed "s/GameApiCmdLine/$1/g" ../cmdline/test.cpp >test.cpp
 
 # Main compilation
 $CPP_COMPILER \
@@ -66,7 +72,7 @@ $CPP_COMPILER \
     -I.. \
     -DANDROID \
     -D_FILE_OFFSET_BITS=64 \
-    ../cmdline/test.cpp \
+    test.cpp \
     android_native_app_glue.o \
     -L$SDLLIBS \
     -L$FREETYPE \
