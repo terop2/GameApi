@@ -1827,6 +1827,8 @@ public:
     float old_pos_y=0.0;
     bool mv_mode= false;
     int timer=20;
+    float event_start_time=0.0f;
+    float current_time=0.0f;
   };
   IMPORT static void quake_movement_event(GameApi::EveryApi &ev, MainLoopApi::Event &e,
 			     float &pos_x, float &pos_y, float &rot_y,

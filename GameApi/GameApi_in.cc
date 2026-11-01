@@ -114,13 +114,18 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   if ((e.type==1026||e.type==1793) && e.button==-1) data.side_right=false;
 
 #ifdef ANDROID
+  data.current_time = ev.mainloop_api.get_time();
+
   if (e.type==0x300 || ((e.type==1025 || e.type==1792) && e.button==0) || e.type==1794)
     {
-      data.timer = 30;
+      //data.timer = 30;
+      data.event_start_time = data.current_time;
     }
   if (e.type==0x301 || ((e.type==1026 || e.type==1793) && e.button==-1))
     {
-      data.timer=-1;
+      data.event_start_time = data.current_time - 4000.0f;
+     
+      //data.timer=-1;
     }
 #endif
 
@@ -155,20 +160,22 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
 void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, float &pos_y, float &rot_y, Quake_data &data, float &speed_x, float &speed_y, float speed, float rot_speed)
 {
 
-
+  
   float delta = ev.mainloop_api.get_delta_time()*7.0;
 
 #ifdef ANDROID
-  data.timer--;
-  data.timer-=int(delta);
-  if (data.timer<0) {
+  data.current_time = ev.mainloop_api.get_time();
+  //data.timer--;
+  //data.timer-=int(delta);
+  if (data.current_time - data.event_start_time > 300.0) {
     data.side_left = false;
     data.side_right = false;
     data.left = false;
     data.right = false;
     data.forward = false;
     data.backward = false;
-    data.timer=-1;
+    //data.event_start_time = data.current_time - 4000.0f;
+      // data.timer=-1;
   }
 #endif
 
