@@ -175,6 +175,9 @@ class GLTFModelInterface;
 void async_pending_plus(std::string label, std::string info);
 void async_pending_minus(std::string label, std::string info);
 
+extern float android_screen_sx;
+extern float android_screen_sy;
+
 
 #ifdef ANDROID
 #if 0

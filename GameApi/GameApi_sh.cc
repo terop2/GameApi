@@ -52,8 +52,8 @@ void GameApi::ShaderApi::set_default_projection_1(SH shader, std::string name)
   float scale_x = 1.0;
   float scale_y = 1.0;
 #ifdef ANDROID
-  scale_x = float(800)/float(2340);
-  scale_y = float(600)/float(1080);
+  scale_x = float(android_screen_sx)/float(screen_sx);
+  scale_y = float(android_screen_sy)/float(screen_sy);
 #endif
 
   Matrix m = Matrix::Perspective(80.0, (double)(screen_sx*scale_x)/(screen_sy*scale_y), 10.1, 1600.0);

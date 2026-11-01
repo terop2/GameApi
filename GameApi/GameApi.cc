@@ -77,6 +77,10 @@ std::string GetContentInstallDir(bool b);
 
 std::string deploy_replace_string(std::string val, std::string repl, std::string subst);
 
+#ifdef ANDROID
+float android_screen_sx = 800.0-5.0; //800.0*(2340.0/1080.0*600.0/800.0);
+float android_screen_sy = 600.0-5.0;
+#endif
 
 std::string replace_deploy_url(std::string home)
 {

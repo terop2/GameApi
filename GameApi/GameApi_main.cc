@@ -551,8 +551,8 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   float scale_x = 1.0;
   float scale_y = 1.0;
 #ifdef ANDROID
-  scale_x = float(800)/float(2340);
-  scale_y = float(600)/float(1080);
+  scale_x = float(android_screen_sx)/float(screenx);
+  scale_y = float(android_screen_sy)/float(screeny);
 #endif
 
   Matrix m = Matrix::Perspective(90.0*double(screeny*scale_y)/double(screenx*scale_x), (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 1600.0); // 10.1 60000.0
@@ -793,8 +793,8 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
   float scale_x = 1.0;
   float scale_y = 1.0;
 #ifdef ANDROID
-  scale_x = float(800)/float(2340);
-  scale_y = float(600)/float(1080);
+  scale_x = float(android_screen_sx)/float(screenx);
+  scale_y = float(android_screen_sy)/float(screeny);
 #endif
 
       
@@ -2145,8 +2145,8 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   float scale_x = 1.0;
   float scale_y = 1.0;
 #ifdef ANDROID
-  scale_x = float(800)/float(2340);
-  scale_y = float(600)/float(1080);
+  scale_x = float(android_screen_sx)/float(screenx);
+  scale_y = float(android_screen_sy)/float(screeny);
 #endif
   
   if (ml.id<0) { std::cout << "execute_ml rejected " << ml.id << std::endl; return; }
@@ -2166,7 +2166,7 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   ek.in_MV = find_matrix(e, in_MV);
   ek.in_T = find_matrix(e, in_T);
   ek.in_N = find_matrix(e, in_N);
-  ek.in_P = Matrix::Perspective(90.0*double(screeny*scale_y)/double(screenx*scale_x), (double)screenx*scale_x/(screeny*scale_y), 10.1, 1600.0); // 10.1, 60000.0
+  ek.in_P = Matrix::Perspective(90.0*double(screeny*scale_y)/double(screenx*scale_x), (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 1600.0); // 10.1, 60000.0
   ek.time = get_time()/1000.0;
   ek.delta_time = get_delta_time();
   ek.screen_x = 0;
@@ -3334,17 +3334,18 @@ GameApi::M GameApi::MainLoopApi::in_P(EveryApi &ev, bool is_3d)
       return add_matrix2(ev.get_env(),g_in_P);
     }
 
+  int screenx = get_screen_width();
+  int screeny = get_screen_height();
 
+  
   float scale_x = 1.0;
   float scale_y = 1.0;
 #ifdef ANDROID
-  scale_x = float(800)/float(2340);
-  scale_y = float(600)/float(1080);
+  scale_x = float(android_screen_sx)/float(screenx);
+  scale_y = float(android_screen_sy)/float(screeny);
 #endif
 
   
-  int screenx = get_screen_width();
-  int screeny = get_screen_height();
   if (is_3d)
     {
       return ev.matrix_api.perspective(80.0, (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 600.0);

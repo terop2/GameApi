@@ -26200,8 +26200,8 @@ public:
   float scale_x = 1.0;
   float scale_y = 1.0;
 #ifdef ANDROID
-  scale_x = float(800)/float(2340);
-  scale_y = float(600)/float(1080);
+  scale_x = float(android_screen_sx)/float(800);
+  scale_y = float(android_screen_sy)/float(600);
 #endif
 
     
