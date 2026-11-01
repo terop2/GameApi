@@ -78,8 +78,8 @@ std::string GetContentInstallDir(bool b);
 std::string deploy_replace_string(std::string val, std::string repl, std::string subst);
 
 #ifdef ANDROID
-float android_screen_sx = 800.0-5.0; //800.0*(2340.0/1080.0*600.0/800.0);
-float android_screen_sy = 600.0-5.0;
+float android_screen_sx = 830.0; //800.0*(2340.0/1080.0*600.0/800.0);
+float android_screen_sy = 630.0;
 #endif
 
 std::string replace_deploy_url(std::string home)
@@ -38082,7 +38082,8 @@ public:
     Program *prog = find_shader_program(env, sh_color);
     prog->use(); // 80.0, 10.1, 60000.0
     
-    Matrix m = Matrix::Perspective(120.0*double(sy)/double(sx), (double)sx/sy, 10.1, 1600.0);
+  float fovy = 90.0 * 3.14159265/180.0f;
+  Matrix m = Matrix::Perspective(fovy /*120.0*double(sy)/double(sx)*/, (double)sx/sy, 10.1, 1600.0);
     //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
     prog->set_var("in_P", m);
     ogl->glViewport(corner_x+x,screen_y-corner_y-sy-y, sx, sy);

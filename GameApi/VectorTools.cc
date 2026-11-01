@@ -607,7 +607,8 @@ Matrix Matrix::Perspective2(float l, float r,
 
 Matrix Matrix::Perspective(float fovy, float aspect, float near, float far)
 {
-  float f = -1.0/tan(fovy/2.0);
+  // TODO, THIS WAS CHANGED FROM -1.0/tan(fovy/2.0) to 1.0/tan(fovy/2.0)
+  float f = 1.0/tan(fovy/2.0);
   float ff = (far+near)/(near-far);
   float fff = 2.0*far*near/(near-far);
   Matrix r = { {f/aspect, 0.0, 0.0, 0.0,
