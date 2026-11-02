@@ -928,7 +928,16 @@ template<>
 class Conv<float>
 {
 public:
-  static void set(float &target, std::string s, bool allow_expr, std::string &expr) { if (allow_expr) { expr = s; s=FloatExprEval(expr); } else s = FloatExprEval(s);  std::stringstream ss(s); ss >> target; }
+  static void set(float &target, std::string s, bool allow_expr, std::string &expr) {
+    if (allow_expr) {
+      if (s.size()>0&&s[0]=='@') { expr=s.substr(1,s.size()-1); }
+      else
+	expr = s;
+      s=FloatExprEval(expr);
+    } else s = FloatExprEval(s);
+    std::stringstream ss(s);
+    ss >> target;
+  }
   static void get(const float &target, std::string &s, bool allow_expr, std::string &expr) { std::stringstream ss; if (allow_expr && expr!="" && expr!="@") ss << expr; else ss << target; s=ss.str(); }
   static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type float!"; }
 };
@@ -1168,7 +1177,11 @@ public:
     
     if (firsttime)
       {
+	//std::cout << "firsttime:" << label << std::endl;
 	Conv<T>::get(target, label, allow_expr, expr);
+	while(label.size()>0&&label[0]=='@') label=label.substr(1,label.size()-1);
+	if (non_editable>0 && (label.size()<1 || (label.size()>0 && label[0]!='@'))) label="@" + label;
+	//std::cout << "firsttime2:" << label << std::endl;
 
 	if (find_str(label,"$(tempdir)") != -1) {
 	  std::cout << "Note: $(tempdir) is the same as " << g_path_handler->use_path(env,gameapi_temp_dir,g_path_handler->situ(PathHandler::EDragDropInfoMessage)) << std::endl;
@@ -1262,7 +1275,12 @@ public:
 	  if (insert) buf3.push_back(buf2[i]);
 	}
 			     
-	label = buf3;
+	//std::cout << "ctrl-v:" << label << std::endl;
+	if (non_editable>0)
+	  label = "@" + buf3;
+	else
+	  label = buf3;
+	//std::cout << "ctrl-v2:" << label << std::endl;
 	changed=true;
       }
     if (active && ctrl && type==768 && ch==99) {
@@ -1312,7 +1330,9 @@ public:
     bool done = false;
     if (active && is_allowed(allowed_chars,ch) && type==768)
       {
+	//std::cout << "insert:" << label << std::endl;
 	done = g_conv_table->insert_label_to_string(&label,ch);
+	//std::cout << "insert:" << label << std::endl;
       }
     if (done) changed=true;
     if (!done)
@@ -1323,7 +1343,9 @@ public:
 	  {
 	    if ((int((unsigned int)allowed_chars[i])&0xff)==(ch&0xff))
 	      {
+		//std::cout << "allowedchar:" << label << std::endl;
 		label.push_back(ch);
+		//std::cout << "allowedchar:" << label << std::endl;
 		changed = true;
 		break;
 	      }
@@ -1335,20 +1357,26 @@ public:
 	      int loc = g_conv_table->find_last_location(label);
 	      if (loc!=-1 && loc==label.size()-5)
 		{
+		  //std::cout << "erase:" << label << std::endl;
 		  label.erase(label.begin()+(label.size()-1));
 		  label.erase(label.begin()+(label.size()-1));
 		  label.erase(label.begin()+(label.size()-1));
 		  label.erase(label.begin()+(label.size()-1));
 		  label.erase(label.begin()+(label.size()-1));
+		  //std::cout << "erase2:" << label << std::endl;
 		  changed=true;
 		}
 	      else {
+		//std::cout << "Aerase:" << label << std::endl;
 		  label.erase(label.begin()+(label.size()-1));
+		  //std::cout << "Aerase2:" << label << std::endl;
 		  changed = true;
 	        }
 	      
 	    } else {
+	      //std::cout << "Berase:" << label << std::endl;
 	      label.erase(label.begin()+(label.size()-1));
+	      //std::cout << "Berase:" << label << std::endl;
 	      changed = true;
 	    }
 	  }
@@ -1360,7 +1388,9 @@ public:
       //std::cout << "EDITOR UPDATES0: " << allow_expr << "::"<< expr << std::endl;
       //std::stringstream ss2(label);
       //ss2 >> target;
+      //std::cout << "set:" << label << std::endl;
       Conv<T>::set(target, label, allow_expr, expr);
+      //std::cout << "set2:" << label << std::endl;
       //std::cout << "EDITOR UPDATES2: " << target << std::endl;
     }
 
@@ -1369,6 +1399,8 @@ public:
 	externally_set=false;
 	std::string display_label = label;
 
+	//std::cout << "display_label:" << label << std::endl;
+	
 	display_label = g_conv_table->convert_labels_to_chars(display_label);
 		
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(display_label.substr(1,display_label.size()-1))+std::string(" ]")).c_str():display_label.c_str(), x_gap*1.2);
