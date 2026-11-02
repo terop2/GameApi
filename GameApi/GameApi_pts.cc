@@ -1740,7 +1740,7 @@ public:
 	  Point p3 = coll->FacePoint(zpi, 2);
 	  Point p4 = coll->FacePoint(zpi, 3);
 	  Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
-	  if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) { std::cout << "NAN" << std::endl; continue; }
+	  if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) { /*std::cout << "NAN" << std::endl;*/ continue; }
 	  points->push_back(p);
 	  color2->push_back(0xffffffff);
 	  xp_vec->push_back(xp);
@@ -1754,7 +1754,7 @@ public:
 	    float r1 = double(r.next())/r.maximum();
 	    float r2 = double(r.next())/r.maximum();
 	    Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
-	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) { std::cout << "NAN" << std::endl; continue; }
+	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) { /*std::cout << "NAN" << std::endl;*/ continue; }
 	    points->push_back(p);
 	    color2->push_back(0xffffffff);
 	    xp_vec->push_back(r1);
