@@ -1083,6 +1083,8 @@ public:
     if (env->ctrl && e.ch==115 && e.type==0x300)
       { // Save.
 	std::cout << "Saving... " << env->filename << std::endl;
+	env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
+
 	env->ev->mod_api.save(env->mod, env->filename);
 	
       }
