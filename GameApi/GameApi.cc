@@ -29498,10 +29498,13 @@ public:
   pthread_t curr = pthread_self();
   if (pthread_equal(curr, g_main_thread_id)) {
 #endif
-    if (main2)
+    if (main2) {
 	main2->Prepare();
+	prepare_called=true;
+    }
+	
 #ifdef THREADS
-  } else { std::cout << "SCRIPTML PREPARE SKIPPED SINCE WE'RE IN DIFFERENT THREAD!" << std::endl; }
+  } 
 #endif
 
 #endif
@@ -29552,10 +29555,10 @@ public:
 	      
   void Prepare() {
     g_progress_script_num = process_script_num;
-#ifdef EMSCRIPTEN
-    if (main2)
+    if (main2 && !prepare_called) {
 	main2->Prepare();
-#endif
+	prepare_called = true;
+    }
     g_progress_script_num = -1;
   }
   virtual void execute(MainLoopEnv &e3)
@@ -29605,6 +29608,7 @@ private:
   MainLoopItem *main2;
   bool async_taken=false;
   int process_script_num=0;
+  bool prepare_called=false;
 };
 
 
@@ -29660,9 +29664,12 @@ public:
   pthread_t curr = pthread_self();
   if (pthread_equal(curr, g_main_thread_id)) {
 #endif
-    main2->Prepare(); // doesn't work with async callbacks executed in threads
+    if (main2) {
+      main2->Prepare(); // doesn't work with async callbacks executed in threads
+      prepare_called = true;
+    }
 #ifdef THREADS
-  } else { std::cout << "SCRIPTML PREPARE SKIPPED SINCE WE'RE IN DIFFERENT THREAD!" << std::endl; }
+  } 
 #endif
 #ifdef EMSCRIPTEN
 	if (async_taken)
@@ -29695,9 +29702,10 @@ public:
   void HeavyPrepare() { Prepare(); }
 	      
   void Prepare() {
-    //if (main2) {
-    //  main2->Prepare(); // doesn't work with async callbacks executed in thr
-    //}
+    if (main2 && !prepare_called) {
+      main2->Prepare(); // doesn't work with async callbacks executed in thr
+      prepare_called=true;
+    }
   }
   virtual void execute(MainLoopEnv &e3)
   {
@@ -29739,6 +29747,7 @@ private:
   bool firsttime;
   MainLoopItem *main2;
   bool async_taken=false;
+  bool prepare_called = false;
 };
 
 
