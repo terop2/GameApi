@@ -29492,8 +29492,8 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
-	
-#ifndef EMSCRIPTEN
+
+#ifndef EMSCRIPTEN	
 #ifdef THREADS
   pthread_t curr = pthread_self();
   if (pthread_equal(curr, g_main_thread_id)) {
@@ -29506,7 +29506,6 @@ public:
 #ifdef THREADS
   } 
 #endif
-
 #endif
 	
 	//#ifdef EMSCRIPTEN
@@ -29540,15 +29539,15 @@ public:
   void Collect(CollectVisitor &vis)
   {
     g_progress_script_num = process_script_num;
-#ifdef EMSCRIPTEN
-    if (main2)
-      main2->Collect(vis);    
-#endif
+    if (main2 && !prepare_called) {
+      main2->Collect(vis);
+      prepare_called = true;
+    }
     g_progress_script_num=-1;
-    vis.register_obj(this);
+    //vis.register_obj(this);
   }
   void HeavyPrepare() {
-    Prepare();
+    //Prepare();
     //if (main2)
     //	main2->Prepare();
   }
@@ -29660,6 +29659,7 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
+#ifndef EMSCRIPTEN
 #ifdef THREADS
   pthread_t curr = pthread_self();
   if (pthread_equal(curr, g_main_thread_id)) {
@@ -29670,6 +29670,7 @@ public:
     }
 #ifdef THREADS
   } 
+#endif
 #endif
 #ifdef EMSCRIPTEN
 	if (async_taken)
@@ -29697,9 +29698,14 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
-    vis.register_obj(this);
+    if (main2 && !prepare_called)
+      {
+	main2->Collect(vis);
+	prepare_called = true;
+      }
+    //vis.register_obj(this);
   }
-  void HeavyPrepare() { Prepare(); }
+  void HeavyPrepare() { /*Prepare();*/ }
 	      
   void Prepare() {
     if (main2 && !prepare_called) {
