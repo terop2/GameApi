@@ -29492,12 +29492,20 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
-	/*
+	
 #ifndef EMSCRIPTEN
+#ifdef THREADS
+  pthread_t curr = pthread_self();
+  if (pthread_equal(curr, g_main_thread_id)) {
+#endif
     if (main2)
 	main2->Prepare();
+#ifdef THREADS
+  } else { std::cout << "SCRIPTML PREPARE SKIPPED SINCE WE'RE IN DIFFERENT THREAD!" << std::endl; }
 #endif
-	*/
+
+#endif
+	
 	//#ifdef EMSCRIPTEN
 	//if (async_taken)
 	//  async_pending_count--;
@@ -29537,16 +29545,17 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
-    if (main2)
-	main2->Prepare();
+    Prepare();
+    //if (main2)
+    //	main2->Prepare();
   }
 	      
   void Prepare() {
     g_progress_script_num = process_script_num;
-   //#ifdef EMSCRIPTEN
+#ifdef EMSCRIPTEN
     if (main2)
 	main2->Prepare();
-    //#endif
+#endif
     g_progress_script_num = -1;
   }
   virtual void execute(MainLoopEnv &e3)
@@ -29647,7 +29656,14 @@ public:
 	GameApi::ML pp;
 	pp.id = p.first;
 	main2 = find_main_loop(e,pp);
-	//main2->Prepare(); // doesn't work with async callbacks executed in threads
+#ifdef THREADS
+  pthread_t curr = pthread_self();
+  if (pthread_equal(curr, g_main_thread_id)) {
+#endif
+    main2->Prepare(); // doesn't work with async callbacks executed in threads
+#ifdef THREADS
+  } else { std::cout << "SCRIPTML PREPARE SKIPPED SINCE WE'RE IN DIFFERENT THREAD!" << std::endl; }
+#endif
 #ifdef EMSCRIPTEN
 	if (async_taken)
 	  async_pending_count--;
@@ -29679,9 +29695,9 @@ public:
   void HeavyPrepare() { Prepare(); }
 	      
   void Prepare() {
-    if (main2) {
-      main2->Prepare(); // doesn't work with async callbacks executed in thr
-    }
+    //if (main2) {
+    //  main2->Prepare(); // doesn't work with async callbacks executed in thr
+    //}
   }
   virtual void execute(MainLoopEnv &e3)
   {
