@@ -3422,7 +3422,7 @@ public:
   {
     float val = root_find(x_start,x_end,maxiter,c,found);
     root_pos=val;
-    if (found) { return GenericPullback<float,X,Y,float>::curve(One(),val); }
+    if (found) { return GenericPullback<One,X,Y,float>::curve(One(),val); }
     return std::make_pair(X(),Y());
   }
 private:
