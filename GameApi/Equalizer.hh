@@ -3422,10 +3422,10 @@ public:
   }
 
   
-  std::pair<T,T> inv_make_pair(std::pair<X,Y> p)
+  std::pair<T,T> inv_make_pair(std::pair<X,Y> p, float x, float y)
   {
     std::pair<std::pair<X,Line>, std::pair<Line,Y> > p = inv_make_x_y_pair_unify(p);
-    return std::make_pair(inv_t_x(p.first.first),inv_t_y(p.second.second));
+    return std::make_pair(inv_t_x(p.first.first,x),inv_t_y(p.second.second,y));
   }
   
   void add_link(T t1, T t2);
@@ -3433,18 +3433,18 @@ public:
     std::pair<T,T> tt = inv_make_pair(make_pair(x,y));
     add_link(tt.first,tt.second);
   }
-  void add_x_link(X x) { add_link(x,inv_g(f(x))); }
-  void add_y_link(Y y) { add_link(inv_f(g(y)),y); }
-  void add_link_c(C c) { add_link(inv_f(c),inv_g(c)); }
+  void add_x_link(X x, float y) { add_link(x,inv_g(f(x),y)); }
+  void add_y_link(Y y, float x) { add_link(inv_f(g(y),x),y); }
+  void add_link_c(C c, float x, float y) { add_link(inv_f(c,x),inv_g(c,y)); }
 public: // inputs.
   virtual X t_x(T t, float x) const=0;
   virtual Y t_y(T t, float y) const=0;
-  virtual T inv_t_x(X x) const=0;
-  virtual T inv_t_y(Y y) const=0;
+  virtual T inv_t_x(X x, float x) const=0; 
+  virtual T inv_t_y(Y y, float y) const=0; 
   virtual C f(X x) const=0;
   virtual C g(Y y) const=0;
-  virtual X inv_f(C c) const=0;
-  virtual Y inv_g(C c) const=0;
+  virtual X inv_f(C c,float x) const=0; 
+  virtual Y inv_g(C c, float y) const=0; 
   
 };
 
