@@ -173,6 +173,31 @@ public:
   C sample_g(T t) const { return g(curve(t).second); }      
 };
 
+template<class X, class Y>
+class FloatPullback2 : public GenericPullback<float,X,Y,float>
+{
+public:
+  FloatPullback2() : equalizer(*this) { }
+  class Eq : public FloatEqualizer
+  {
+  public:
+    Eq(FloatPullback2<X,Y> &p) : p(p) { }
+    float f(float x) { return p.sample_f(x); }
+    float g(float x) { return p.sample_g(x); }
+  private:
+    FloatPullback2<X,Y> &p;
+  };
+public:
+  float root_find(float t_start, float t_end, int maxiter, float c, bool &found)
+  {
+    return equalizer.rootfind(t_start,t_end,maxiter,c,found);
+  }
+private:
+  Eq equalizer;
+};
+
+
+
 class FloatEqualizerExampleXEquals10 : public FloatEqualizer
 {
 public:
