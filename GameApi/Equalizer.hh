@@ -3236,7 +3236,7 @@ public:
       while(found) {
 	float pos = first_intersection_float(t,start_range, end_range,delta, found);
 	if (found) roots.push_back(pos);
-	start_range = pos + 0.000001;
+	start_range = pos + 2.0*delta;
       }
     }
     bool is_root(T t, float x) const {
@@ -3264,23 +3264,24 @@ public:
   // helper functions
   virtual bool has_compare() const=0;
   virtual bool compare_x(X x1, X x2) const=0;
-  virtual bool compare_y(Y y1, Y y2) const=0;
+  virtual bool compare_y(Y y1, Y y2, float delta) const { return fabs(minus(y1,y2)) < delta; } 
   virtual bool has_minus() const=0;
   virtual float minus(Y y1, Y y2) const=0;
   // intersection can use compare_x,compare_y, f, g or minus, f, g
 
   // every infinite number of buckets need to do this operation.
-  bool axiom_of_choice_choice_function(X x) const
+  bool axiom_of_choice_choice_function(X x, float delta) const
   {
     std::pair<X,X> p = create_pair(x);
-    return compare_y(f(p.first),g(p.second));
+    return compare_y(f(p.first),g(p.second),delta);
   }
 
   virtual float first_intersection_float(T t, float start_range, float end_range, float delta, bool &found) const
   {
+    // this delta-sampling might jump over root too easily. Use FloatEqualizer instead for better root finding.
     for(float x = start_range;x<end_range;x+=delta) {
       X xx = get_x(t,x);
-      bool b = axiom_of_choice_choice_function(xx);
+      bool b = axiom_of_choice_choice_function(xx,delta);
       if (b==true)
 	{
 	  found=true;
