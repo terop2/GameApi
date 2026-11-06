@@ -39,6 +39,8 @@ public:
 									     { }
 };
 
+
+
 class RootFinding_Lipschitz
 {
 public:
@@ -73,6 +75,43 @@ private:
   int maxiter;
   float c;
 };
+
+class FloatEqualizer : private Function<float,float>
+{
+public:
+  // T -> E -> f: (X -> Y)
+  // T -> E -> g: (X -> Y)
+
+  // decisions: Y=float
+  //            X=float
+  
+  virtual float f(float x) const=0;
+  virtual float g(float x) const=0;
+
+  // equation: f(x)=g(x)
+  // root finding: f(x)-g(x)=0 => ff(x)=f(x)-g(x) => rootfind ff(x)
+private:
+  float Index(float x) const
+  {
+    return f(x)-g(x);
+  }
+public:
+  float root_find(float x_start, float x_end, int maxiter, float c, bool &found)
+  {
+    RootFinding_Lipschitz root(*this, x_start,x_end, maxiter, c);
+    float val = root.root(found);
+    return val;
+  }
+};
+
+class FloatEqualizerExampleXEquals10 : public FloatEqualizer
+{
+public:
+  float f(float x) const { return x*x; }
+  float g(float y) const { return 10.0; }
+};
+
+
 
 class SphereRaysBitmap : public Bitmap<Color>
 {
