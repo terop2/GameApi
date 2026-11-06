@@ -3229,27 +3229,35 @@ class GenericEqualizer
 public:
   class E {
   public:
-    E(GenericEqualizer<T,X,Y> &eq) : eq(eq)
+    E(GenericEqualizer<T,X,Y> &eq,T t, float start_range, float end_range, float delta) : eq(eq)
     {
-      /* todo, calculate roots based on equalizer */
+      bool found = true;
+      // if this loop finds infinite amount of data/goes to infinite loop, you might have f=g.
+      while(found) {
+	float pos = first_intersection_float(t,start_range, end_range,delta, found);
+	if (found) roots.push_back(pos);
+	start_range = pos + 0.000001;
+      }
     }
-    bool is_root(T t) const {
+    bool is_root(T t, float x) const {
       int s = roots.size();
-      for(int i=0;i<s;i++) if (eq.compare_y(eq.f(get_x(roots[i])),eq.g(get_x(t)))) return true;
+      for(int i=0;i<s;i++) if (eq.compare_y(eq.f(get_x(t,roots[i])),eq.g(x))) return true;
       return false;
     }
-    X equalizer_subset(T t) const
+    X equalizer_subset(T t, float x) const
     {
-      return eq.get_x(t);
+      return eq.get_x(t,x);
     }
     int root_count() const { return roots.size(); }
-    T index_root_t(int i) const { return roots[i]; }
-    X index_root_x(int i) const { return equalizer_subset(roots[i]); }
+    //T index_root_t(int i) const { return roots[i]; }
+    X index_root_x(T t, int i) const { return equalizer_subset(t,roots[i]); }
   private:
     GenericEqualizer<T,X,Y> &eq;
-    std::vector<T> roots;
+    std::vector<float> roots;
   };
   virtual X get_x(T t, float i) const=0; // float decides which X to pick and T=1.
+
+  // f and g must not be the same function / otherwise equalizer returns infinite amount of data.
   virtual Y f(X x) const=0;
   virtual Y g(X x) const=0;
   std::pair<X,X> create_pair(X x) const { return std::make_pair(x,x); }
@@ -3264,7 +3272,8 @@ public:
   // every infinite number of buckets need to do this operation.
   bool axiom_of_choice_choice_function(X x) const
   {
-    return compare_y(f(x),g(x));
+    std::pair<X,X> p = create_pair(x);
+    return compare_y(f(p.first),g(p.second));
   }
 
   virtual float first_intersection_float(T t, float start_range, float end_range, float delta, bool &found) const
