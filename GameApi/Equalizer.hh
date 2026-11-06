@@ -3407,11 +3407,16 @@ public:
   std::pair<X,Line> make_x_pair(X x) const { return std::make_pair(x,Line()); }
   std::pair<Line,Y> make_y_pair(Y y) const { return std::make_pair(Line(),y); }
   std::pair<X,Y> make_x_y_pair_unify(std::pair<X,Line> p1, std::pair<Line,Y> p2) { return std::make_pair(p1.first,p2.second); }
+  void add_link(X x, Y y);
+  void add_x_link(X x) { add_link(x,inv_g(f(x))); }
+  void add_y_link(Y y) { add_link(inv_f(g(y))); }
 public: // inputs.
   virtual X t_x(T t, float x) const=0;
   virtual Y t_y(T t, float y) const=0;
   virtual C f(X x) const=0;
   virtual C g(Y y) const=0;
+  virtual X inv_f(C c) const=0;
+  virtual Y inv_g(C c) const=0;
   
 };
 
