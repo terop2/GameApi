@@ -3379,7 +3379,7 @@ private:
 };
 
 class One { };
-
+class Line { };
 
 template<class T, class X, class Y, class C>
 class GenericPullbackFull
@@ -3397,6 +3397,16 @@ public:
   // T->X == T->(X,Y)->X diagram commutes
   // T->Y == T->(X,Y)->Y diagram commutes
 
+  std::pair<X,Y> make_pair(X x, Y y) const {
+    // use (1) to change which implementation to use.
+    return make_x_y_pair(make_x_pair(x),make_y_pair(y));
+    //OLD return std::make_pair(x,y);
+  }
+  X pair_project_x(std::pair<X,Y> p) const { return p.first; }
+  Y pair_project_y(std::pair<X,Y> p) const { return p.second; }
+  std::pair<X,Line> make_x_pair(X x) const { return std::make_pair(x,Line()); }
+  std::pair<Line,Y> make_y_pair(Y y) const { return std::make_pair(Line(),y); }
+  std::pair<X,Y> make_x_y_pair(std::pair<X,Line> p1, std::pair<Line,Y> p2) { return std::make_pair(p1.first,p2.second); }
 public: // inputs.
   virtual X t_x(T t, float x) const=0;
   virtual Y t_y(T t, float y) const=0;
