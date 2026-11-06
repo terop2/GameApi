@@ -3229,27 +3229,38 @@ class GenericEqualizer
 public:
   class E {
   public:
-    E(GenericEqualizer<T,X,Y> &eq, T t) : eq(eq), m_t(t) { }
-    bool is_root() const { /* TODO */ }
-    X equalizer_subset() const
+    E(GenericEqualizer<T,X,Y> &eq) : eq(eq)
     {
-      return eq.get_x(m_t);
+      /* todo, calculate roots based on equalizer */
     }
+    bool is_root(T t) const {
+      int s = roots.size();
+      for(int i=0;i<s;i++) if (eq.compare_y(eq.f(get_x(roots[i])),eq.g(get_x(t)))) return true;
+      return false;
+    }
+    X equalizer_subset(T t) const
+    {
+      return eq.get_x(t);
+    }
+    int root_count() const { return roots.size(); }
+    T index_root_t(int i) const { return roots[i]; }
+    X index_root_x(int i) const { return equalizer_subset(roots[i]); }
   private:
     GenericEqualizer<T,X,Y> &eq;
-    T m_t;
+    std::vector<T> roots;
   };
-  // this block is probably wrong recarding category theory equalizer.
-  // input probably should be T->X, not T->E->X. But epi-mono factorisation
-  // should find T->E->X from T->X. And the equalizer defines the E type.
   virtual X get_x(T t) const=0;
-  //---
   virtual Y f(X x) const=0;
   virtual Y g(X x) const=0;
+  // helper functions
+  virtual bool has_compare() const=0;
+  virtual bool compare_y(Y y1, Y y2) const=0;
+  virtual bool has_minus() const=0;
+  virtual float minus(Y y1, Y y2) const=0;
 public:
-  X sample_t(T t) const { return get_x(); }
-  E sample_t_e(T t) const { E e(*this,t); return e; }
-  X sample_e(E e) const { return e.equalizer_subset(); }
+  X sample_t(T t) const { return get_x(t); }
+  E sample_e() const { E e(*this); return e; }
+  X sample_e(E e, T t) const { return e.equalizer_subset(t); }
   Y sample_f(T t) const { return f(sample_t(t)); }
   Y sample_g(T t) const { return g(sample_t(t)); }
 };
