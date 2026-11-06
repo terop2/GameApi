@@ -3410,6 +3410,7 @@ public:
   void add_link(X x, Y y);
   void add_x_link(X x) { add_link(x,inv_g(f(x))); }
   void add_y_link(Y y) { add_link(inv_f(g(y)),y); }
+  void add_link_c(C c) { add_link(inv_f(c),inv_g(c)); }
 public: // inputs.
   virtual X t_x(T t, float x) const=0;
   virtual Y t_y(T t, float y) const=0;
