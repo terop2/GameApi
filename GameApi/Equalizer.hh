@@ -3257,7 +3257,8 @@ public:
   virtual bool compare_y(Y y1, Y y2) const=0;
   virtual bool has_minus() const=0;
   virtual float minus(Y y1, Y y2) const=0;
-  virtual X first_intersection(Y (*f)(X x, void *data),Y (*g)(X x, void *data), X start_range, X end_range, void *data) const=0; 
+  // intersection can use compare_y, f, g or minus, f, g
+  virtual X first_intersection(X start_range, X end_range) const=0; 
 public:
   X sample_t(T t) const { return get_x(t); }
   E sample_e() const { E e(*this); return e; }
