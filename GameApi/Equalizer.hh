@@ -3380,6 +3380,31 @@ private:
 
 class One { };
 
+
+template<class T, class X, class Y, class C>
+class GenericPullbackFull
+{
+public:
+  // fibered product X x_C Y
+  // T->X input
+  // T->Y input
+  // T->(X,Y)->X automatically generated make_pair and .first
+  // T->(X,Y)->Y automatically generated make_pair nad .second
+  // f: X->C input
+  // g: Y->C input
+  // C has single points. Inverse image of point through (f,g) gives a link between left side point and right side point in (X,Y)
+  //   and this creates the fibered feature of the product.
+  // T->X == T->(X,Y)->X diagram commutes
+  // T->Y == T->(X,Y)->Y diagram commutes
+
+public: // inputs.
+  virtual X t_x(T t, float x) const=0;
+  virtual Y t_y(T t, float y) const=0;
+  virtual C f(X x) const=0;
+  virtual C g(Y y) const=0;
+  
+};
+
 template<class T, class X, class Y, class C>
 class GenericPullback 
 {
