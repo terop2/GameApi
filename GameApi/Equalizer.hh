@@ -3228,6 +3228,7 @@ class GenericEqualizer
 {
 public:
   class E {
+  public:
     E(GenericEqualizer<T,X,Y> &eq, T t) : eq(eq), m_t(t) { }
     bool is_root() const { /* TODO */ }
     X equalizer_subset() const
