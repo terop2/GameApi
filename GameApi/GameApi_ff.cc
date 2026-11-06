@@ -155,6 +155,24 @@ private:
   float m_x;
 };
 
+template<class T, class X, class Y, class C>
+class GenericPullback 
+{
+public:
+  GenericPullback() { }
+  // T -> (X,Y) -> f:(X -> C)
+  // T -> (X,Y) -> g:(Y -> C)
+
+  // decisions: X=float, Y=float, C=float
+
+  virtual std::pair<X,Y> curve(T t) const=0;
+  virtual C f(X x) const=0;
+  virtual C g(Y y) const=0;
+public:
+  C sample_f(T t) const { return f(curve(t).first); }
+  C sample_g(T t) const { return g(curve(t).second); }      
+};
+
 class FloatEqualizerExampleXEquals10 : public FloatEqualizer
 {
 public:
