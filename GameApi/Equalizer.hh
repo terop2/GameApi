@@ -3381,8 +3381,8 @@ private:
 class One {
   friend void add_link(One o1, One o2);
 };
+#if 0
 class Line { };
-
 template<class T /*=One*/, class X, class Y, class C>
 class GenericPullbackFull
 {
@@ -3399,6 +3399,19 @@ public:
   // T->X == T->(X,Y)->X diagram commutes
   // T->Y == T->(X,Y)->Y diagram commutes
 
+  template<class X, class Y, class C>
+  struct FiberedProduct {
+    std::pair<X,Y> p;
+    std::vector<C> vec;
+  };
+
+  FiberedProduct<X,Y,C> make_pair_fibered(X x, Y y, std::vector<C> vec)
+  {
+    FiberedProduct<X,Y,C> fib = { std::make_pair(x,y), vec };
+    return fib;
+  }
+  
+  
   std::pair<X,Y> make_pair(X x, Y y) const {
     // use (1) to change which implementation to use.
     return make_x_y_pair_unify(make_x_pair(x),make_y_pair(y));
@@ -3428,7 +3441,7 @@ public:
     return std::make_pair(inv_t_x(p.first.first,x),inv_t_y(p.second.second,y));
   }
   
-  void add_link(T t1, T t2);
+  void add_link(T t1, T t2) { fibers.push_back(std::make_pair(t1,t2)); }
   void add_link(X x, Y y) {
     std::pair<T,T> tt = inv_make_pair(make_pair(x,y));
     add_link(tt.first,tt.second);
@@ -3445,8 +3458,11 @@ public: // inputs.
   virtual C g(Y y) const=0;
   virtual X inv_f(C c,float x) const=0; 
   virtual Y inv_g(C c, float y) const=0; 
-  
+private:
+  std::vector<std::pair<T,T> > fibers;
 };
+#endif
+
 
 template<class T, class X, class Y, class C>
 class GenericPullback 
