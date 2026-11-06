@@ -192,6 +192,12 @@ public:
   {
     return equalizer.rootfind(t_start,t_end,maxiter,c,found);
   }
+  std::pair<X,Y> root_find2(float t_start, float t_end, int maxiter, float c, bool &found)
+  {
+    float val = root_find(t_start,t_end,maxiter,c,found);
+    if (found) { return GenericPullback<float,X,Y,float>::curve(val); }
+    return std::make_pair(X(),Y());
+  }
 private:
   Eq equalizer;
 };
