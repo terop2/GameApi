@@ -3261,6 +3261,7 @@ public:
   virtual float minus(Y y1, Y y2) const=0;
   // intersection can use compare_x,compare_y, f, g or minus, f, g
 
+  // every infinite number of buckets need to do this operation.
   bool axiom_of_choice_choice_function(X x) const
   {
     return compare_y(f(x),g(x));
