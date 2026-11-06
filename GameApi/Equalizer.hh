@@ -3223,6 +3223,36 @@ private:
   float c;
 };
 
+template<class T, class X, class Y>
+class GenericEqualizer
+{
+public:
+  class E {
+    E(GenericEqualizer<T,X,Y> &eq, T t) : eq(eq), m_t(t) { }
+    bool is_root() const { /* TODO */ }
+    X equalizer_subset() const
+    {
+      return eq.get_x(m_t);
+    }
+  private:
+    GenericEqualizer<T,X,Y> &eq;
+    T m_t;
+  };
+  // this block is probably wrong recarding category theory equalizer.
+  // input probably should be T->X, not T->E->X. But epi-mono factorisation
+  // should find T->E->X from T->X. And the equalizer defines the E type.
+  virtual X get_x(T t) const=0;
+  //---
+  virtual Y f(X x) const=0;
+  virtual Y g(X x) const=0;
+public:
+  X sample_t(T t) const { return get_x(); }
+  E sample_t_e(T t) const { E e(*this,t); return e; }
+  X sample_e(E e) const { return e.equalizer_subset(); }
+  Y sample_f(T t) const { return f(sample_t(t)); }
+  Y sample_g(T t) const { return g(sample_t(t)); }
+};
+
 class FloatEqualizer : private Function<float,float>
 {
 public:
