@@ -104,6 +104,57 @@ public:
   }
 };
 
+class FloatPullbackXY : private Function<float,float>
+{
+public:
+  FloatPullbackXY(float y) : m_y(y) { }
+  // T -> (X,Y) -> f:(X -> C)
+  // T -> (X,Y) -> g:(Y -> C)
+
+  // decisions: X=float, Y=float, C=float
+
+  virtual float f(float x) const=0;
+  virtual float g(float y) const=0;
+private:
+  float Index(float x) const {
+    return f(x)-g(m_y);
+  }
+public:
+  float root_find(float x_start, float x_end, int maxiter, float c, bool &found)
+  {
+    RootFinding_Lipschitz root(*this, x_start,x_end, maxiter, c);
+    float val = root.root(found);
+    return val;
+  }
+private:
+  float m_y;
+};
+class FloatPullbackYX : private Function<float,float>
+{
+public:
+  FloatPullbackYX(float x) : m_x(x) { }
+  // T -> (X,Y) -> f:(X -> C)
+  // T -> (X,Y) -> g:(Y -> C)
+
+  // decisions: X=float, Y=float, C=float
+
+  virtual float f(float x) const=0;
+  virtual float g(float y) const=0;
+private:
+  float Index(float y) const {
+    return f(m_x)-g(y);
+  }
+public:
+  float root_find(float y_start, float y_end, int maxiter, float c, bool &found)
+  {
+    RootFinding_Lipschitz root(*this, y_start,y_end, maxiter, c);
+    float val = root.root(found);
+    return val;
+  }  
+private:
+  float m_x;
+};
+
 class FloatEqualizerExampleXEquals10 : public FloatEqualizer
 {
 public:
