@@ -3249,22 +3249,43 @@ public:
     GenericEqualizer<T,X,Y> &eq;
     std::vector<T> roots;
   };
-  virtual X get_x(T t) const=0;
+  virtual X get_x(T t, float i) const=0; // float decides which X to pick and T=1.
   virtual Y f(X x) const=0;
   virtual Y g(X x) const=0;
+  std::pair<X,X> create_pair(X x) const { return std::make_pair(x,x); }
   // helper functions
   virtual bool has_compare() const=0;
+  virtual bool compare_x(X x1, X x2) const=0;
   virtual bool compare_y(Y y1, Y y2) const=0;
   virtual bool has_minus() const=0;
   virtual float minus(Y y1, Y y2) const=0;
-  // intersection can use compare_y, f, g or minus, f, g
-  virtual X first_intersection(X start_range, X end_range) const=0; 
+  // intersection can use compare_x,compare_y, f, g or minus, f, g
+
+  bool axiom_of_choice_choice_function(X x) const
+  {
+    return compare_y(f(x),g(x));
+  }
+
+  virtual float first_intersection_float(T t, float start_range, float end_range, float delta, bool &found) const
+  {
+    for(float x = start_range;x<end_range;x+=delta) {
+      X xx = get_x(t,x);
+      bool b = axiom_of_choice_choice_function(xx);
+      if (b==true)
+	{
+	  found=true;
+	  return x;
+	}
+    }
+    found=false;
+    return 0.0f;    
+  }
 public:
-  X sample_t(T t) const { return get_x(t); }
+  X sample_t(T t, float i) const { return get_x(t,i); }
   E sample_e() const { E e(*this); return e; }
   X sample_e(E e, T t) const { return e.equalizer_subset(t); }
-  Y sample_f(T t) const { return f(sample_t(t)); }
-  Y sample_g(T t) const { return g(sample_t(t)); }
+  Y sample_f(T t, float i) const { return f(sample_t(t,i)); }
+  Y sample_g(T t, float i) const { return g(sample_t(t,i)); }
 };
 
 class FloatEqualizer : private Function<float,float>
