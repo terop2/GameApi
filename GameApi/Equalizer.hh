@@ -3378,6 +3378,8 @@ private:
   float m_x;
 };
 
+class One { };
+
 template<class T, class X, class Y, class C>
 class GenericPullback 
 {
@@ -3388,16 +3390,17 @@ public:
 
   // decisions: X=float, Y=float, C=float
 
-  virtual std::pair<X,Y> curve(T t) const=0;
+  // this curve probably should be space-filling curve for whole (X,Y) space (in certain rectangle).
+  virtual std::pair<X,Y> curve(T t, float x) const=0;
   virtual C f(X x) const=0;
   virtual C g(Y y) const=0;
 public:
-  C sample_f(T t) const { return f(curve(t).first); }
-  C sample_g(T t) const { return g(curve(t).second); }      
+  C sample_f(T t, float x) const { return f(curve(t,x).first); }
+  C sample_g(T t, float x) const { return g(curve(t,x).second); }      
 };
 
 template<class X, class Y>
-class FloatPullback2 : public GenericPullback<float,X,Y,float>
+class FloatPullback2 : public GenericPullback<One,X,Y,float>
 {
 public:
   FloatPullback2() : equalizer(*this) { }
@@ -3405,21 +3408,21 @@ public:
   {
   public:
     Eq(FloatPullback2<X,Y> &p) : p(p) { }
-    float f(float x) { return p.sample_f(x); }
-    float g(float x) { return p.sample_g(x); }
+    float f(float x) { return p.sample_f(One(),x); }
+    float g(float x) { return p.sample_g(One(),x); }
   private:
     FloatPullback2<X,Y> &p;
   };
 public:
-  float root_find(float t_start, float t_end, int maxiter, float c, bool &found)
+  float root_find(float x_start, float x_end, int maxiter, float c, bool &found)
   {
-    return equalizer.rootfind(t_start,t_end,maxiter,c,found);
+    return equalizer.rootfind(x_start,x_end,maxiter,c,found);
   }
-  std::pair<X,Y> root_find2(float t_start, float t_end, int maxiter, float c, bool &found, float &root_pos)
+  std::pair<X,Y> root_find2(float x_start, float x_end, int maxiter, float c, bool &found, float &root_pos)
   {
-    float val = root_find(t_start,t_end,maxiter,c,found);
+    float val = root_find(x_start,x_end,maxiter,c,found);
     root_pos=val;
-    if (found) { return GenericPullback<float,X,Y,float>::curve(val); }
+    if (found) { return GenericPullback<float,X,Y,float>::curve(One(),val); }
     return std::make_pair(X(),Y());
   }
 private:
