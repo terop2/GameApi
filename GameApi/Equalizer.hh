@@ -3378,7 +3378,9 @@ private:
   float m_x;
 };
 
-class One { };
+class One {
+  friend void add_link(One o1, One o2);
+};
 class Line { };
 
 template<class T /*=One*/, class X, class Y, class C>
@@ -3407,13 +3409,38 @@ public:
   std::pair<X,Line> make_x_pair(X x) const { return std::make_pair(x,Line()); }
   std::pair<Line,Y> make_y_pair(Y y) const { return std::make_pair(Line(),y); }
   std::pair<X,Y> make_x_y_pair_unify(std::pair<X,Line> p1, std::pair<Line,Y> p2) { return std::make_pair(p1.first,p2.second); }
-  void add_link(X x, Y y);
+
+
+  X inv_make_x_pair(std::pair<X,Line> p) { return p.first; }
+  Y inv_make_y_pair(std::pair<Line,Y> p) { return p.second; }
+  
+  std::pair<std::pair<X,Line>, std::pair<Line,Y> > inv_make_x_y_pair_unify(std::pair<X,Y> p)
+  {
+    std::pair<X,Line> p1 = std::make_pair(p.first,Line());
+    std::pair<Line,Y> p2 = std::make_pair(Line(),p.second);
+    return std::make_pair(p1,p2);
+  }
+
+  
+  std::pair<T,T> inv_make_pair(std::pair<X,Y> p)
+  {
+    std::pair<std::pair<X,Line>, std::pair<Line,Y> > p = inv_make_x_y_pair_unify(p);
+    return std::make_pair(inv_t_x(p.first.first),inv_t_y(p.second.second));
+  }
+  
+  void add_link(T t1, T t2);
+  void add_link(X x, Y y) {
+    std::pair<T,T> tt = inv_make_pair(make_pair(x,y));
+    add_link(tt.first,tt.second);
+  }
   void add_x_link(X x) { add_link(x,inv_g(f(x))); }
   void add_y_link(Y y) { add_link(inv_f(g(y)),y); }
   void add_link_c(C c) { add_link(inv_f(c),inv_g(c)); }
 public: // inputs.
   virtual X t_x(T t, float x) const=0;
   virtual Y t_y(T t, float y) const=0;
+  virtual T inv_t_x(X x) const=0;
+  virtual T inv_t_y(Y y) const=0;
   virtual C f(X x) const=0;
   virtual C g(Y y) const=0;
   virtual X inv_f(C c) const=0;
