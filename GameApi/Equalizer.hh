@@ -3204,10 +3204,11 @@ public:
       //std::cout << "Step:" << i << std::endl;
       //if (std::isnan(x)) { found=true; break; }
       float val = func.Index(x);
-      //std::cout << "x=" << x << "val=" << val << std::endl;
+      //if (val<30.0)
+      //	std::cout << "x=" << x << "val=" << val << std::endl;
 
       float fval = fabs(val);
-      if (fval < 0.00001f) { found = true; /*std::cout << i << "::" << x << " " << val << std::endl;*/ break; }
+      if (fval < 15.0f) { found = true; /*std::cout << i << "::" << x << " " << val << std::endl;*/ break; }
       x += neg * c * fval;
       //if (neg>0.0 && x >= x_end) { found = false; /*std::cout << i << "::" << "++" << std::endl;*/ break; }
       //if (neg<0.0 && x <= x_end) { found = false; /*std::cout << i << "::" << "--" << std::endl;*/ break; }
@@ -3547,11 +3548,11 @@ public:
     bool found=false;
     float root_pos = 0.0f;
     float delta = pixel_width;
-    std::cout << "x=" << x << " y=" << y << std::endl;
-    std::cout << "start=" << inv_curve(x,y) << std::endl;
-    std::cout << "end=" << inv_curve(x+delta,y) << std::endl;
-    std::cout << "check:" << curve(One(),inv_curve(x,y)).first << "::" << curve(One(),inv_curve(x,y)).second << std::endl;
-    std::pair<float,float> pos = root_find2(inv_curve(x,y),inv_curve(x+delta,y),30,0.1,found,root_pos);
+    //std::cout << "x=" << x << " y=" << y << std::endl;
+    //std::cout << "start=" << inv_curve(x,y) << std::endl;
+    //std::cout << "end=" << inv_curve(x+delta,y) << std::endl;
+    //std::cout << "check:" << curve(One(),inv_curve(x,y)).first << "::" << curve(One(),inv_curve(x,y)).second << std::endl;
+    std::pair<float,float> pos = root_find2(inv_curve(x,y),inv_curve(x+delta,y),3000,0.9,found,root_pos);
     if (found) return Color(255,255,255,255);
     return Color(0,0,0,0);
   }
