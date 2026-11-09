@@ -3191,7 +3191,7 @@ public:
 class RootFinding_Lipschitz
 {
 public:
-  RootFinding_Lipschitz(Function<float,float> &func, float x_start, float x_end, int maxiter, float c) : func(func), x_start(x_start), x_end(x_end), maxiter(maxiter),c(c)
+  RootFinding_Lipschitz(const Function<float,float> &func, float x_start, float x_end, int maxiter, float c) : func(func), x_start(x_start), x_end(x_end), maxiter(maxiter),c(c)
   {
     if (x_end<x_start) neg=-1.0; else neg=1.0;
   }
@@ -3215,7 +3215,7 @@ public:
     return x;
   }
 private:
-  Function<float,float> &func;
+  const Function<float,float> &func;
   float x_start;
   float x_end;
   float neg;
@@ -3319,7 +3319,7 @@ private:
     return f(x)-g(x);
   }
 public:
-  float root_find(float x_start, float x_end, int maxiter, float c, bool &found)
+  float root_find(float x_start, float x_end, int maxiter, float c, bool &found) const
   {
     RootFinding_Lipschitz root(*this, x_start,x_end, maxiter, c);
     float val = root.root(found);
@@ -3492,28 +3492,72 @@ public:
   {
   public:
     Eq(FloatPullback2<X,Y> &p) : p(p) { }
-    float f(float x) { return p.sample_f(One(),x); }
-    float g(float x) { return p.sample_g(One(),x); }
+    float f(float x) const { return p.sample_f(One(),x); }
+    float g(float x) const { return p.sample_g(One(),x); }
   private:
     FloatPullback2<X,Y> &p;
   };
 public:
-  float root_find(float x_start, float x_end, int maxiter, float c, bool &found)
+  virtual std::pair<X,Y> curve(One t, float x) const=0;
+  float root_find(float x_start, float x_end, int maxiter, float c, bool &found) const
   {
-    return equalizer.rootfind(x_start,x_end,maxiter,c,found);
+    return equalizer.root_find(x_start,x_end,maxiter,c,found);
   }
-  std::pair<X,Y> root_find2(float x_start, float x_end, int maxiter, float c, bool &found, float &root_pos)
+  std::pair<X,Y> root_find2(float x_start, float x_end, int maxiter, float c, bool &found, float &root_pos) const
   {
     float val = root_find(x_start,x_end,maxiter,c,found);
     root_pos=val;
-    if (found) { return GenericPullback<One,X,Y,float>::curve(One(),val); }
+    if (found) { return /*GenericPullback<One,X,Y,float>::*/ curve(One(),val); }
     return std::make_pair(X(),Y());
   }
 private:
   Eq equalizer;
 };
 
+// X=float, Y=float
+class RootFindBitmap : public ContinuousBitmap<Color>, private FloatPullback2<float,float>
+{
+public:
+  RootFindBitmap(float (*f)(float x), float (*g)(float x), float pixel_width, float scan_line_height, float width, float height) : m_f(f), m_g(g), pixel_width(pixel_width), scan_line_height(scan_line_height), width(width), height(height) { }
 
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  void Prepare() { }
+  
+  std::pair<float,float> curve(One, float x) const
+  {
+    int a = int(x/width);
+    float b = x-width*a;
+    return std::make_pair(b,a);
+  }
+  float inv_curve(float x, float y) const
+  {
+    float num = height/scan_line_height;
+    int scan_line = y/num;
+    float pos = scan_line*width + x;
+    return pos;
+  }
+  float f(float x) const { return m_f(x); }
+  float g(float x) const { return m_g(x); }
+
+  float SizeX() const { return width; }
+  float SizeY() const { return height; }
+  Color Map(float x, float y) const
+  {
+    bool found=false;
+    float root_pos = 0.0f;
+    float delta = pixel_width;
+    std::pair<float,float> pos = root_find2(inv_curve(x,y),inv_curve(x+delta,y),30,0.1,found,root_pos);
+    if (found) return Color(255,255,255,255);
+    return Color(0,0,0,0);
+  }
+private:
+  float (*m_f)(float);
+  float (*m_g)(float);
+  float pixel_width;
+  float scan_line_height;
+  float width, height;
+};
 
 class FloatEqualizerExampleXEquals10 : public FloatEqualizer
 {

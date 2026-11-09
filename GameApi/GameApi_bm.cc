@@ -9922,5 +9922,25 @@ GameApi::ML GameApi::BitmapApi::isoline_render2(EveryApi &ev, FB fb, float pos, 
 
   GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn, 1, 10.0);
   return ml2;
-  
+}
+
+
+float circle_f(float x)
+{
+  x-=50.0;
+  return x*x;
+}
+float circle_g(float y)
+{
+  y-=50.0;
+  return 100.0-y*y;
+}
+
+
+GameApi::BM GameApi::BitmapApi::circle_pullback(EveryApi &ev)
+{
+  RootFindBitmap *bm = new RootFindBitmap(circle_f, circle_g, 1.0, 1.0, 100.0, 100.0);
+  GameApi::CBM cbm = add_continuous_bitmap(e, bm);
+
+  return ev.cont_bitmap_api.sample(cbm, 100,100);
 }

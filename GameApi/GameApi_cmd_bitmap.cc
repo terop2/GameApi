@@ -6,7 +6,13 @@ std::vector<GameApiItem*> bitmapapi_functions()
 {
   std::vector<GameApiItem*> vec;
 
- 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::circle_pullback,
+			 "circle_pullback",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "BM", "bitmap_api", "circle_pullback"));
+  
 #if (ALL==1)||(NEWBITMAP==1)  
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::newbitmap,
 			 "new", 
