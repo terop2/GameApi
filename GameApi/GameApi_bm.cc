@@ -9947,6 +9947,29 @@ float circle_ff2(float x,float y)
   
 }
 
+class CirclePullbackFunction : public PullbackFunction
+{
+public:
+  float Map(float x, float y) const
+  {
+    x-=50.0;
+    y-=50.0;
+    return x*x+y*y;
+  }
+};
+class FlipPullbackFunction : public PullbackFunction
+{
+public:
+  FlipPullbackFunction(PullbackFunction &p) : p(p) { }
+  float Map(float x, float y) const
+  {
+    return p.Map(y,x);
+  }
+private:
+  PullbackFunction &p;
+};
+
+
 GameApi::BM GameApi::BitmapApi::circle_pullback(EveryApi &ev)
 {
   RootFindBitmap *bm = new RootFindBitmap(circle_f, circle_g, 1.0, 1.0, 100.0, 100.0);
@@ -9980,3 +10003,33 @@ GameApi::BB GameApi::BitmapApi::circle_pullback3(EveryApi &ev)
   GameApi::BB res = ev.bool_bitmap_api.or_bitmap(bb,bb2);
   return res;
 }
+
+GameApi::F GameApi::BitmapApi::pullbacks(int i)
+{
+  PullbackFunction *func = 0;
+  switch(i) {
+  default: 
+  case 0: func = new CirclePullbackFunction; break;
+  };
+  return add_pullback(e,func);
+}
+
+GameApi::BB GameApi::BitmapApi::pullback_render(EveryApi &ev, F func, float pos, int sx, int sy, float pixel_width, float scanline_height, float width, float height)
+{
+  PullbackFunction *func2 = find_pullback(e,func);
+  FlipPullbackFunction *flip = new FlipPullbackFunction(*func2);
+  RootFindBitmap2 *bm = new RootFindBitmap2(func2, pos, 1.0, 1.0, 100.0, 100.0);
+  RootFindBitmap2 *bm2 = new RootFindBitmap2(flip, pos, 1.0, 1.0, 100.0, 100.0);
+  GameApi::CBM cbm = add_continuous_bitmap(e, bm);
+  GameApi::CBM cbm2 = add_continuous_bitmap(e, bm2);
+  GameApi::BM m_bm = ev.cont_bitmap_api.to_bitmap(cbm, sx,sy);
+  GameApi::BM m_bm2 = ev.cont_bitmap_api.to_bitmap(cbm2, sx,sy);
+  GameApi::BM m_bm2_rot = ev.bitmap_api.rot90(m_bm2);
+  GameApi::BM m_bm2_rot1 = ev.bitmap_api.rot90(m_bm2_rot);
+  GameApi::BM m_bm2_rot2 = ev.bitmap_api.rot90(m_bm2_rot1);
+  GameApi::BB bb = ev.bool_bitmap_api.from_bitmaps_color(m_bm,255,255,255);
+  GameApi::BB bb2 = ev.bool_bitmap_api.from_bitmaps_color(m_bm2_rot2,255,255,255);
+  GameApi::BB res = ev.bool_bitmap_api.or_bitmap(bb,bb2);
+  return res;
+}
+

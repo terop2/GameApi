@@ -144,6 +144,16 @@ void add_b(std::shared_ptr<void> ptr)
 }
 #endif
 
+GameApi::F add_pullback(GameApi::Env &e, PullbackFunction *p)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->pullbacks.push_back(p);
+  if (g_current_block != -2)
+    add_b(p);
+  GameApi::F im;
+  im.id = env->pullbacks.size()-1;
+  return im;
+}
 
 GameApi::PAT add_path(GameApi::Env &e, Path *p)
 {
@@ -1558,6 +1568,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 #endif
   GameApi::LL ll = { -1 };
   return ll;
+}
+
+PullbackFunction *find_pullback(GameApi::Env &e, GameApi::F p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->pullbacks[p.id];  
 }
 
 Path *find_path(GameApi::Env &e, GameApi::PAT p)

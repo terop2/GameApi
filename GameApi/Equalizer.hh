@@ -3523,6 +3523,7 @@ class RootFindBitmap2 : public ContinuousBitmap<Color>, private FloatPullback2<s
 {
 public:
   RootFindBitmap2(float (*f)(float x, float y), float val, float pixel_width, float scan_line_height, float width, float height) : m_f(f), pixel_width(pixel_width), scan_line_height(scan_line_height), width(width), height(height), val(val) { }
+  RootFindBitmap2(PullbackFunction *f, float val, float pixel_width, float scan_line_height, float width, float height) : m_f2(f), pixel_width(pixel_width), scan_line_height(scan_line_height), width(width), height(height), val(val) { }
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   void Prepare() { }
@@ -3542,6 +3543,7 @@ public:
   }
   float f(std::pair<float,float> p) const
   {
+    if (m_f2) return m_f2->Map(p.first,p.second);
     return m_f(p.first,p.second);
   }
   float g(float y) const
@@ -3569,6 +3571,7 @@ private:
   float val;
 private:
   float (*m_f)(float,float);
+  PullbackFunction *m_f2=0;
   //float (*m_g)(float);
   float pixel_width;
   float scan_line_height;

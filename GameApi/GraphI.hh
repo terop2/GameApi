@@ -144,6 +144,12 @@ extern Rest g_rest;
 
 void recreate_block(int id);
 
+class PullbackFunction
+{
+public:
+  virtual float Map(float x, float y) const=0;
+};
+
 
 template<class T> class BlockImpl : public BlockBase
 {

@@ -548,6 +548,7 @@ MACRO(GameApi::TRB)
 MACRO(GameApi::TRR)
 MACRO(GameApi::PV)
 MACRO(GameApi::FS)
+MACRO(GameApi::F)
 #undef MACRO
 
 

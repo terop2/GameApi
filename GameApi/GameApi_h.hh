@@ -845,6 +845,7 @@ struct EnvImpl
   std::vector<FloatScene*, GameApiAllocator<FloatScene*> > float_scenes;
   std::vector<Path*, GameApiAllocator<Path*> > paths;
   std::vector<void*, GameApiAllocator<void*> > objects;
+  std::vector<PullbackFunction*, GameApiAllocator<PullbackFunction*> > pullbacks;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1267,6 +1268,8 @@ typename FindTrait<ID>::interface_type find_object(GameApi::Env &e, ID i)
 
 #endif
 
+
+GameApi::F add_pullback(GameApi::Env &e, PullbackFunction *f);
 #if 1
 GameApi::PAT add_path(GameApi::Env &e, Path *p);
 GameApi::FS add_float_scene(GameApi::Env &e, FloatScene *fs);
@@ -1440,6 +1443,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 //Array<int,LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_array(GameApi::Env &e, GameApi::TFA tfa);
 //Bitmap<LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_matrix(GameApi::Env &e, GameApi::TFB tfb);
+PullbackFunction *find_pullback(GameApi::Env &e, GameApi::F f);
 #if 1
 Path *find_path(GameApi::Env &e, GameApi::PAT p);
 FloatScene *find_float_scene(GameApi::Env &e, GameApi::FS fs);
