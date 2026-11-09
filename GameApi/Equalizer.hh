@@ -3515,6 +3515,63 @@ private:
   Eq equalizer;
 };
 
+
+class RootFindBitmap2 : public ContinuousBitmap<Color>, private FloatPullback2<std::pair<float,float>, float>
+{
+public:
+  RootFindBitmap2(float (*f)(float x, float y), float val, float pixel_width, float scan_line_height, float width, float height) : m_f(f), pixel_width(pixel_width), scan_line_height(scan_line_height), width(width), height(height), val(val) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  void Prepare() { }
+
+  std::pair<std::pair<float,float>, float> curve(One t, float x) const
+  {
+    int a = int(x/width);
+    float b = x-width*a;
+    return std::make_pair(std::make_pair(b,a),val);
+  }
+  float inv_curve(float x, float y) const
+  {
+    float num = height/scan_line_height;
+    int scan_line = y*(num/height);
+    float pos = scan_line*width + x;
+    return pos;
+  }
+  float f(std::pair<float,float> p) const
+  {
+    return m_f(p.first,p.second);
+  }
+  float g(float y) const
+  {
+    return val;
+    //return m_g(y);
+  }
+  float SizeX() const { return width; }
+  float SizeY() const { return height; }
+  Color Map(float x, float y) const
+  {
+    bool found=false;
+    float root_pos = 0.0f;
+    float delta = pixel_width;
+    //std::cout << "x=" << x << " y=" << y << std::endl;
+    //std::cout << "start=" << inv_curve(x,y) << std::endl;
+    //std::cout << "end=" << inv_curve(x+delta,y) << std::endl;
+    //std::cout << "check:" << curve(One(),inv_curve(x,y)).first << "::" << curve(One(),inv_curve(x,y)).second << std::endl;
+    std::pair<std::pair<float,float>,float> pos = root_find2(inv_curve(x,y),inv_curve(x+delta,y),3000,0.9,found,root_pos);
+    if (found) return Color(255,255,255,255);
+    return Color(0,0,0,0);
+  }
+
+private:
+  float val;
+private:
+  float (*m_f)(float,float);
+  //float (*m_g)(float);
+  float pixel_width;
+  float scan_line_height;
+  float width, height;
+};
+
 // X=float, Y=float
 class RootFindBitmap : public ContinuousBitmap<Color>, private FloatPullback2<float,float>
 {

@@ -9935,11 +9935,23 @@ float circle_g(float y)
   y-=50.0;
   return 45.0*45.0-y*y;
 }
-
+float circle_ff(float x,float y)
+{
+  x-=50.0;
+  y-=50.0;
+  return x*x+y*y;
+}
 
 GameApi::BM GameApi::BitmapApi::circle_pullback(EveryApi &ev)
 {
   RootFindBitmap *bm = new RootFindBitmap(circle_f, circle_g, 1.0, 1.0, 100.0, 100.0);
+  GameApi::CBM cbm = add_continuous_bitmap(e, bm);
+
+  return ev.cont_bitmap_api.to_bitmap(cbm, 1000,1000);
+}
+GameApi::BM GameApi::BitmapApi::circle_pullback2(EveryApi &ev)
+{
+  RootFindBitmap2 *bm = new RootFindBitmap2(circle_ff, 45.0*45.0, 1.0, 1.0, 100.0, 100.0);
   GameApi::CBM cbm = add_continuous_bitmap(e, bm);
 
   return ev.cont_bitmap_api.to_bitmap(cbm, 1000,1000);
