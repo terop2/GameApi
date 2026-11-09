@@ -1087,6 +1087,7 @@ public:
   IMPORT BM circle_pullback2(EveryApi &ev);
   IMPORT BM circle_pullback(EveryApi &ev);
   IMPORT BB pullback_render(EveryApi &ev, F func, float pos, int sx, int sy, float pixel_width, float scanline_height, float width, float height);
+  IMPORT FB pullback_bitmap(EveryApi &ev, F func, float start_pos, float end_pos, int sx, int sy, float width, float height);
   IMPORT F pullbacks(int i, float param);
   IMPORT ML isoline_render2(EveryApi &ev, FB fb, float pos, float delta_pos, int num);
   IMPORT BB isoline_render(EveryApi &ev, FB bm, float start_range, float end_range, float delta_range, int num);

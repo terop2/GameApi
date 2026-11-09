@@ -31,6 +31,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "F", "float", "int", "int", "float", "float", "float", "float" },
 			 { "ev", "", "0", "1000", "1000", "1.0", "1.0", "100", "100" },
 			 "BB", "bitmap_api", "pullback_render"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::pullback_bitmap,
+			 "pullback_bitmap",
+			 { "ev", "func", "start_pos", "end_pos","sx", "sy", "width", "height" },
+			 { "EveryApi&", "F", "float", "float",  "int", "int", "float", "float" },
+			 { "ev", "", "0", "1", "1000", "1000", "100", "100" },
+			 "FB", "bitmap_api", "pullback_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::pullbacks,
 			 "f_pullbacks",
 			 { "i", "param" },

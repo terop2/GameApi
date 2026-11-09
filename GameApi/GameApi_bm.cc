@@ -10007,6 +10007,68 @@ GameApi::BB GameApi::BitmapApi::circle_pullback3(EveryApi &ev)
   return res;
 }
 
+class PullbackBitmap : public ContinuousBitmap<float>
+{
+public:
+  PullbackBitmap(PullbackFunction &f, float start_pos, float end_pos, float width, float height) : f(f), start_pos(start_pos), end_pos(end_pos), width(width), height(height) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+  void Prepare() { }
+  virtual float SizeX() const { return width; }
+  virtual float SizeY() const { return height; }
+  virtual float Map(float x, float y) const
+  {
+    float val = f.Map(x,y);
+    val-=start_pos;
+    val/=(end_pos-start_pos);
+    return val;
+  }
+private:
+  PullbackFunction &f;
+  float start_pos;
+  float end_pos;
+  float width;
+  float height;
+};
+class SampleContinuousBitmapFloat : public Bitmap<float>
+{
+public:
+  SampleContinuousBitmapFloat(ContinuousBitmap<float> &f, int sx, int sy) : f(f), sx(sx), sy(sy) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+  void Prepare() { }
+
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual float Map(int x, int y) const
+    {
+      float xx = float(x);
+      float yy = float(y);
+      xx*=f.SizeX();
+      yy*=f.SizeY();
+      xx/=float(sx);
+      yy/=float(sy);
+      return f.Map(xx,yy);
+    }
+private:
+  ContinuousBitmap<float> &f;
+  int sx;
+  int sy;
+};
+
+GameApi::FB GameApi::BitmapApi::pullback_bitmap(EveryApi &ev, F func, float start_pos, float end_pos, int sx, int sy, float width, float height)
+{
+  PullbackFunction *f = find_pullback(e,func);
+  PullbackBitmap *pb_bitmap = new PullbackBitmap(*f,start_pos,end_pos, width, height);
+  Bitmap<float> *fbm = new SampleContinuousBitmapFloat(*pb_bitmap, sx,sy);
+  GameApi::FB fb = add_float_bitmap(e,fbm);
+  return fb;
+}
+
 GameApi::F GameApi::BitmapApi::pullbacks(int i, float param)
 {
   PullbackFunction *func = 0;
