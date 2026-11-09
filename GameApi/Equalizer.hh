@@ -3533,7 +3533,7 @@ public:
   float inv_curve(float x, float y) const
   {
     float num = height/scan_line_height;
-    int scan_line = y/num;
+    int scan_line = y*(num/height);
     float pos = scan_line*width + x;
     return pos;
   }
@@ -3547,6 +3547,10 @@ public:
     bool found=false;
     float root_pos = 0.0f;
     float delta = pixel_width;
+    std::cout << "x=" << x << " y=" << y << std::endl;
+    std::cout << "start=" << inv_curve(x,y) << std::endl;
+    std::cout << "end=" << inv_curve(x+delta,y) << std::endl;
+    std::cout << "check:" << curve(One(),inv_curve(x,y)).first << "::" << curve(One(),inv_curve(x,y)).second << std::endl;
     std::pair<float,float> pos = root_find2(inv_curve(x,y),inv_curve(x+delta,y),30,0.1,found,root_pos);
     if (found) return Color(255,255,255,255);
     return Color(0,0,0,0);
