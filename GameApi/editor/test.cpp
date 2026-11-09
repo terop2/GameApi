@@ -2350,6 +2350,19 @@ public:
 					      env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
 					      
 					    }
+		                          else if (type=="F")
+					    {
+					      F f;
+					      f.id = id;
+					      
+					      BB bb;
+					      bb = env->ev->bitmap_api.pullback_render(*env->ev,f,2025,1000,1000,1.0,1.0,100,100);
+					      BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					      
+					    }
 					  else if (type=="BB")
 					    {
 					      BB bb;

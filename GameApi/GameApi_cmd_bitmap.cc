@@ -34,7 +34,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::pullbacks,
 			 "f_pullbacks",
 			 { "i" },
-			 { "int" },
+			 { "{circle}" },
 			 { "0" },
 			 "F", "bitmap_api", "pullbacks"));
   
