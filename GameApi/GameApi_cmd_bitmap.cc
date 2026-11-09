@@ -18,6 +18,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "BM", "bitmap_api", "circle_pullback2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::circle_pullback3,
+			 "circle_pullback3",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "BB", "bitmap_api", "circle_pullback3"));
   
 #if (ALL==1)||(NEWBITMAP==1)  
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::newbitmap,

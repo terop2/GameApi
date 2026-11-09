@@ -3328,6 +3328,8 @@ public:
   }
 };
 
+
+
 class FloatPullbackXY : private Function<float,float>
 {
 public:
@@ -3514,6 +3516,7 @@ public:
 private:
   Eq equalizer;
 };
+
 
 
 class RootFindBitmap2 : public ContinuousBitmap<Color>, private FloatPullback2<std::pair<float,float>, float>

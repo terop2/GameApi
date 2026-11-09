@@ -9941,6 +9941,11 @@ float circle_ff(float x,float y)
   y-=50.0;
   return x*x+y*y;
 }
+float circle_ff2(float x,float y)
+{
+  return circle_ff(y,x);
+  
+}
 
 GameApi::BM GameApi::BitmapApi::circle_pullback(EveryApi &ev)
 {
@@ -9955,4 +9960,23 @@ GameApi::BM GameApi::BitmapApi::circle_pullback2(EveryApi &ev)
   GameApi::CBM cbm = add_continuous_bitmap(e, bm);
 
   return ev.cont_bitmap_api.to_bitmap(cbm, 1000,1000);
+}
+
+
+
+GameApi::BB GameApi::BitmapApi::circle_pullback3(EveryApi &ev)
+{
+  RootFindBitmap2 *bm = new RootFindBitmap2(circle_ff, 45.0*45.0, 1.0, 1.0, 100.0, 100.0);
+  RootFindBitmap2 *bm2 = new RootFindBitmap2(circle_ff2, 45.0*45.0, 1.0, 1.0, 100.0, 100.0);
+  GameApi::CBM cbm = add_continuous_bitmap(e, bm);
+  GameApi::CBM cbm2 = add_continuous_bitmap(e, bm2);
+  GameApi::BM m_bm = ev.cont_bitmap_api.to_bitmap(cbm, 1000,1000);
+  GameApi::BM m_bm2 = ev.cont_bitmap_api.to_bitmap(cbm2, 1000,1000);
+  GameApi::BM m_bm2_rot = ev.bitmap_api.rot90(m_bm2);
+  GameApi::BM m_bm2_rot1 = ev.bitmap_api.rot90(m_bm2_rot);
+  GameApi::BM m_bm2_rot2 = ev.bitmap_api.rot90(m_bm2_rot1);
+  GameApi::BB bb = ev.bool_bitmap_api.from_bitmaps_color(m_bm,255,255,255);
+  GameApi::BB bb2 = ev.bool_bitmap_api.from_bitmaps_color(m_bm2_rot2,255,255,255);
+  GameApi::BB res = ev.bool_bitmap_api.or_bitmap(bb,bb2);
+  return res;
 }

@@ -1083,6 +1083,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BB circle_pullback3(EveryApi &ev);
   IMPORT BM circle_pullback2(EveryApi &ev);
   IMPORT BM circle_pullback(EveryApi &ev);
   IMPORT ML isoline_render2(EveryApi &ev, FB fb, float pos, float delta_pos, int num);
