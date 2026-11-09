@@ -9950,12 +9950,15 @@ float circle_ff2(float x,float y)
 class CirclePullbackFunction : public PullbackFunction
 {
 public:
+  CirclePullbackFunction(float param) : param(param) { }
   float Map(float x, float y) const
   {
     x-=50.0;
     y-=50.0;
-    return x*x+y*y;
+    return x*x+y*y - param*param;
   }
+private:
+  float param;
 };
 class FlipPullbackFunction : public PullbackFunction
 {
@@ -10004,12 +10007,12 @@ GameApi::BB GameApi::BitmapApi::circle_pullback3(EveryApi &ev)
   return res;
 }
 
-GameApi::F GameApi::BitmapApi::pullbacks(int i)
+GameApi::F GameApi::BitmapApi::pullbacks(int i, float param)
 {
   PullbackFunction *func = 0;
   switch(i) {
   default: 
-  case 0: func = new CirclePullbackFunction; break;
+  case 0: func = new CirclePullbackFunction(param); break;
   };
   return add_pullback(e,func);
 }

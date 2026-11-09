@@ -2356,7 +2356,7 @@ public:
 					      f.id = id;
 					      
 					      BB bb;
-					      bb = env->ev->bitmap_api.pullback_render(*env->ev,f,2025,1000,1000,1.0,1.0,100,100);
+					      bb = env->ev->bitmap_api.pullback_render(*env->ev,f,0,1000,1000,1.0,1.0,100,100);
 					      BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
 					      env->env->free_temp_memory();
 					      env->gui->delete_widget(env->mem);

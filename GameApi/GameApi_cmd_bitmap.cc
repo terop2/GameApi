@@ -29,13 +29,13 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "pullback_render",
 			 { "ev", "func", "pos", "sx", "sy", "pixel_width", "scanline_height", "width", "height" },
 			 { "EveryApi&", "F", "float", "int", "int", "float", "float", "float", "float" },
-			 { "ev", "", "2025", "1000", "1000", "1.0", "1.0", "100", "100" },
+			 { "ev", "", "0", "1000", "1000", "1.0", "1.0", "100", "100" },
 			 "BB", "bitmap_api", "pullback_render"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::pullbacks,
 			 "f_pullbacks",
-			 { "i" },
-			 { "{circle}" },
-			 { "0" },
+			 { "i", "param" },
+			 { "{circle}", "float" },
+			 { "0", "45.0" },
 			 "F", "bitmap_api", "pullbacks"));
   
 #if (ALL==1)||(NEWBITMAP==1)  

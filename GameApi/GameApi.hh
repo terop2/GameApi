@@ -1087,7 +1087,7 @@ public:
   IMPORT BM circle_pullback2(EveryApi &ev);
   IMPORT BM circle_pullback(EveryApi &ev);
   IMPORT BB pullback_render(EveryApi &ev, F func, float pos, int sx, int sy, float pixel_width, float scanline_height, float width, float height);
-  IMPORT F pullbacks(int i);
+  IMPORT F pullbacks(int i, float param);
   IMPORT ML isoline_render2(EveryApi &ev, FB fb, float pos, float delta_pos, int num);
   IMPORT BB isoline_render(EveryApi &ev, FB bm, float start_range, float end_range, float delta_range, int num);
   IMPORT BM render_volume_object(O o, float start_x, float end_x, float start_y, float end_y, float z, int sx, int sy, float ray_length, int sample_count);
