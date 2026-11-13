@@ -92,11 +92,14 @@ std::string x_display(int i)
   return std::string("x^")+ss.str();  
 }
 
-std::string i_display(int ii)
+std::string i_display(int ii, float range_start)
 {
   std::string s = "f";
   for(int i=0;i<ii;i++) s+='\'';
-  s+="(0)=";
+  std::stringstream ss;
+  float ii_scaled = range_start;
+  ss << ii_scaled;
+  s+="(" + ss.str() + ")=";
   return s;
 }
 
@@ -111,7 +114,7 @@ void solve_diff_eq(float (*fptr)(float x), int degree,
   int s3 = initial_values.size();
   for(int i=s3-1;i>=0;i--)
     {
-      std::cout << i_display(i) << initial_values[i] << std::endl;
+      std::cout << i_display(i,range_start) << initial_values[i] << std::endl;
     }
   
   
