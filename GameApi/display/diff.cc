@@ -146,11 +146,11 @@ float diff2_subst(float x) { return -x*x-1; }
 
 void diff_test_case1()
 {
-  solve_diff_eq(&diff1_subst, 1, std::vector<float>{999.0f}, -30.0, 30.0, 10);
+  solve_diff_eq(&diff1_subst, 1, std::vector<float>{0.0f}, -30.0, 30.0, 10);
 }
 void diff_test_case2()
 {
-  solve_diff_eq(&diff2_subst, 2, std::vector<float>{666.0f,888.0f}, -30.0, 30.0, 10);  
+  solve_diff_eq(&diff2_subst, 2, std::vector<float>{0.0f,0.0f}, -30.0, 30.0, 10);  
 }
 
 int main()
