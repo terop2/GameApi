@@ -35,7 +35,6 @@ std::vector<float> next_level(std::vector<float> slots, std::vector<float> initi
 {
   std::vector<float> res;
   res.push_back(initial_values[degree]);
-
   res.resize(slots.size()+1);
   
   for(int i=1;i<slots.size()+1;i++)
@@ -97,9 +96,10 @@ void solve_diff_eq(float (*fptr)(float x), int degree,
 		   float range_start, float range_end,
 		   int sample_count)
 {
+  sample_count--;
   std::vector<float> val;
   std::vector<float> orig_x;
-  for(int i=0;i<sample_count;i++)
+  for(int i=0;i<sample_count+1;i++)
     {
       float ii = float(i);
       float ii_scaled = range_start + ii/float(sample_count)*(range_end-range_start);
@@ -112,6 +112,7 @@ void solve_diff_eq(float (*fptr)(float x), int degree,
       curr = next_level(val,initial_values,i);
       val = curr;
     }
+  std::cout << curr.size() << " " << orig_x.size() << std::endl;
   int s = std::min(curr.size(),orig_x.size());
 
   std::cout.setf(std::ios::fixed, std::ios::floatfield);
