@@ -104,11 +104,19 @@ std::string i_display(int ii, float range_start)
 }
 
 
-void solve_diff_eq(float (*fptr)(float x), int degree,
+void solve_diff_eq(float (*fptr)(float x), std::string eq, int degree,
 		   std::vector<float> initial_values,
 		   float range_start, float range_end,
 		   int sample_count)
 {
+  std::cout << std::endl;
+
+  std::cout << "Diff Equation to be solved:" << std::endl;
+  if (degree==1)
+    std::cout << "df/dx + " << eq << " =0 "<< std::endl;
+  else
+    std::cout << "df^" << degree << "/dx^" << degree << " + " << eq << " =0 "<< std::endl;
+
   std::cout << std::endl;
   std::cout << "Initial values:" << std::endl;
   int s3 = initial_values.size();
@@ -171,12 +179,12 @@ float diff2_subst(float x) { return -x*x-1; }
 void diff_test_case1()
 {
   std::cout << "Test case #1:" << std::endl;
-  solve_diff_eq(&diff1_subst, 1, std::vector<float>{0.0f}, -30.0, 30.0, 10);
+  solve_diff_eq(&diff1_subst, "x*x+1", 1, std::vector<float>{0.0f}, -30.0, 30.0, 10);
 }
 void diff_test_case2()
 {
   std::cout << "Test case #2:" << std::endl;
-  solve_diff_eq(&diff2_subst, 2, std::vector<float>{0.0f,0.0f}, -30.0, 30.0, 10);  
+  solve_diff_eq(&diff2_subst, "x*x+1", 2,std::vector<float>{0.0f,0.0f}, -30.0, 30.0, 10);  
 }
 
 int main()
