@@ -102,7 +102,7 @@ void solve_diff_eq(float (*fptr)(float x), int degree,
   for(int i=0;i<sample_count;i++)
     {
       float ii = float(i);
-      float ii_scaled = (10.0-0)*(ii-range_start)/(range_end-range_start);
+      float ii_scaled = range_start + ii/float(sample_count)*(range_end-range_start);
       orig_x.push_back(ii_scaled);
       val.push_back(fptr(ii_scaled)); // 0, 1, 2, 3 ,4, ..., 9
     }
