@@ -3,6 +3,7 @@
 #include <cassert>
 #include <sstream>
 #include <iomanip>
+#include <math.h>
 //
 // Newton's what comes next - differential equation solver
 //
@@ -112,12 +113,12 @@ void solve_diff_eq(float (*fptr)(float x), int degree,
       curr = next_level(val,initial_values,i);
       val = curr;
     }
-  std::cout << curr.size() << " " << orig_x.size() << std::endl;
   int s = std::min(curr.size(),orig_x.size());
 
   std::cout.setf(std::ios::fixed, std::ios::floatfield);
   std::cout.setf(std::ios::showpoint);
-  
+
+  std::cout << std::endl;
   std::cout << "Samples:" << std::endl;
   for(int i=0;i<s;i++)
     {
@@ -131,10 +132,13 @@ void solve_diff_eq(float (*fptr)(float x), int degree,
   int s1 = res.size();
   for(int i=0;i<s1;i++)
     {
-      std::cout << res[i];
-      std::cout << x_display(i);
-      if (i!=s-1) std::cout << "+";
+      if (fabs(res[i])<0.00000001) { } else {
+	if (i!=0) std::cout << "+";
+	std::cout << res[i];
+	std::cout << x_display(i);
+      }
     }
+  std::cout << std::endl;
 }
 
 float diff1_subst(float x) { return -x*x-1; }
