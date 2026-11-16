@@ -217,15 +217,16 @@ $highmem = js_highmem();
      "position": 2,
      "item": {
         "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_4",
-	"name": "tool download"
+	"name": "AI"
      }
   },
+
   {
      "@type": "ListItem",
      "position": 3,
      "item": {
         "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_5",
-	"name": "faq" 
+	"name": "tool download"
      }
   },
   {
@@ -233,7 +234,7 @@ $highmem = js_highmem();
      "position": 4,
      "item": {
         "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_6",
-	"name": "documents"
+	"name": "faq" 
      }
   },
   {
@@ -241,6 +242,14 @@ $highmem = js_highmem();
      "position": 5,
      "item": {
         "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_7",
+	"name": "documents"
+     }
+  },
+  {
+     "@type": "ListItem",
+     "position": 6,
+     "item": {
+        "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_8",
 	"name": "about"
      }
   }
@@ -257,6 +266,7 @@ $highmem = js_highmem();
 <div id="navbar1" style="display:none">
 <div class="topnav">
   <a class="active" href="#" id="menu_main"><?php echo "$sitename"; ?></a>
+  <a href="#" id="menu_AI">AI</a>
   <a href="#" id="menu_tool">tool download</a>
   <a href="#" id="menu_faq">faq</a>
   <a href="#" id="menu_tutorial">docs</a>
@@ -1013,7 +1023,7 @@ list_end();
 
 <h2>How does the site work?</h2>
 <ul>
-<li><a style="font-size:large;" href="<?php echo $https ?>://<?php echo $site ?>/meshpage_4">DOWNLOAD</a>: You download the builder tool</a>
+<li><a style="font-size:large;" href="<?php echo $https ?>://<?php echo $site ?>/meshpage_5">DOWNLOAD</a>: You download the builder tool</a>
 <li><a style="font-size:large;" href="<?php echo $https ?>://<?php echo $assetsite ?>/builder_green4_example.webm">CREATE</a>: Create your powerful message with 3d technology
 <li><a style="font-size:large;" href="<?php echo $https ?>://<?php echo $assetsite ?>/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
 <li><a style="font-size:large;" href="<?php echo $https ?>://<?php echo $assetsite ?>/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
@@ -1380,6 +1390,22 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $http
 <li>mediaisnothingtomebutistilllikeit <a href="https://mediaisnothingtomebutistilllikeit.wordpress.com/2017/12/06/meshpage-org/">blog</a>
 </ul>
 </div>
+<div id="AI" class="container-lg" style="display:none;">
+<p>
+<p>
+<h1>Using 3d engine with artificial intelligence</h1>
+
+FI32 5731 6540 0430 41 Tero Pulkkinen<br><br>
+
+Engine download:<p>
+<ul>
+<li>Engine deploy package: <a href="https://meshpage.org/gameapi_3d_engine.zip">gameapi_3d_engine.zip</a>.
+<li>Claude context file: <a href="https://meshpage.org/gameapi_3d_engine_claude.txt">gameapi_3d_engine_claude.txt</a>.
+<li>Claude base example: <a href="https://meshpage.org/gameapi_3d_engine_claude_example_script.txt">gameapi_3d_engine_claude_example_script.txt</a>.
+</ul>
+
+
+</div> <!-- id=AI -->
 <div id="tool" class="container-lg" style="display:none;">
 
 <p>
@@ -2174,6 +2200,7 @@ var store = {
     empty: true,
     main: false,
     create_mesh: false,
+    tool_AI: false,
     tool_download: false,
     faq: false,
     docs: false,
@@ -2198,6 +2225,7 @@ var store = {
        this.state.empty = false;
        this.state.main = false;
        this.state.create_mesh = false;
+       this.state.tool_AI = false;
        this.state.tool_download = false;
        this.state.faq = false;
        this.state.docs = false;
@@ -2252,6 +2280,7 @@ var store = {
       this.clear_state();
       if (a=='main') this.state.main = true;
       else if (a=='create_mesh') this.state.create_mesh = true;
+      else if (a=='tool_AI') this.state.tool_AI = true;
       else if (a=='tool_download') this.state.tool_download = true;
       else if (a=='faq') this.state.faq = true;
       else if (a=='docs') this.state.docs = true;
@@ -2341,8 +2370,8 @@ function zip_progress(id)
 
 
 
-let elementNames = [ "menu_main", "menu_tool", "menu_faq", "menu_tutorial", "menu_about" ];
-let pageNames = [ "main", "tool", "faq", "docs", "about" ];
+let elementNames = [ "menu_main", "menu_AI", "menu_tool", "menu_faq", "menu_tutorial", "menu_about" ];
+let pageNames = [ "main", "AI", "tool", "faq", "docs", "about" ];
 let elementNames2 = [ "menu_main2", "menu_display" ];
 let pageNames2 = [ "main", "main_display" ];
 
@@ -2352,10 +2381,12 @@ window.set_url = function(id,repl)
     console.log("set_url");
 
    if (id==3) { window.history.replaceState({page:3}, "title 3", "/meshpage.php"); }
-   if (id==4) { window.history.replaceState({page:4}, "title 4", "/builder-tool-download.php"); }
-   if (id==5) { window.history.replaceState({page:5}, "title 5", "/faq.php"); }
-   if (id==6) { window.history.replaceState({page:6}, "title 6", "/docs.php"); }
-   if (id==7) { window.history.replaceState({page:7}, "title 7", "/about.php"); }
+   if (id==4) { window.history.replaceState({page:4}, "title 4", "/engine-3d-with-AI.php"); }
+ 
+   if (id==5) { window.history.replaceState({page:5}, "title 4", "/builder-tool-download.php"); }
+   if (id==6) { window.history.replaceState({page:6}, "title 5", "/faq.php"); }
+   if (id==7) { window.history.replaceState({page:7}, "title 6", "/docs.php"); }
+   if (id==8) { window.history.replaceState({page:8}, "title 7", "/about.php"); }
 }
 
 
@@ -2616,8 +2647,8 @@ if ($page!="") {
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==4) {
-      echo "store.choose(\"tool_download\");";
-      echo "choose_bread(\"tool_download\",vm.main_breadcrumb);";
+      echo "store.choose(\"tool_AI\");";
+      echo "choose_bread(\"tool_AI\",vm.main_breadcrumb);";
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(1);";
@@ -2625,8 +2656,8 @@ if ($page!="") {
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==5) {
-      echo "store.choose(\"faq\");";
-      echo "choose_bread(\"faq\",vm.main_breadcrumb);";
+      echo "store.choose(\"tool_download\");";
+      echo "choose_bread(\"tool_download\",vm.main_breadcrumb);";
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(2);";
@@ -2634,8 +2665,8 @@ if ($page!="") {
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==6) {
-      echo "store.choose(\"docs\");";
-      echo "choose_bread(\"docs\",vm.main_breadcrumb);";
+      echo "store.choose(\"faq\");";
+      echo "choose_bread(\"faq\",vm.main_breadcrumb);";
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(3);";
@@ -2643,11 +2674,20 @@ if ($page!="") {
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==7) {
+      echo "store.choose(\"docs\");";
+      echo "choose_bread(\"docs\",vm.main_breadcrumb);";
+      echo "window.choose_nav(0);";
+      echo "window.clearActive();";
+      echo "window.menu(4);";
+      echo "hide_main(false);";
+      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
+   }
+   if ($page==8) {
       echo "store.choose(\"about\");";
       echo "choose_bread(\"about\",vm.main_breadcrumb);";
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
-      echo "window.menu(4);";
+      echo "window.menu(5);";
       echo "hide_main(false);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
@@ -2750,10 +2790,11 @@ var d = document.getElementById("display_title_bar");
      ],
      main_breadcrumb_first: [{num:0,name: "mesh_all", choose:"main", title:"<?php echo "$sitename"; ?>", link:true},
      		       //{num:1,name: "create_mesh", choose:"create_mesh",title:"create mesh",link:false},
-		       {num:2,name: "mesh_tool", choose:"tool_download",title:"tool download",link:false},
-                       {num:3,name: "mesh_faq", choose:"faq",title:"faq",link:false},
-		       {num:4,name: "mesh_tutorial", choose:"docs",title:"docs",link:false},
-		       {num:5,name: "mesh_about", choose:"about", title:"about",link:false},
+		       {num:2,name: "mesh_AI", choose:"tool_AI",title:"tool AI", link:false},
+		       {num:3,name: "mesh_tool", choose:"tool_download",title:"tool download",link:false},
+                       {num:4,name: "mesh_faq", choose:"faq",title:"faq",link:false},
+		       {num:5,name: "mesh_tutorial", choose:"docs",title:"docs",link:false},
+		       {num:6,name: "mesh_about", choose:"about", title:"about",link:false},
 		       //{num:6,name: "mesh_hide.php", choose:"vault",title:"vault",link:false},
 		       //{num:8,name: "mesh_block", choose:"block",title:"block",link:false},
 		       //{num:9,name: "mesh_stats", choose:"stats", title:"stats",link:false},

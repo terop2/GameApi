@@ -84,12 +84,13 @@ if ("$machine"=="terop-pc2") {
 
 //header("Cross-Origin-Opener-Policy: same-origin");
 
-$labels = array("3D MODEL VIEWER", "GLTF to HTML5 ZIP", "DOWNLOAD TOOL<h1 style=\"font-size:24px\">(price: 130&#8364;)</h1>", "EXAMPLES");
-$imgs = array("img_1.webp", "img_2.webp", "img_3.webp", "img_4.webp");
-$alts = array("3d model viewer", "gltf to html5 zip converter", "builder tool download", "3d design examples");
-$links = array("view.php", "gltf_to_zip.php", "builder-tool-download.php", "meshpage.php");
+$labels = array("3D MODEL VIEWER", "GLTF to HTML5 ZIP", "GENERATIVE AI", "DOWNLOAD TOOL<h1 style=\"font-size:24px\">(price: 130&#8364;)</h1>", "EXAMPLES");
+$imgs = array("img_1.webp", "img_2.webp", "img_AI.webp", "img_3.webp", "img_4.webp");
+$alts = array("3d model viewer", "gltf to html5 zip converter", "engine 3d with AI", "builder tool download", "3d design examples");
+$links = array("view.php", "gltf_to_zip.php", "engine-3d-with-AI.php", "builder-tool-download.php", "meshpage.php");
 $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with the engine",
        	       "convert your<br>gltf files to html5<br>for hosting space<br>",
+	       "artificial intelligence<br>generates<br>your output",
 	       "if end result needed<br>tweaking, download<br> tool",
 	       "and there's plenty<br> of examples to learn<br> the scripting language");
 
@@ -214,6 +215,7 @@ echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
 
 echo "<h2><span style=\"font-size: 70%;\">&ldquo;Golden times of photography already had good technology available. After pressing red button on your camera, the camera equipment had only very short amount of time to produce a picture and output it outside of the device. Once you get a photo in a piece of paper, you can spend a lifetime to rotate it in your hands and the picture has stopped time and shows a snapshot of the world at the recording time. OpenGL static geometry and matrix stack is working the same way. The old technology was just branded differently. After OpenGL, the next branding attempt called the same technology as \"bullet time\", as it had stopped time, and the scene was just rotated, exactly the same way as original photographs. Next phase after bullet time is obviously <b>meshpage.org's GameApi Builder</b> — a 3D engine that lets you build cool, working 3D applications from scratch.&rdquo;</span></h2>";
+echo "<h2><span style=\"font-size: 70%;\">In finnish: &ldquo; Tekoälyn maailmanvalloitus on alkanut. Tampereella luodaan jo tekoälyteknologioihin pohjaa jolla 3d grafiikkaa pystyy rakentelemaan clauden ja muiden tekoälyalustojen avustuksella. Claude osaa jo käsitellä 3d avaruuden metkuja, ajan etenemistä ja opengl/webgl piirtoa tietokoneen ruudulle. Näin saadaan kivan näköistä lopputulosta, vaikka joudutaankin ihmisten silmiä vastaan kilpailemaan laadulla.&rdquo;</span></h2>";
 echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";
@@ -433,7 +435,7 @@ echo "<div class=\"customfont\" style=\"position: relative; left:30px;\">\n";
 echo "<h1>AVAILABLE TOOLS:</h1>\n";
 echo "</div>\n";
 echo "<div class=\"grid_container\">\n";
-for($i=0;$i<4;$i++)
+for($i=0;$i<5;$i++)
 {
    echo "<div class=\"grid_item\">\n";
    echo "<a class=\"link\" href=\"$links[$i]\">\n";

@@ -48,19 +48,21 @@ RewriteEngine On
 #RewriteCond %{HTTP:X-Forwarded-Proto} !https
 #RewriteCond %{HTTPS} off
 #RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-RewriteRule ^$ business_closed.png [L]
-RewriteRule ^builder-tool-download.php$ meshpage_4
-RewriteRule ^faq.php$ meshpage_5
-RewriteRule ^docs.php$ meshpage_6
-RewriteRule ^about.php$ meshpage_7
+RewriteRule ^$ business_closed.html [L]
+RewriteRule ^engine-3d-with-AI.php$ meshpage_4
+RewriteRule ^builder-tool-download.php$ meshpage_5
+RewriteRule ^faq.php$ meshpage_6
+RewriteRule ^docs.php$ meshpage_7
+RewriteRule ^about.php$ meshpage_8
 RewriteRule ^meshpage_([0-9])$ meshpage\.php?page=$1 [L]
-RewriteRule ^([0-9]+)$ meshpage\.php?p=2&id=$1 [L]
+RewriteRule ^([0-9]+)$ meshpage\.php?p=2&id=$1 [L,QSA]
 RewriteRule ^([0-9]+)_([0-9]+)$ meshpage\.php?p=$1&id=$2 [L]
 RewriteRule mesh_all mesh_all\.php [L]
 RewriteRule mesh_code mesh_code\.php [L]
 RewriteRule mesh_api mesh_api\.php [L]
 RewriteRule mesh_html mesh_html\.php [L]
 RewriteRule create_mesh create_mesh\.php [L]
+RewriteRule mesh_AI mesh_AI\.php [L]
 RewriteRule mesh_tool mesh_tool\.php [L]
 RewriteRule mesh_faq mesh_faq\.php [L]
 RewriteRule mesh_tutorial mesh_tutorial\.php [L]

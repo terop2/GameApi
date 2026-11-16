@@ -1538,6 +1538,10 @@ public:
 	    std::stringstream ss2(line);
 	    ss2 >> filename >> url >> author;
 	    int sk=g_license_filenames.size();
+	    if (g_license_urls.size()<sk || g_license_authors.size()<sk) {
+	      g_license_urls.resize(sk);
+	      g_license_authors.resize(sk);
+	    }
 	    for(int i=0;i<sk;i++)
 	      {
 		if (g_license_filenames[i]==filename) {
