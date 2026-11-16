@@ -179,12 +179,12 @@ float diff2_subst(float x) { return -x*x-1; }
 void diff_test_case1()
 {
   std::cout << "Test case #1:" << std::endl;
-  solve_diff_eq(&diff1_subst, "x*x+1", 1, std::vector<float>{0.0f}, -30.0, 30.0, 10);
+  solve_diff_eq(&diff1_subst, "x*x+1", 1, std::vector<float>{0.0f}, 0.0, 30.0, 10);
 }
 void diff_test_case2()
 {
   std::cout << "Test case #2:" << std::endl;
-  solve_diff_eq(&diff2_subst, "x*x+1", 2,std::vector<float>{0.0f,0.0f}, -30.0, 30.0, 10);  
+  solve_diff_eq(&diff2_subst, "x*x+1", 2,std::vector<float>{0.0f,0.0f}, 0.0, 30.0, 10);  
 }
 
 int main()

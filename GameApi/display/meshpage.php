@@ -170,10 +170,10 @@ $arr["id"] = $id;
 
 $user = "terop";
 
-$arr2 = array("id" => $arr["id"],
+$arr2 = array("id" => $id, //$arr["id"],
               "username" => $user,
-	      "index" => intval($arr["index"]),
-	      "num" => intval($arr["index"])+1,
+	      "index" => intval($id), //$arr["index"]),
+	      "num" => intval($id)+1, //$arr["index"])+1,
 	      "width" => 800,
 	      "height" => 600);
 

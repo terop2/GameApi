@@ -365,9 +365,10 @@ function twitter_meta( $arr, $j )
 {
   global $sitename;
   global $site;
+  global $https;
   $user = $arr["username"];
   $i = $arr["index"];
-  $filename = $site . "/user_data/user_" . $user . "/screenshot" . $i . ".webp";
+  $filename = $https . "://" . $site . "/user_data/user_" . $user . "/screenshot" . $i . ".webp";
   echo "<meta name=\"twitter:card\" content=\"summary\"/>";
   echo "<meta name=\"twitter:image\" content=\"" . $filename . "\"/>";
   $label = get_label($arr);
@@ -378,9 +379,10 @@ function twitter_meta( $arr, $j )
 function google_meta( $arr, $i )
 {
   global $site;
+  global $https;
   $user = $arr["username"];
   $i = $arr["index"];
-  $filename = $site . "/user_data/user_" . $user . "/screenshot" . $i . ".webp";
+  $filename = $https . "://" .$site . "/user_data/user_" . $user . "/screenshot" . $i . ".webp";
   $label = get_label($arr);
   echo '<meta property="og:title" content="' . $label . '"/>';
   echo '<meta property="og:description" content="3d animations"/>';
