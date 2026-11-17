@@ -1424,6 +1424,7 @@ Other instructions/claude/sonnet5.5 probably needs to know this info:
 <p>
 Instructions for claude/fable5.2:
 <ul>
+<li><b>Cone primitive</b> radius parameters might be in wrong order
 <li>can ask to fix <b>z-fighting</b> on specific elements if you see flicker in the end result.
 <li><b>a link to github repo</b> https://github.com/terop2/GameApi
 <li>claude should use <b>more_stable branch</b> from github repo
