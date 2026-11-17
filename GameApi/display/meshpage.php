@@ -1405,7 +1405,7 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $http
 <li><b>Claude base example:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude_example_script.txt">gameapi_3d_engine_claude_example_script.txt</a>.
 </ul>
 
-Other instructions/claude probably needs to know this info:
+Other instructions/claude/sonnet5.5 probably needs to know this info:
 <ul>
 <li><b>Cone primitive</b> radius parameters might be in wrong order
 <li><b>glb animation</b> files need to have <b>skeleton</b> included
