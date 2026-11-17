@@ -1422,6 +1422,14 @@ Other instructions/claude/sonnet5.5 probably needs to know this info:
 <li>claude should use <b>more_stable branch</b> from github repo
 </ul>
 <p>
+Instructions for claude/fable5.2:
+<ul>
+<li>can ask to fix <b>z-fighting</b> on specific elements if you see flicker in the end result.
+<li><b>a link to github repo</b> https://github.com/terop2/GameApi
+<li>claude should use <b>more_stable branch</b> from github repo
+
+</ul>
+<p>
 Advanced usage/web server config:
 <ul>
 <li><b>domain name + https/certbot + shared_array_buffer</b> will give you access to 8 cpus/multithreading and will speed up load time
