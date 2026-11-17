@@ -1400,11 +1400,19 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $http
 
 <b>Engine download:</b><p>
 <ul>
-<li><b>Engine deploy package:</b> <a href="https://meshpage.org/gameapi_3d_engine.zip">gameapi_3d_engine.zip</a>. (display.html has the script you need to change)
+<li><b>Engine deploy package:</b> <a href="https://meshpage.org/gameapi_3d_engine.zip">gameapi_3d_engine.zip</a>. 
 <li><b>Claude context file:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude.txt">gameapi_3d_engine_claude.txt</a>.
 <li><b>Claude base example:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude_example_script.txt">gameapi_3d_engine_claude_example_script.txt</a>.
+<li><b>Link to claude.ai:</b> <a href="https://claude.ai">claude.ai</a>.
 </ul>
-
+<p>
+Usage instructions:
+<ul>
+<li>unzip gameapi_3d_engine.zip to new web server directory
+<li>display.html from the zip file has the script you need to change
+<li>use &lt;iframe src="mywebdir/display.html" width="830" height="630" scrolling="no"&gt; to display the result in another web page.
+</ul>
+<p>
 Other instructions/claude/sonnet5.5 probably needs to know this info:
 <ul>
 <li><b>Cone primitive</b> radius parameters might be in wrong order
@@ -1413,7 +1421,12 @@ Other instructions/claude/sonnet5.5 probably needs to know this info:
 <li>claude might ask <b>a link to github repo</b> https://github.com/terop2/GameApi
 <li>claude should use <b>more_stable branch</b> from github repo
 </ul>
-
+<p>
+Advanced usage/web server config:
+<ul>
+<li><b>domain name + https/certbot + shared_array_buffer</b> will give you access to 8 cpus/multithreading and will speed up load time
+<li><b>brotli</b> compression will speed up load time
+</ul>
 
 </div> <!-- id=AI -->
 <div id="tool" class="container-lg" style="display:none;">
