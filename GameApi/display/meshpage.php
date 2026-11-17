@@ -1395,13 +1395,23 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $http
 <p>
 <h1>Using 3d engine with artificial intelligence</h1>
 
-FI32 5731 6540 0430 41 Tero Pulkkinen<br><br>
 
-Engine download:<p>
+<h3>This model can create walking simulators with OpenGL/WebGL technology</h3> 
+
+<b>Engine download:</b><p>
 <ul>
-<li>Engine deploy package: <a href="https://meshpage.org/gameapi_3d_engine.zip">gameapi_3d_engine.zip</a>.
-<li>Claude context file: <a href="https://meshpage.org/gameapi_3d_engine_claude.txt">gameapi_3d_engine_claude.txt</a>.
-<li>Claude base example: <a href="https://meshpage.org/gameapi_3d_engine_claude_example_script.txt">gameapi_3d_engine_claude_example_script.txt</a>.
+<li><b>Engine deploy package:</b> <a href="https://meshpage.org/gameapi_3d_engine.zip">gameapi_3d_engine.zip</a>.
+<li><b>Claude context file:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude.txt">gameapi_3d_engine_claude.txt</a>.
+<li><b>Claude base example:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude_example_script.txt">gameapi_3d_engine_claude_example_script.txt</a>.
+</ul>
+
+Other instructions/claude probably needs to know this info:
+<ul>
+<li><b>Cone primitive</b> radius parameters might be in wrong order
+<li><b>glb animation</b> files need to have <b>skeleton</b> included
+<li>after initial setup, it's useful to ask <b>snippets</b> from claude
+<li>claude might ask <b>a link to github repo</b> https://github.com/terop2/GameApi
+<li>claude should use <b>more_stable branch</b> from github repo
 </ul>
 
 
@@ -1417,7 +1427,6 @@ Engine download:<p>
 <p>
 <h1>builder tool download</h1>
 
-FI32 5731 6540 0430 41 Tero Pulkkinen<br><br>
 
 <?php
 require_once("user.php");
