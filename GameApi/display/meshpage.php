@@ -1393,14 +1393,14 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $http
 <div id="AI" class="container-lg" style="display:none;">
 <p>
 <p>
-<h1>Using 3d engine with artificial intelligence</h1>
+<h1>Using our 3d engine with artificial intelligence</h1>
 
 
 <h3>This model can create walking simulators with OpenGL/WebGL technology</h3> 
 
 <b>Engine download:</b><p>
 <ul>
-<li><b>Engine deploy package:</b> <a href="https://meshpage.org/gameapi_3d_engine.zip">gameapi_3d_engine.zip</a>.
+<li><b>Engine deploy package:</b> <a href="https://meshpage.org/gameapi_3d_engine.zip">gameapi_3d_engine.zip</a>. (display.html has the script you need to change)
 <li><b>Claude context file:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude.txt">gameapi_3d_engine_claude.txt</a>.
 <li><b>Claude base example:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude_example_script.txt">gameapi_3d_engine_claude_example_script.txt</a>.
 </ul>
