@@ -851,6 +851,8 @@ $connect = "no";
 echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\"></canvas>";
 echo "<iframe scrolling=\"no\" class=\"ems\" id=\"iframe\" style=\"display:none; width:800px; height:600px;\" width=\"800\” height=\"600\” oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></iframe>";
 
+
+
 if ($mobile=="yes") {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
 } else {
@@ -860,9 +862,10 @@ echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" wi
 
 ?>
 </div>
-<p>
-<p>
+
+<div id="spacer" style="height:30vw; display:none;"></div>
 <div id="addtext"></div>
+<div id="spacer2" style="height: 60px; display:block;"></div>
 <?php
   page_footer2();
   ?>
@@ -3558,20 +3561,30 @@ if ($mobile=="yes") {
 ?>
   var elem = document.getElementById("display");
   var elem2 = document.getElementById("display2");
-  if (typeof(elem)!='undefined' && elem != null) { } else { return; }
+  var elem3 = document.getElementById("spacer");
+  var elem4 = document.getElementById("spacer2");
+if (typeof(elem)!='undefined' && elem != null) { } else { return; }
 
   if (g_fullscreen==true) {
+       elem3.style.display="block";
+       elem4.style.display="none";
 	elem.style.position="absolute";
+	elem.style.top="0px";
+	elem.style.left="0px";
 	elem.style.width="100vw";
-	elem.style.height="100vw";
+	elem.style.height="56vw";
 	elem.style.object_fit="contain";
 	elem.style.aspect_ratio="16/9";
+	elem.style.z_index="10";
 
 	elem2.style.position="absolute";
+	elem2.style.top="0px";
+	elem2.style.left="0px";
 	elem2.style.width="100vw";
-	elem2.style.height="100vw";
+	elem2.style.height="56vw";
 	elem2.style.object_fit="contain";
 	elem2.style.aspect_ratio="16/9";
+	elem2.style.z_index="10";
  } else {
 
 elem.style.width = (wd).toString() + "px";
@@ -3588,23 +3601,35 @@ elem.style.width = (wd).toString() + "px";
 
   if (g_fullscreen==true) {
 
+  iframe.style.top = "0px";
+  iframe.style.left = "0px";
   iframe.style.width = "100vw";
-  iframe.style.height = "100vw";
+  iframe.style.height = "56vw";
+  iframe.style.z_index="10";
 
   var iframe3 = document.getElementById("iframe");
   iframe3.style.width = "100vw";
-  iframe3.style.height = "100vw";
+  iframe3.style.height = "56vw";
+  iframe3.style.top = "0px";
+  iframe3.style.left = "0px";
+  iframe3.style.z_index="10";
 
   var iframe2 = document.getElementById("canvas2");
   if (!iframe2) return;
   iframe2.style.width = "100vw";	
-  iframe2.style.height = "100vw";
+  iframe2.style.height = "56vw";
+  iframe2.style.top = "0px";
+  iframe2.style.left = "0px";
+  iframe2.style.z_index="10";
 
 
   var iframe3 = document.getElementById("gpucanvas");
   if (!iframe3) return;
   iframe3.style.width = "100vw";
-  iframe3.style.height = "100vw";
+  iframe3.style.height = "56vw";
+  iframe3.style.top = "0px";
+  iframe3.style.left = "0px";
+  iframe3.style.z_index="10";
 
 
 
@@ -3725,29 +3750,37 @@ function choose_fullscreen2(id, txt)
 {
    var el = document.getElementById("iframe");
    var el2 = document.getElementById("canvas");
-   console.log("FULLSCREEN2");
+   var el3 = document.getElementById("spacer");
+   var el4 = document.getElementById("spacer2");
+console.log("FULLSCREEN2");
    console.log(txt);
    console.log("FULLSCREEN OVER");
    if (txt=="1")
    {
       g_fullscreen = true;
+      el3.style.display="block";
+       el4.style.display="none";
 	el.style.position="absolute";
 	el.style.width="100vw";
-	el.style.height="100vw";
+	el.style.height="56vw";
 	el.style.object_fit="contain";
 	el.style.aspect_ratio="16/9";
 	el.style.top="0px";
 	el.style.left="0px";
+  	el.style.z_index="10";
 
 	el2.style.position="absolute";
 	el2.style.width="100vw";
-	el2.style.height="100vw";
+	el2.style.height="56vw";
 	el2.style.object_fit="contain";
 	el2.style.aspect_ratio="16/9";
 	el2.style.top="0px";
 	el2.style.left="0px";
-
+  	el2.style.z_index="10";
+	window.scrollTo(0,0);
    } else {
+      el3.style.display="none";
+       el4.style.display="block";
     g_fullscreen = false;
    }
 
