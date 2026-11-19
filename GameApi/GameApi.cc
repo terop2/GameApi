@@ -25362,6 +25362,7 @@ extern GameApi::M g_view_rot;
 
 bool g_is_quakeml=false;
 float quake_pos_height = 0.0f;
+float quake_push_x = 0.0f, quake_push_z = 0.0f;
 
 class QuakeML : public MainLoopItem
 {
@@ -25381,6 +25382,14 @@ public:
     g_is_quake=true;
     g_is_quakeml=true;
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
+    if (quake_push_x != 0.0f || quake_push_z != 0.0f)
+      {
+	Point d = Point(-quake_push_x, 0.0f, -quake_push_z) *
+	  Matrix::Inverse(Matrix::YRotation(rot_y)*Matrix::Scale(1.0,1.0,-1.0));
+	pos_x += d.x; pos_y += d.z;
+	quake_push_x = 0.0f;
+	quake_push_z = 0.0f;
+      }
     quake_pos_x = pos_x;
     quake_pos_y = pos_y;
     quake_rot_y = rot_y;
@@ -25507,6 +25516,250 @@ GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, flo
   MainLoopItem *mml = find_main_loop(e,ml4);
   return add_main_loop(e, new QuakeML(e,ev, mml, speed, rot_speed));
 }
+
+class QuakeGround : public MainLoopItem
+{
+public:
+  QuakeGround(GameApi::EveryApi &ev, MainLoopItem *next, FaceCollection *ground, float climb_speed) : ev(ev), next(next), ground(ground), climb_speed(climb_speed) { }
+  ~QuakeGround() { quake_pos_height = 0.0f; }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    ground->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { }
+  void Prepare() { next->Prepare(); ground->Prepare(); }
+
+  // The faces' heights on a net over their extent in x and z: the highest face over each cell.
+  bool make_heights()
+  {
+    int faces = ground->NumFaces();
+    if (faces<=0) return false;
+    min_x = min_z = 1e30f; max_x = max_z = -1e30f;
+    for(int f=0;f<faces;f++) {
+      int n = ground->NumPoints(f);
+      // a face without extent in x and z (such as one put in only to span a box) has no height to give
+      float fx0=1e30f, fx1=-1e30f, fz0=1e30f, fz1=-1e30f;
+      for(int i=0;i<n;i++) { Point p = ground->FacePoint(f,i); fx0=std::min(fx0,p.x); fx1=std::max(fx1,p.x); fz0=std::min(fz0,p.z); fz1=std::max(fz1,p.z); }
+      if (n<3 || fx1-fx0<1e-6f || fz1-fz0<1e-6f || flat_area(f)<1e-9f) continue;
+      min_x=std::min(min_x,fx0); max_x=std::max(max_x,fx1); min_z=std::min(min_z,fz0); max_z=std::max(max_z,fz1);
+    }
+    if (max_x<=min_x || max_z<=min_z) return false;
+    heights.assign(cells*cells, -1e30f);
+    for(int f=0;f<faces;f++) {
+      int n = ground->NumPoints(f);
+      if (n<3 || flat_area(f)<1e-9f) continue;
+      Point a = ground->FacePoint(f,0);
+      for(int i=1;i+1<n;i++) triangle(a, ground->FacePoint(f,i), ground->FacePoint(f,i+1));
+    }
+    // cells no face reached take their neighbours' height
+    for(int pass=0;pass<cells;pass++) {
+      bool open = false;
+      std::vector<float> next_heights = heights;
+      for(int z=0;z<cells;z++)
+	for(int x=0;x<cells;x++) {
+	  if (heights[z*cells+x]>-1e29f) continue;
+	  float sum=0.0f; int count=0;
+	  for(int k=0;k<4;k++) {
+	    int xx = x+(k==0)-(k==1), zz = z+(k==2)-(k==3);
+	    if (xx<0||zz<0||xx>=cells||zz>=cells||heights[zz*cells+xx]<-1e29f) continue;
+	    sum+=heights[zz*cells+xx]; count++;
+	  }
+	  if (count) next_heights[z*cells+x]=sum/count; else open=true;
+	}
+      heights = next_heights;
+      if (!open) break;
+    }
+    return true;
+  }
+  float flat_area(int f) const
+  {
+    Point a = ground->FacePoint(f,0), b = ground->FacePoint(f,1), c = ground->FacePoint(f,2);
+    return fabs((b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z));
+  }
+  float cell_x(float x) const { return (x-min_x)/(max_x-min_x)*cells-0.5f; }
+  float cell_z(float z) const { return (z-min_z)/(max_z-min_z)*cells-0.5f; }
+  void triangle(Point a, Point b, Point c)
+  {
+    float den = (b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);
+    if (fabs(den)<1e-9f) return;
+    int x0 = std::max(0,int(floor(cell_x(std::min(a.x,std::min(b.x,c.x)))))), x1 = std::min(cells-1,int(ceil(cell_x(std::max(a.x,std::max(b.x,c.x))))));
+    int z0 = std::max(0,int(floor(cell_z(std::min(a.z,std::min(b.z,c.z)))))), z1 = std::min(cells-1,int(ceil(cell_z(std::max(a.z,std::max(b.z,c.z))))));
+    for(int z=z0;z<=z1;z++)
+      for(int x=x0;x<=x1;x++) {
+	float px = min_x+(x+0.5f)/cells*(max_x-min_x), pz = min_z+(z+0.5f)/cells*(max_z-min_z);
+	float u = ((b.z-c.z)*(px-c.x)+(c.x-b.x)*(pz-c.z))/den, v = ((c.z-a.z)*(px-c.x)+(a.x-c.x)*(pz-c.z))/den;
+	if (u<-0.02f||v<-0.02f||u+v>1.02f) continue;
+	heights[z*cells+x] = std::max(heights[z*cells+x], u*a.y+v*b.y+(1.0f-u-v)*c.y);
+      }
+  }
+  float height_at(float x, float z) const
+  {
+    float fx = std::min(std::max(cell_x(x),0.0f),cells-1.001f), fz = std::min(std::max(cell_z(z),0.0f),cells-1.001f);
+    int ix = int(fx), iz = int(fz);
+    float tx = fx-ix, tz = fz-iz;
+    return (heights[iz*cells+ix]*(1-tx)+heights[iz*cells+ix+1]*tx)*(1-tz) + (heights[(iz+1)*cells+ix]*(1-tx)+heights[(iz+1)*cells+ix+1]*tx)*tz;
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (!ready) ready = make_heights();
+    if (ready) {
+      // QuakeML2 turns the scene about the walker, who stands at (0,y,400) of the view.
+      Matrix m = e.in_MV * e.in_T;
+      Point under = Point(0.0f,0.0f,400.0f) * Matrix::Inverse(m);
+      float y = (Point(under.x, height_at(under.x,under.z), under.z) * m).y;  // where the ground under the walker is drawn now
+      if (!have_start) { start_y = y - quake_pos_height; have_start = true; }
+      float target = quake_pos_height + (start_y - y);
+      float step = fabs(climb_speed) * ev.mainloop_api.get_delta_time()*7.0f;  // the walker's own measure of speed
+      if (target > quake_pos_height) quake_pos_height = std::min(target, quake_pos_height+step);
+      else quake_pos_height = std::max(target, quake_pos_height-step);
+    }
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  FaceCollection *ground;
+  float climb_speed;
+  static const int cells = 256;
+  std::vector<float> heights;
+  float min_x=0.0f, max_x=0.0f, min_z=0.0f, max_z=0.0f;
+  bool ready = false, have_start = false;
+  float start_y = 0.0f;
+};
+
+class QuakeCollide : public MainLoopItem
+{
+public:
+  QuakeCollide(MainLoopItem *next, FaceCollection *faces, float radius, float height) : next(next), faces(faces), radius(radius), height(height) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    faces->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { }
+  void Prepare() { next->Prepare(); faces->Prepare(); }
+
+  static bool has_area(Point a, Point b, Point c) { return Vector::CrossProduct(b-a,c-a).Dist()>1e-9f; }
+  bool make_cells()
+  {
+    int count = faces->NumFaces();
+    if (count<=0) return false;
+    lo = Point(1e30f,1e30f,1e30f); hi = Point(-1e30f,-1e30f,-1e30f);
+    bool any = false;
+    for(int f=0;f<count;f++) {
+      int n = faces->NumPoints(f);
+      if (n<3 || !has_area(faces->FacePoint(f,0),faces->FacePoint(f,1),faces->FacePoint(f,2))) continue;  // such as a face put in only to span a box
+      for(int i=0;i<n;i++) {
+	Point p = faces->FacePoint(f,i);
+	lo.x=std::min(lo.x,p.x); lo.y=std::min(lo.y,p.y); lo.z=std::min(lo.z,p.z);
+	hi.x=std::max(hi.x,p.x); hi.y=std::max(hi.y,p.y); hi.z=std::max(hi.z,p.z);
+	any = true;
+      }
+    }
+    if (!any || hi.x<=lo.x || hi.y<=lo.y || hi.z<=lo.z) return false;
+    cells.assign((size_t(nx)*ny*nz+31)/32, 0u);
+    float cell = std::min((hi.x-lo.x)/nx, std::min((hi.y-lo.y)/ny, (hi.z-lo.z)/nz));
+    for(int f=0;f<count;f++) {
+      int n = faces->NumPoints(f);
+      if (n<3) continue;
+      Point a = faces->FacePoint(f,0);
+      for(int i=1;i+1<n;i++) {
+	Point b = faces->FacePoint(f,i), c = faces->FacePoint(f,i+1);
+	if (!has_area(a,b,c)) continue;
+	float longest = std::max((b-a).Dist(), std::max((c-a).Dist(), (c-b).Dist()));
+	int steps = std::min(400, std::max(1, int(ceil(longest/(cell*0.5f)))));
+	for(int u=0;u<=steps;u++)
+	  for(int v=0;u+v<=steps;v++) {
+	    float fu = float(u)/steps, fv = float(v)/steps;
+	    mark(Point(a.x+(b.x-a.x)*fu+(c.x-a.x)*fv, a.y+(b.y-a.y)*fu+(c.y-a.y)*fv, a.z+(b.z-a.z)*fu+(c.z-a.z)*fv));
+	  }
+      }
+    }
+    return true;
+  }
+  int cx(float x) const { return int(floor((x-lo.x)/(hi.x-lo.x)*nx)); }
+  int cy(float y) const { return int(floor((y-lo.y)/(hi.y-lo.y)*ny)); }
+  int cz(float z) const { return int(floor((z-lo.z)/(hi.z-lo.z)*nz)); }
+  void mark(Point p)
+  {
+    int x = std::min(nx-1,std::max(0,cx(p.x))), y = std::min(ny-1,std::max(0,cy(p.y))), z = std::min(nz-1,std::max(0,cz(p.z)));
+    size_t i = (size_t(y)*nz+z)*nx+x;
+    cells[i/32] |= 1u<<(i%32);
+  }
+  bool marked(int x, int y, int z) const
+  {
+    if (x<0||y<0||z<0||x>=nx||y>=ny||z>=nz) return false;
+    size_t i = (size_t(y)*nz+z)*nx+x;
+    return (cells[i/32]>>(i%32))&1u;
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (!ready) ready = make_cells();
+    if (ready) {
+      // QuakeML2 turns the scene about the walker, who stands at (0,y,400) of the view with the eye at y=0.
+      Matrix m = e.in_MV * e.in_T;
+      Matrix back = Matrix::Inverse(m);
+      Point eye = Point(0.0f,0.0f,400.0f) * back;
+      Point origin = Point(0.0f,0.0f,0.0f) * back;
+      float scale = ((Point(1.0f,0.0f,0.0f) * back) - origin).Dist();  // the length here of one unit of the view
+      float r = fabs(radius)*scale;
+      Point foot = Point(0.0f,-fabs(height),400.0f) * back;
+      float sx = (hi.x-lo.x)/nx, sz = (hi.z-lo.z)/nz;
+      int y0 = cy(std::min(eye.y,foot.y)), y1 = cy(std::max(eye.y,foot.y));
+      float away_x = 0.0f, away_z = 0.0f, nearest = 1e30f;
+      for(int z=cz(eye.z-r);z<=cz(eye.z+r);z++)
+	for(int x=cx(eye.x-r);x<=cx(eye.x+r);x++) {
+	  float dx = eye.x-(lo.x+(x+0.5f)*sx), dz = eye.z-(lo.z+(z+0.5f)*sz);
+	  float dist = sqrt(dx*dx+dz*dz);
+	  if (dist>r || dist<1e-6f) continue;
+	  bool hit = false;
+	  for(int y=y0;y<=y1&&!hit;y++) hit = marked(x,y,z);
+	  if (!hit) continue;
+	  away_x += dx/dist*(r-dist); away_z += dz/dist*(r-dist);
+	  nearest = std::min(nearest,dist);
+	}
+      float len = sqrt(away_x*away_x+away_z*away_z);
+      if (nearest<1e29f && len>1e-6f) {
+	float push = std::min(r, r-nearest+0.05f*std::max(sx,sz));
+	Point moved = Point(eye.x+away_x/len*push, eye.y, eye.z+away_z/len*push) * m;  // where the walker should be, in the view
+	quake_push_x += moved.x; quake_push_z += moved.z-400.0f;
+      }
+    }
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+  FaceCollection *faces;
+  float radius, height;
+  static const int nx = 384, ny = 128, nz = 384;
+  std::vector<unsigned int> cells;
+  Point lo, hi;
+  bool ready = false;
+};
+
+GameApi::ML GameApi::MovementNode::quake_collide(EveryApi &ev, ML ml, P obstacles, float radius, float height)
+{
+  MainLoopItem *mml = find_main_loop(e,ml);
+  FaceCollection *faces = find_facecoll(e,obstacles);
+  return add_main_loop(e, new QuakeCollide(mml, faces, radius, height));
+}
+
+GameApi::ML GameApi::MovementNode::quake_ground(EveryApi &ev, ML ml, P ground, float climb_speed)
+{
+  MainLoopItem *mml = find_main_loop(e,ml);
+  FaceCollection *faces = find_facecoll(e,ground);
+  return add_main_loop(e, new QuakeGround(ev, mml, faces, climb_speed));
+}
+
 
 
 float find_area_y(GameApi::Env &e, float pos_x, float pos_z);

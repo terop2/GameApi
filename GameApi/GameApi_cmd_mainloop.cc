@@ -1195,6 +1195,18 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::qua
 			 { "ev", "", "20.0", "0.03" },
 			 "ML", "move_api", "quake_ml2"));
 #endif
+ vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::quake_ground,
+			 "quake_ground",
+			 { "ev", "ml", "ground", "climb_speed" },
+			 { "EveryApi&", "ML", "P", "float" },
+			 { "ev", "", "", "60.0" },
+			 "ML", "move_api", "quake_ground"));
+vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::quake_collide,
+			 "quake_collide",
+			 { "ev", "ml", "obstacles", "radius", "height" },
+			 { "EveryApi&", "ML", "P", "float", "float" },
+			 { "ev", "", "", "60.0", "300.0" },
+			 "ML", "move_api", "quake_collide"));
 #if (ALL==1)||(QUAKE_ML3==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::quake_ml3,
 			 "fly_ml",

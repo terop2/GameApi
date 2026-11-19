@@ -2204,6 +2204,8 @@ public:
   IMPORT ML wasd(EveryApi &ev, ML ml, MN w, MN a, MN s, MN d, float duration);
   IMPORT ML quake_ml(EveryApi &ev, ML ml, float speed, float rot_speed);
   IMPORT ML quake_ml2(EveryApi &ev, ML ml, float speed, float rot_speed);
+  IMPORT ML quake_ground(EveryApi &ev, ML ml, P ground, float climb_speed);
+  IMPORT ML quake_collide(EveryApi &ev, ML ml, P obstacles, float radius, float height);
   IMPORT ML quake_ml3(EveryApi &ev, ML ml, ML ml2, float speed, float rot_speed, float p_x, float p_y, float p_z);
   IMPORT ML key_printer_ml(ML ml);
   IMPORT ML local_move(EveryApi &ev, ML inner_ml, PTS center_points);
