@@ -3235,14 +3235,14 @@ public:
       bool found = true;
       // if this loop finds infinite amount of data/goes to infinite loop, you might have f=g.
       while(found) {
-	float pos = first_intersection_float(t,start_range, end_range,delta, found);
+	float pos = eq.first_intersection_float(t,start_range, end_range,delta, found);
 	if (found) roots.push_back(pos);
 	start_range = pos + 2.0*delta;
       }
     }
     bool is_root(T t, float x) const {
       int s = roots.size();
-      for(int i=0;i<s;i++) if (eq.compare_y(eq.f(get_x(t,roots[i])),eq.g(x))) return true;
+      for(int i=0;i<s;i++) if (eq.compare_y(eq.f(eq.get_x(t,roots[i])),eq.g(x))) return true;
       return false;
     }
     X equalizer_subset(T t, float x) const

@@ -12,7 +12,8 @@ int hhhh_gggg=1;
 #include "Tasks.hh"
 #include <unordered_set>
 #include "MaterialI.hh"
-
+#include <mutex>
+#include <atomic>
 
 #ifdef EMSCRIPTEN
 #define ASYNC_JOIN 1
@@ -707,6 +708,7 @@ int g_loadgltf_uni_id = 0;
 int splitter_cb_count();
 class LoadGltf : public CollectInterface
 {
+  std::recursive_mutex preprepare_mutex;
 public:
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
     //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
@@ -1074,6 +1076,7 @@ public:
   }
   void PrePrePrepare(int i, FETCHID id)
   {
+    std::lock_guard<std::recursive_mutex> preprepare_guard(preprepare_mutex);
     //std::cout << "LoadGltf::PrePrePrepare" << std::endl;
     if (!decoder) { stackTrace(); std::cout << "PrePrePrepare::nodecoder" << std::endl; return; }
     //std::cout << "PrePrePrepare" << i << std::endl;
@@ -2268,10 +2271,12 @@ void *thread_func_gltf_bitmap(void *data2)
     for(int y=0;y<new_h;y++)
       for(int x=0;x<new_w;x++)
 	{
-	  unsigned int *ptr = (unsigned int*)(data + (y*reduce)*h*comp*(bits/8) + (x*reduce)*comp*(bits/8));
-	  unsigned int val = *ptr;
-	  unsigned int *ptr2 = (unsigned int*)((&image->image[0]) + (y*new_h*comp*(bits/8)) + (x*comp*(bits/8)));
-	  *ptr2 = val;			      
+	  //unsigned int *ptr = (unsigned int*)(data + (y*reduce)*h*comp*(bits/8) + (x*reduce)*comp*(bits/8));
+	  //unsigned int val = *ptr;
+	  //unsigned int *ptr2 = (unsigned int*)((&image->image[0]) + (y*new_h*comp*(bits/8)) + (x*comp*(bits/8)));
+	  //*ptr2 = val;
+	  const int px = comp*(bits/8);
+	  std::memcpy((&image->image[0]) + (size_t(y)*new_w + x)*px, data + (size_t(y)*reduce*w + size_t(x)*reduce)*px, px);
 	 }
     image->width = new_w;
     image->height= new_h;
@@ -10818,6 +10823,14 @@ private:
   GameApi::TRB transfer_id;
 };
 
+struct FacePointCache { int owner=-1; int face[4]={-1,-1,-1,-1}; Point res[4]; };
+static int new_facepoint_cache_id() { static std::atomic<int> next{0}; return next++; }
+static FacePointCache &facepoint_cache(int owner)
+{
+  thread_local FacePointCache c;
+  if (c.owner!=owner) { c=FacePointCache(); c.owner=owner; }
+  return c;
+}
 
 class GltfMeshAllP : public FaceCollection
 {
@@ -10898,18 +10911,21 @@ public:
     return coll->NumPoints(face);
   }
   virtual Point FacePoint(int face, int point) const {
-      if (point==0&&cache_0&&cache_face_0==face) { return cache_res_0; }
-      if (point==1&&cache_1&&cache_face_1==face) { return cache_res_1; }
-      if (point==2&&cache_2&&cache_face_2==face) { return cache_res_2; }
-      if (point==3&&cache_3&&cache_face_3==face) { return cache_res_3; }
+    // if (point==0&&cache_0&&cache_face_0==face) { return cache_res_0; }
+    // if (point==1&&cache_1&&cache_face_1==face) { return cache_res_1; }
+    //  if (point==2&&cache_2&&cache_face_2==face) { return cache_res_2; }
+    //  if (point==3&&cache_3&&cache_face_3==face) { return cache_res_3; }
+    FacePointCache &c = facepoint_cache(cache_id);
+    if (point>=0 && point<4 && c.face[point]==face) { return c.res[point]; }
     if (res.id==-1) return Point(0.0,0.0,0.0);
     FaceCollection *coll = find_facecoll(env,res);
     if (!coll) return Point(0.0,0.0,0.0);
     Point p = coll->FacePoint(face,point);
-    if (point==0) { cache_res_0=p; cache_0=true; cache_face_0=face;}
-    if (point==1) { cache_res_1=p; cache_1=true; cache_face_1=face;}
-    if (point==2) { cache_res_2=p; cache_2=true; cache_face_2=face;}
-    if (point==3) { cache_res_3=p; cache_3=true; cache_face_3=face;}
+    //if (point==0) { cache_res_0=p; cache_0=true; cache_face_0=face;}
+    //if (point==1) { cache_res_1=p; cache_1=true; cache_face_1=face;}
+    //if (point==2) { cache_res_2=p; cache_2=true; cache_face_2=face;}
+    //if (point==3) { cache_res_3=p; cache_3=true; cache_face_3=face;}
+    if (point>=0 && point<4) { c.res[point]=p; c.face[point]=face; }
     return p;
   }
   virtual Vector PointNormal(int face, int point) const
@@ -11024,15 +11040,15 @@ private:
   GLTFModelInterface *interface;
   GameApi::P res;
 private:
-  mutable int cache_face_0=-1;
-  mutable int cache_face_1=-1;
-  mutable int cache_face_2=-1;
-  mutable int cache_face_3=-1;
-  mutable Point cache_res_0; mutable bool cache_0=false;
-  mutable Point cache_res_1; mutable bool cache_1=false;
-  mutable Point cache_res_2; mutable bool cache_2=false;
-  mutable Point cache_res_3; mutable bool cache_3=false;
-  
+  //mutable int cache_face_0=-1;
+  //mutable int cache_face_1=-1;
+  //mutable int cache_face_2=-1;
+  //mutable int cache_face_3=-1;
+  //mutable Point cache_res_0; mutable bool cache_0=false;
+  //mutable Point cache_res_1; mutable bool cache_1=false;
+  //mutable Point cache_res_2; mutable bool cache_2=false;
+  //mutable Point cache_res_3; mutable bool cache_3=false;
+  const int cache_id = new_facepoint_cache_id();
   };
 
 std::vector<int> get_tinygltf_nodes( GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num)
@@ -11663,18 +11679,21 @@ public:
     return coll->NumPoints(face);
   }
   virtual Point FacePoint(int face, int point) const {
-      if (point==0&&cache_0&&cache_face_0==face) { return cache_res_0; }
-      if (point==1&&cache_1&&cache_face_1==face) { return cache_res_1; }
-      if (point==2&&cache_2&&cache_face_2==face) { return cache_res_2; }
-      if (point==3&&cache_3&&cache_face_3==face) { return cache_res_3; }
+    // if (point==0&&cache_0&&cache_face_0==face) { return cache_res_0; }
+    //  if (point==1&&cache_1&&cache_face_1==face) { return cache_res_1; }
+    //  if (point==2&&cache_2&&cache_face_2==face) { return cache_res_2; }
+    //  if (point==3&&cache_3&&cache_face_3==face) { return cache_res_3; }
+    FacePointCache &c = facepoint_cache(cache_id);
+    if (point>=0 && point<4 && c.face[point]==face) { return c.res[point]; }
     if (res.id==-1) return Point(0.0,0.0,0.0);
     FaceCollection *coll = find_facecoll(env,res);
     if (!coll) return Point(0.0,0.0,0.0);
     Point p = coll->FacePoint(face,point);
-    if (point==0) { cache_res_0=p; cache_0=true; cache_face_0=face;}
-    if (point==1) { cache_res_1=p; cache_1=true; cache_face_1=face;}
-    if (point==2) { cache_res_2=p; cache_2=true; cache_face_2=face;}
-    if (point==3) { cache_res_3=p; cache_3=true; cache_face_3=face;}
+    //if (point==0) { cache_res_0=p; cache_0=true; cache_face_0=face;}
+    //if (point==1) { cache_res_1=p; cache_1=true; cache_face_1=face;}
+    //if (point==2) { cache_res_2=p; cache_2=true; cache_face_2=face;}
+    //if (point==3) { cache_res_3=p; cache_3=true; cache_face_3=face;}
+    if (point>=0&&point<4) { c.res[point]=p; c.face[point]=face; }
     return p;
   }
   virtual Vector PointNormal(int face, int point) const
@@ -11778,14 +11797,15 @@ private:
   GLTFModelInterface *interface;
   GameApi::P res;
 private:
-  mutable int cache_face_0=-1;
-  mutable int cache_face_1=-1;
-  mutable int cache_face_2=-1;
-  mutable int cache_face_3=-1;
-  mutable Point cache_res_0; mutable bool cache_0=false;
-  mutable Point cache_res_1; mutable bool cache_1=false;
-  mutable Point cache_res_2; mutable bool cache_2=false;
-  mutable Point cache_res_3; mutable bool cache_3=false;
+  //mutable int cache_face_0=-1;
+  //mutable int cache_face_1=-1;
+  //mutable int cache_face_2=-1;
+  //mutable int cache_face_3=-1;
+  //mutable Point cache_res_0; mutable bool cache_0=false;
+  //mutable Point cache_res_1; mutable bool cache_1=false;
+  //mutable Point cache_res_2; mutable bool cache_2=false;
+  //mutable Point cache_res_3; mutable bool cache_3=false;
+  const int cache_id = new_facepoint_cache_id();
   int i;
   static std::map<GLTFModelInterface*,GameApi::ARR> g_cache;
   static std::map<GLTFModelInterface*,GameApi::P> g_cache2;
@@ -12839,7 +12859,7 @@ public:
 	    if (scene.nodes.size()>0) {
 	      start_node = scene.nodes[0];
 	      if (scene.nodes.size()>1) std::cout << "ERROR: Possibly not all scene nodes rendered" << std::endl;
-	      if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
+	      //if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
 	      //std::cout << "scene_node=" << start_node << std::endl;
 	    }
 	    else {
@@ -12909,7 +12929,7 @@ public:
 	    if (scene.nodes.size()>0) {
 	      start_node = scene.nodes[0];
 	      if (scene.nodes.size()>1) std::cout << "ERROR: Possibly not all scene nodes rendered" << std::endl;
-	      if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
+	      //if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
 	      //std::cout << "scene_node=" << start_node << std::endl;
 	    }
 	    else {

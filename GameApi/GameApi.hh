@@ -2934,6 +2934,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT ML landscape_height(P p, float height);
   IMPORT P sum(std::vector<P> vec);
   IMPORT P mult(P p, float val);
   IMPORT P core_interpolate(std::vector<P> vec, std::vector<float> mult);

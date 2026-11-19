@@ -77,11 +77,12 @@ public:
       {
 	m_set[(*it).first] = (*it).second; //new Polys(*(*it).second);
       }
-    const VertexArraySet *curr = &s;
-    while (curr->m_ref) { curr=curr->m_ref; }
-    curr->ref_count++;
-    ref_count=0;
-    m_ref = &s;
+    //const VertexArraySet *curr = &s;
+    //while (curr->m_ref) { curr=curr->m_ref; }
+    //curr->ref_count++;
+    //ref_count=0;
+    //m_ref = &s;
+    m_owner = s.m_owner;
     bm_id = 0;
     texture_id = s.texture_id;
     texture_many_ids = s.texture_many_ids;
@@ -307,8 +308,13 @@ public:
   static void append_to_polys(VertexArraySet::Polys &target, const VertexArraySet::Polys &source);
 
   mutable std::mymap<int, Polys*> m_set;
-  mutable int ref_count=0;
-  mutable const VertexArraySet *m_ref=0;
+  //mutable int ref_count=0;
+  //mutable const VertexArraySet *m_ref=0;
+  struct PolysOwner {
+    std::vector<Polys*> polys;
+    ~PolysOwner();
+  };
+  std::shared_ptr<PolysOwner> m_owner = std::make_shared<PolysOwner>();
   bool has_normal=true;
   bool has_attrib=false;
   bool has_color=true;

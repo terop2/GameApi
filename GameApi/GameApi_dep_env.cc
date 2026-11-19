@@ -10,6 +10,7 @@
 #endif
 
 #include <atomic>
+#include <mutex>
 #ifndef WINDOWS
 #include <thread>
 #include <chrono>
@@ -300,7 +301,7 @@ std::cout << "You should check if element exists before calling async_get" << st
 
 del_map g_del_map_impl;
 del_map_interface &g_del_map = g_del_map_impl;
-bool g_del_map_deleter_installed=false;
+std::atomic<bool> g_del_map_deleter_installed(false);
 
 
 class ASyncDataFetcher : public GameApi::ASyncVec
@@ -365,10 +366,13 @@ GameApi::ASyncVec *del_map::async_get2(std::string url)
 	VECENTRY &e = load_url_buffers_async[i];
 	//std::cout << "COMPARE:'" << e.first << "' '" << url << "'" << std::endl;
 	if (e.first == url)
-	  { ret=e;
+	  //	  { ret=e;
+	  {
+	    GameApi::ASyncVec *found = new ASyncDataFetcher(e.second);
 	    pthread_mutex_unlock(&lock);
 	    //std::cout << "FOUND" << std::endl;
-	    return new ASyncDataFetcher(e.second); // WAS ret.
+	    //	    return new ASyncDataFetcher(e.second); // WAS ret.
+	    return found;
 	  }
       }
 std::cout << "You should check if element exists before calling async_get" << std::endl;
@@ -434,9 +438,13 @@ extern task_interface &g_tasks;
 
 void *task_queue_consumer(void *data)
 {
-  static int task_num = 0;
-  task_num++;
-  int task_num2 = task_num;
+  //static int task_num = 0;
+  //task_num++;
+  //int task_num2 = task_num;
+  static std::atomic<int> task_num(0);
+  int task_num2 = ++task_num;
+
+  
   while(1)
     {
       //std::cout << "Tasks loop" << task_num2 << std::endl;
@@ -537,7 +545,9 @@ pthread_mutex_t *g_m_mutex = 0;
 
 EXPORT void tasks_done_queue_clear()
 {
+  if (g_queue_mutex) pthread_mutex_lock(g_queue_mutex);
   g_queue_tasks_done->clear();
+  if (g_queue_mutex) pthread_mutex_unlock(g_queue_mutex);
 }
 
 
@@ -839,9 +849,11 @@ int count_tasks_with_id(int id, std::vector<task_data> *data)
 
 IMPORT void tasks_async_join_m(int id, void (*fptr)(void*), void *data)
 {
+  if (g_queue_mutex) pthread_mutex_lock(g_queue_mutex);
   int a1 = count_tasks_with_id(id,g_queue);
   int a2 = count_tasks_with_id(id,g_tasks_in_execute);
   int a3 = count_tasks_with_id(id,g_queue_tasks_done);
+  if (g_queue_mutex) pthread_mutex_unlock(g_queue_mutex);
   if (a1+a2+a3 == 0)
     {
       //std::cout << "No tasks in queues, " << id << ", sending cb and existing.." << std::endl;
@@ -1131,10 +1143,17 @@ public:
     //std::cout << "pushing to queue" << d.num << std::endl;
     queue_mutex_start();
     queue.push_back(d);
+    queue_mutex_end();
     pthread_mutex_lock(mutex);
     pthread_cond_signal(cond);
     pthread_mutex_unlock(mutex);
+  }
+  bool queue_is_empty_locked()
+  {
+    queue_mutex_start();
+    bool b = queue.size()==0;
     queue_mutex_end();
+    return b;
   }
   virtual bool queue_has_data()
   {
@@ -1186,7 +1205,7 @@ public:
     //check_for_progressbar(NULL);
     
     pthread_mutex_lock(mutex);
-    while(queue.size()==0&&!m_shutdown_ongoing)
+    while(queue_is_empty_locked()&&!m_shutdown_ongoing)
       {
 	//pthread_cond_wait(cond, mutex);
 	int val = wait_with_timeout(cond,mutex,300);
@@ -1714,6 +1733,7 @@ private:
 
       
       emscripten_fetch(&attr, ptr);
+      delete [] ptr;
     } else { // split tool+brotli can be used to split the files beforehand, 1M blocks
       int id1 = id / 26;
       int id2 = id - (id1*26);
@@ -1729,6 +1749,7 @@ private:
       std::copy(url2.begin(),url2.end(),ptr);
       ptr[url2.size()]=0;
       emscripten_fetch(&attr, ptr);
+      delete [] ptr;
     }
     async_pending_count++;
   }
@@ -1736,9 +1757,9 @@ public:
   void fetch_success(emscripten_fetch_t *fetch)
   {
     
-    async_pending_count--;
     // std::cout << "fetch_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << " " << fetch->status << std::endl;
     if (!fetch || !fetch->data || !fetch->numBytes) { fetch_failed(fetch); return; } 
+    async_pending_count--;
     FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
     //std::cout << fetch->statusText << std::endl;
     //std::cout << fetch->status << std::endl;
@@ -1872,20 +1893,41 @@ public:
   {
     async_pending_count--;
     std::cout << "fetch_failed" << std::endl;
+    FetchInBlocksUserData *ptr = fetch ? (FetchInBlocksUserData*)(fetch->userData) : 0;
+    int blk = ptr ? ptr->block_num : -1;
+    delete ptr;
+    if (fetch) emscripten_fetch_close(fetch);
+    if (gave_up) return;
+
     failcount++;
-    if (failcount>10) {
+    if (failcount>10 || blk<0) {
       std::cout << "FetchInBlocks::chunk_failed()" << std::endl;
-      g_error_urls.push_back(url);
+      //g_error_urls.push_back(url);
+      gave_up = true;
+      g_num_pending_concurrent_downloads--;
+      if (g_num_pending_concurrent_downloads<0) g_num_pending_concurrent_downloads=0;
       failed(data);
-      emscripten_fetch_close(fetch);
+      //emscripten_fetch_close(fetch);
     }
     else
       {
-	FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
-	int blk = ptr->block_num;
+	//FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
+	//int blk = ptr->block_num;
 	fetch_block(blk);
       }
   }
+  void no_range()
+  {
+    async_pending_count--;
+        std::cout << "Warning: You probably don't have http Range requests enabled!" << std::endl;
+    std::cout << "Recommended solution (in .htaccess):" << std::endl;
+    std::cout << "<IfModule mod_headers.c>" << std::endl;
+    std::cout << "   Header set Access-Control-Expose-Headers \"Content-Length, Content-Range\""<< std::endl;
+    std::cout << "</IfModule>" << std::endl;
+    gave_up = true;
+    failed_after_size(0,-1);
+  }
+  bool gave_up = false;
 public:
   std::string url;
   std::string url2;
@@ -1907,6 +1949,7 @@ EMSCRIPTEN_KEEPALIVE
 extern "C" void head_result(const char *ptr, void *data)
 {
   FetchInBlocks *blk = (FetchInBlocks *)data;
+  if (!ptr || !*ptr) { blk->no_range(); return; }
   std::string s(ptr);
   blk->head_result(s);
 }
@@ -1914,7 +1957,8 @@ EMSCRIPTEN_KEEPALIVE
 extern "C" void head_result_err(void *data)
 {
   FetchInBlocks *blk = (FetchInBlocks *)data;
-  blk->head_result_err();
+  //blk->head_result_err();
+  blk->no_range();
 }
 
 void blocks_success(emscripten_fetch_t *fetch)
@@ -2496,17 +2540,20 @@ struct ASyncCallback { void (*fptr)(void*); void *data; };
 struct ASyncCallback2 { std::string url; ASyncCallback *cb; };
 //std::map<std::string, ASyncCallback*> load_url_callbacks;
 std::vector<ASyncCallback2> load_url_callbacks;
+std::mutex g_load_url_callbacks_mutex;
 void add_async_cb(std::string url, ASyncCallback *cb)
 {
   //std::cout << "add_async_cb:" << url << std::endl;
   ASyncCallback2 cb2;
   cb2.url = url;
   cb2.cb = cb;
+  std::lock_guard<std::mutex> guard(g_load_url_callbacks_mutex);
   load_url_callbacks.push_back(cb2);
 }
 ASyncCallback *rem_async_cb(std::string url)
 {
   //std::cout << "rem_async_cb:" << url << std::endl;
+  std::lock_guard<std::mutex> guard(g_load_url_callbacks_mutex);
   int s = load_url_callbacks.size();
   int i = 0;
   for(;i<s;i++)
@@ -2797,8 +2844,10 @@ void* process(void *ptr)
 bool g_progress_already_done = false;
 std::map<int,long long> g_current_size;
 std::map<int,long long> g_total_size;
+std::mutex g_size_mutex;
 long long get_current_size()
 {
+  std::lock_guard<std::mutex> guard(g_size_mutex);
   long long res=0;
   std::map<int,long long>::iterator i = g_current_size.begin();
   int ii=0;
@@ -2817,6 +2866,7 @@ long long get_current_size()
 }
 long long get_total_size()
 {
+  std::lock_guard<std::mutex> guard(g_size_mutex);
   long long res=0;
   std::map<int,long long>::iterator i = g_total_size.begin();
   int ii=0;
@@ -2912,8 +2962,10 @@ void ASyncLoader::load_all_urls(GameApi::Env &e, std::vector<std::string> urls, 
       sizes.push_back(sz);
       total_size+=sz;
     }
+  { std::lock_guard<std::mutex> guard(g_size_mutex);
   g_total_size[g_progress_script_num] = total_size;
   g_current_size[g_progress_script_num]=0;
+  }
   
   std::vector<ProcessData*> vec;
 
@@ -3204,8 +3256,9 @@ void fetch_2_success(emscripten_fetch_t *fetch)
   dt->obj->result = std::vector<unsigned char,GameApiAllocator<unsigned char> >(&fetch->data[0],&fetch->data[fetch->numBytes]);
   // hack to fix the download amounts.
   //std::cout << "FETCH2SUCCESS:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
-  if (dt->final_file_size!=-1 && fetch->numBytes != dt->final_file_size) {
-    //std::cout << "Size Compare:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
+  //if (dt->final_file_size!=-1 && fetch->numBytes != dt->final_file_size) {
+  if ((g_concurrent_download || !g_no_concurrent_download) || (dt->final_file_size!=-1 && fetch->numBytes != dt->final_file_size)) {
+  //std::cout << "Size Compare:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
      dt->obj->result.push_back(' ');
   }
   const std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec = dt->obj->get();  
@@ -3232,7 +3285,7 @@ void fetch_2_success(emscripten_fetch_t *fetch)
     }
   onload_async_cb(333,(void*)url,vec);
   int s2 = g_pending_fetch.size();
-  for(int i=0;i<s;i++)
+  for(int i=0;i<s2;i++)
     {
       //std::cout << "Finish:" << g_pending_fetch[i] << " == " << url << std::endl;
       if (stripprefix(striphomepage(g_pending_fetch[i]))==stripprefix(striphomepage(url))) {
@@ -3240,7 +3293,7 @@ void fetch_2_success(emscripten_fetch_t *fetch)
 	g_pending_fetch.erase(g_pending_fetch.begin()+i);
 	g_pending_fetch_obj.erase(g_pending_fetch_obj.begin()+i);
 	i--;
-	s--;
+	s2--;
       }
     }
 #ifdef EMSCRIPTEN
@@ -3254,6 +3307,8 @@ void fetch_2_error(emscripten_fetch_t *fetch)
 {
   g_async_pending_count_failures++; std::cout << "FAIL: async_pending_count_failure" << std::endl;
   std::cout << "ERROR: 2nd attempt at loading the data failed" << std::endl;
+  LoadData *dt = (LoadData*)(fetch->userData);
+  if (dt) g_error_urls.push_back(dt->url);
   emscripten_fetch_close(fetch);
 }
 void fetch_2_progress(emscripten_fetch_t *fetch)
@@ -3738,7 +3793,17 @@ void ASyncLoader::load_urls2(GameApi::Env &e, std::string url, std::string homep
 
     // std::cout << "push_async_url: " << url2 << std::endl;
     
-    g_del_map.push_async_url(url2,new ASyncDataFetcher(buf));
+    //g_del_map.push_async_url(url2,new ASyncDataFetcher(buf));
+    {
+      static std::mutex store_mutex;
+      std::lock_guard<std::mutex> guard(store_mutex);
+      if (!g_del_map.async_find(url2))
+	g_del_map.push_async_url(url2,new ASyncDataFetcher(buf));
+      else
+	delete buf;
+    }
+
+
     //g_del_map.load_url_buffers_async[url2] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(*buf); //new std::vector<unsigned char>(buf);
     //std::cout << "Async cb!" << url2 << std::endl;
   std::string url_only = "load_url.php?url=" + oldurl;
@@ -3969,10 +4034,15 @@ std::vector<int> g_setup_count;
 int find_str(std::string s, std::string s2);
 
 
-IMPORT void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
+std::recursive_mutex g_progress_mutex;
+IMPORT void ClearProgress() {
+  std::lock_guard<std::recursive_mutex> progress_guard(g_progress_mutex);
+  progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
 IMPORT void InstallProgress(int num, std::string label, int max=15)
 {
   if (find_str(label,"script")!=-1) return;
+  std::lock_guard<std::recursive_mutex> progress_guard(g_progress_mutex);
+
   //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
   //std::cout << "IB: " << num << std::endl;
@@ -4024,7 +4094,7 @@ int g_max2;
 
 IMPORT long long FindProgressVal()
 {
-
+  std::lock_guard<std::recursive_mutex> progress_guard(g_progress_mutex);
 #if 0
   int res=0;
   std::vector<int> done_vec;
@@ -4092,6 +4162,7 @@ IMPORT long long FindProgressVal()
 int g_async_load_count = 0;
 long long FindProgressMax()
 {
+  std::lock_guard<std::recursive_mutex> progress_guard(g_progress_mutex);
 
 #if 0
   int res=0;
@@ -4186,6 +4257,7 @@ IMPORT void (*update_progress_dialog_cb)(volatile GameApi::W &w, int,int, GameAp
 
 void SetupProgress(int num, int count)
 {
+  std::lock_guard<std::recursive_mutex> progress_guard(g_progress_mutex);  
   g_setup.push_back(num);
   g_setup_count.push_back(count);
 }
@@ -4206,6 +4278,8 @@ void ProgressBar(int num, int val, int max, std::string label)
   pthread_t curr = pthread_self();
   if (!pthread_equal(curr, g_main_thread_id)) return;
 #endif
+  std::lock_guard<std::recursive_mutex> progress_guard(g_progress_mutex);
+
   /// std::cout << "ProgressBar: '" << num << " " << label << " " << val << " " << max << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
@@ -5245,7 +5319,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
     {
       if (remove_load(url)==g_urls[i]) { 
 	std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(g_content[i], g_content_end[i]);
-	g_current_size[progress_script_num]+=vec->size();
+	{ std::lock_guard<std::mutex> guard(g_size_mutex); g_current_size[progress_script_num]+=vec->size(); }
 
 	return vec;
       }
@@ -5334,7 +5408,9 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
     }
     }
     //std::cout << "POPEN GOT Content-Length: " << num << std::endl;
-    g_total_size[progress_script_num] = num;
+    { std::lock_guard<std::mutex> guard(g_size_mutex);
+      g_total_size[progress_script_num] = num;
+    }
 
 
 
@@ -5425,7 +5501,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 	//	    if (nosize) { std::cout << "fread" << std::endl; }
       //std::cout << c;
       i+=bytes_read;
-      g_current_size[progress_script_num]+=bytes_read;
+      { std::lock_guard<std::mutex> guard(g_size_mutex); g_current_size[progress_script_num]+=bytes_read; }
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
@@ -5459,7 +5535,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
 #ifdef WINDOWS
     while ( fread(&c,1,1,f)==1) {
       i++;
-      g_current_size[progress_script_num]++;
+      { std::lock_guard<std::mutex> guard(g_size_mutex); g_current_size[progress_script_num]++; }
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
@@ -5518,7 +5594,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(Game
     long long i = 0;
     while(fread(&c,1,1,f)==1) {
       i++;
-      g_current_size[progress_script_num]++;
+      { std::lock_guard<std::mutex> guard(g_size_mutex); g_current_size[progress_script_num]++; }
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;

@@ -6341,7 +6341,8 @@ void ProgressBar(int num, int val, int max, std::string label);
 extern ThreadInfo volatile *ti_global;
 pthread_cond_t *g_cond;
 #endif
-extern volatile int thread_counter;
+//extern volatile int thread_counter;
+extern std::atomic<int> thread_counter;
 
 extern std::atomic<bool> g_lock1;
 extern std::atomic<bool> g_lock2;
@@ -31939,6 +31940,113 @@ GameApi::P GameApi::PolygonApi::interpolate_polygon(P space, P (*fptr)(int face,
   }
 }
 
+
+#if 0
+extern float quake_pos_height;
+
+
+class Landscape_height : public MainLoopItem
+{
+public:
+  Landscape_height(FaceCollection *coll, float height) : coll(coll),h(height) { }
+
+  virtual void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare()
+  {
+    coll->Prepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float q_pos_x = quake_pos_x;
+    float q_pos_z = quake_pos_y;
+    LineProperties line(Point(q_pos_x,-1000.0,q_pos_z),
+			Point(q_pos_x,1000.0,q_pos_z));
+    int s = coll->NumFaces();
+    Matrix m = e.in_MV;
+    Matrix m2 = e.in_T;
+    //std::cout << m << " " << m2 << std::endl;
+    //std::cout << "Q:"  << q_pos_x << " " << q_pos_z << std::endl;
+    for(int i=0;i<s;i++)
+      {
+	int num = coll->NumPoints(i);
+	if (num==3)
+	  {
+	    Point p1 = coll->FacePoint(i,0);
+	    Point p2 = coll->FacePoint(i,1);
+	    Point p3 = coll->FacePoint(i,2);
+	    //std::cout << "p123:" << p1 << " " << p2 << " " << p3 << std::endl;
+	    p1 = p1 * m; // * m2;
+	    p2 = p2 * m; // * m2;
+	    p3 = p3 * m; // * m2;
+	    //std::cout << "m123:" << p1 << " " << p2 << " " << p3 << std::endl;
+	    float r=0.5f;
+	    bool intersect = line.TriangleIntersection(p1,p2,p3,r);
+	    if (intersect && fabs(r-0.5f)>0.001f) {
+	      Point p = line.MiddlePoint(r);
+	      if (p.y>=-1000.0 && p.y<=1000.0)
+		quake_pos_height = p.y-h;
+	      std::cout << "qheight:" << quake_pos_height << std::endl;
+	      break;
+	    }
+	  }
+	if (num==4)
+	  {
+	    Point p1 = coll->FacePoint(i,0);
+	    Point p2 = coll->FacePoint(i,1);
+	    Point p3 = coll->FacePoint(i,2);
+	    Point p4 = coll->FacePoint(i,3);
+	    //std::cout << "p1234:" << p1 << " " << p2 << " " << p3 << " " << p4 << std::endl;
+	    //p1 = p1 * m * m2;
+	    //p2 = p2 * m * m2;
+	    //p3 = p3 * m * m2;
+	    //p4 = p4 * m * m2;
+	    //std::cout << "m1234:" << p1 << " " << p2 << " " << p3 << " " << p4 << std::endl;
+	    {
+	    float r=0.5f;
+	    bool intersect = line.TriangleIntersection(p1,p2,p3,r);
+	    if (intersect && fabs(r-0.5f)>0.001f) {
+	      Point p = line.MiddlePoint(r);
+	      if (p.y>=-1000.0 && p.y<=1000.0)
+		quake_pos_height = p.y-h;
+	      break;
+	    }
+	    }
+	    {
+	    float r=0.5f;
+	    bool intersect = line.TriangleIntersection(p3,p4,p1,r);
+	    if (intersect && fabs(r-0.5f)>0.001f) {
+	      Point p = line.MiddlePoint(r);
+	      if (p.y>=-1000.0 && p.y<=1000.0)
+		quake_pos_height = p.y-h;
+	      break;
+	    }
+	    }
+	    
+	    
+	  }
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  FaceCollection *coll;
+  float h;
+};
+
+GameApi::ML GameApi::PolygonApi::landscape_height(P p, float height)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_main_loop(e, new Landscape_height(coll, height));
+}
+
+#endif
+
 #if 0
 class PtsToVX : public Voxel<int>
 {
@@ -32031,5 +32139,4 @@ GameApi::PTS GameApi::VoxelApi::snap_pts_to_grid(PTS pts,
   }
 
 #endif  
-
 

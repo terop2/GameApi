@@ -25361,6 +25361,7 @@ bool g_is_quake = false;
 extern GameApi::M g_view_rot;
 
 bool g_is_quakeml=false;
+float quake_pos_height = 0.0f;
 
 class QuakeML : public MainLoopItem
 {
@@ -25405,6 +25406,8 @@ public:
 							   ,scale));
 				      
 #endif					
+    res = ev.matrix_api.mult(res,ev.matrix_api.trans(0.0f,quake_pos_height,0.0f));
+
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
     GameApi::SH s1;
     s1.id = e.sh_texture;
@@ -25511,6 +25514,7 @@ float find_area_y(GameApi::Env &e, float pos_x, float pos_z);
 Matrix g_quakeml2_matrix = Matrix::Identity();
 bool g_is_quakeml2 = false;
 
+
 class QuakeML2 : public MainLoopItem
 {
 public:
@@ -25565,6 +25569,9 @@ public:
 #else
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
 #endif
+
+    res = ev.matrix_api.mult(res,ev.matrix_api.trans(0.0f,quake_pos_height,0.0f));
+    
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
     GameApi::SH s1;
     s1.id = e.sh_texture;
@@ -40718,6 +40725,7 @@ KP extern "C" void set_new_script(const char *script2_)
   // PROGRESS BAR end
   
   g_last_resize=Matrix::Identity();
+  delete [] (char*)g_mainloop_ptr;
   g_mainloop_ptr = (void*)script2;
     g_mainloop_callback = &run_callback;
     g_execute_callback = true;
@@ -40828,6 +40836,7 @@ KP extern "C" void set_string(int num, const char *value_)
   
   size_t ptr_size=0;
   char *ptr=0;
+  std::unique_ptr<char[]> ptr_owner;
   if (num!=3) {
 emscripten::val v = emscripten::val::u8string(value_);
  std::string script2_a;  
@@ -40837,6 +40846,7 @@ emscripten::val v = emscripten::val::u8string(value_);
       std::copy(script2_a.begin(),script2_a.end(),ptr);
       ptr[script2_a.size()]=0;
       ptr_size=script2_a.size();
+      ptr_owner.reset(ptr);
   } else {
     //script2_b = emscripten::vecFromJSArray<unsigned char>(v);
     ptr = const_cast<char*>(value_);

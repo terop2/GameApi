@@ -770,6 +770,14 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "", "false" },
 			 "VA", "polygon_api", "create_vertex_array"));
 #endif
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::landscape_height,
+			 "p_landscape_height",
+			 { "p", "landscape_height" },
+			 { "P", "float" },
+			 { "", "400.0" },
+			 "ML", "polygon_api", "landscape_height"));
+#endif
 #if (ALL==1)||(RENDER_VERTEX_ARRAY_ML2==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_vertex_array_ml2,
 			 "p_render",
