@@ -2603,7 +2603,8 @@ var app = new Vue({
       	  window.clearActive();
       	  window.menu(0);	
 	  choose_iframe_vs_canvas(id);	  
-  
+	  choose_fullscreen(id);
+
 	  //start_emscripten(vm);
 	  //if (pgnum==1)
 	  //   window.history.go(-2);
@@ -2618,6 +2619,7 @@ var app = new Vue({
       	  window.clearActive2();
       	  window.menu2(1,id,false);
 	  choose_iframe_vs_canvas(id);	  
+	  choose_fullscreen(id);
 	  if (typeof fix_keyboard === "function") fix_keyboard(false);
 	  }
        }
@@ -3012,7 +3014,7 @@ function choose_display(id,label, vm,is_popstate)
    d.innerHTML = display_labels[id];
 
   choose_iframe_vs_canvas(id);
-
+  choose_fullscreen(id);
 
   m_id = id;
   if (!is_popstate) {
@@ -3557,17 +3559,57 @@ if ($mobile=="yes") {
   var elem = document.getElementById("display");
   var elem2 = document.getElementById("display2");
   if (typeof(elem)!='undefined' && elem != null) { } else { return; }
-  elem.style.width = (wd).toString() + "px";
+
+  if (g_fullscreen==true) {
+	elem.style.position="absolute";
+	elem.style.width="100vw";
+	elem.style.height="100vw";
+	elem.style.object_fit="contain";
+	elem.style.aspect_ratio="16/9";
+
+	elem2.style.position="absolute";
+	elem2.style.width="100vw";
+	elem2.style.height="100vw";
+	elem2.style.object_fit="contain";
+	elem2.style.aspect_ratio="16/9";
+ } else {
+
+elem.style.width = (wd).toString() + "px";
   elem.style.height = (hd).toString() + "px";
   elem2.style.width = (wd).toString() + "px";
   elem2.style.height = (hd).toString() + "px";
-
+}
   var title = document.getElementById("display_title_bar");
   if (!title) return;
   title.style.width = (wd).toString() + "px";
 
   var iframe = document.getElementById("canvas");
   if (!iframe) return;
+
+  if (g_fullscreen==true) {
+
+  iframe.style.width = "100vw";
+  iframe.style.height = "100vw";
+
+  var iframe3 = document.getElementById("iframe");
+  iframe3.style.width = "100vw";
+  iframe3.style.height = "100vw";
+
+  var iframe2 = document.getElementById("canvas2");
+  if (!iframe2) return;
+  iframe2.style.width = "100vw";	
+  iframe2.style.height = "100vw";
+
+
+  var iframe3 = document.getElementById("gpucanvas");
+  if (!iframe3) return;
+  iframe3.style.width = "100vw";
+  iframe3.style.height = "100vw";
+
+
+
+} else {
+
   iframe.style.width = (wd).toString() + "px";
   iframe.style.height = (hd).toString() + "px";
   const dpr = window.devicePixelRatio || 2;
@@ -3597,6 +3639,7 @@ if ($mobile=="yes") {
   iframe3.style.width = (wd).toString() + "px";
   iframe3.style.height = (hd).toString() + "px";
 
+}
 
   //var prog = document.getElementById("prgress");
   //prog.style.width = (wd).toString() + "px";
@@ -3653,6 +3696,7 @@ function iframe_script(id,ump)
     .then(x => x.text())
     .then(y => iframe_script2(id,y,ump));
 }
+
 function choose_iframe_vs_canvas2(id,txt)
 {
    console.log("choose_iframe:" + id + "::" + txt);
@@ -3676,7 +3720,45 @@ function choose_iframe_vs_canvas(id)
     .then(x => x.text())
     .then(y => choose_iframe_vs_canvas2(id,y));
 }
+var g_fullscreen = false;
+function choose_fullscreen2(id, txt)
+{
+   var el = document.getElementById("iframe");
+   var el2 = document.getElementById("canvas");
+   console.log("FULLSCREEN2");
+   console.log(txt);
+   console.log("FULLSCREEN OVER");
+   if (txt=="1")
+   {
+      g_fullscreen = true;
+	el.style.position="absolute";
+	el.style.width="100vw";
+	el.style.height="100vw";
+	el.style.object_fit="contain";
+	el.style.aspect_ratio="16/9";
+	el.style.top="0px";
+	el.style.left="0px";
 
+	el2.style.position="absolute";
+	el2.style.width="100vw";
+	el2.style.height="100vw";
+	el2.style.object_fit="contain";
+	el2.style.aspect_ratio="16/9";
+	el2.style.top="0px";
+	el2.style.left="0px";
+
+   } else {
+    g_fullscreen = false;
+   }
+
+}
+
+function choose_fullscreen(id)
+{
+   fetch("<?php echo $https ?>://<?php echo $site ?>/mesh_fullscreen.php?id=" + id.toString())
+    .then(x => x.text())
+    .then(y => choose_fullscreen2(id,y));
+}
 
 </script>
 <script>

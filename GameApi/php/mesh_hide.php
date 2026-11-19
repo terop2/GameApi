@@ -79,8 +79,15 @@ $filename2 = "user_data/user_" . $user . "/screenshot" . $i . ".webp";
 if (file_exists($filename2)) $filename = $filename2;
 echo "<p><div width=\"100%\"><div style=\"display: inline-block; *display: inline; vertical-align: top; width: 5%; height: 150px;\"><h1>$i</h1></div><div style=\"display: inline-block; *display: inline; vertical-align: top; width: 20%; height: 150px;\"> <a href=\"mesh.php?id=" . $id . "\"><img width=\"200\" height=\"150\" src=\"" . $filename . "\"/></a></div>";
 echo "<div style=\"display: inline-block; *display: inline; width: 60%; height: 150px;  vertical-align: top;\"><div><a href=\"" . $site . "/" . $i . "\">LINK</a>";
+echo "<input type=\"hidden\" name=\"" . $i . "_fullscreen\" value=\"off\">";
+echo "Fullscreen:<input type=\"checkbox\" name=\"" . $i . "_fullscreen\"";
+if (is_fullscreen($arr)) {
+echo " checked";
+}
+echo ">";
+
 echo "<input type=\"hidden\" name=\"" . $i . "_hide\" value=\"off\">";
-echo "<input type=\"checkbox\" name=\"" . $i . "_hide\"";
+echo "Hide:<input type=\"checkbox\" name=\"" . $i . "_hide\"";
 
 
 if (is_hidden($arr)) {
@@ -88,7 +95,7 @@ echo " checked";
 }
 echo ">";
 echo "<input type=\"hidden\" name=\"" . $i . "_lowmem\" value=\"off\">";
-echo "<input type=\"checkbox\" name=\"" . $i . "_lowmem\"";
+echo "Mobile: <input type=\"checkbox\" name=\"" . $i . "_lowmem\"";
 if (is_lowmem($arr)) {
 echo " checked";
 }

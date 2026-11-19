@@ -41,7 +41,7 @@ $arr2 = array("username" => $user,
 //js_session_start();
 //webassembly_detect( $arr2, $id, "mesh_preview.php", $noheaders, $width, $height, $meshdata, $homepage, $label );
 
-if ($meshdata == "")
+if ($meshdata == "" && $iframe_url == "")
 {
   header("Location: mesh.php?id=$id");
 }
@@ -79,6 +79,6 @@ $arr = array("username" => $user,
 
 <?php
 //var_dump( $arr["data"] );
-frame( $arr, $arr["width"], $arr["height"], $arr["data"], 0, $arr["homepage"], 0 );
+//frame( $arr, $arr["width"], $arr["height"], $arr["data"], 0, $arr["homepage"], 0 );
 page_footer();
 ?>

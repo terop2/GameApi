@@ -57,6 +57,21 @@ if ($pngfilename != "")
 foreach( $_POST as $key => $value )
 {
 echo "KEY:" . $key . " Value:" . $value . "\n";
+$box5 = substr($key,-11);
+if ($box5=="_fullscreen") {
+  $keystr = substr($key, 0, -11);
+  $keynum = intval($keystr);
+  $arr = array("username" => $user,
+       	       "index" => $keynum);
+  if ($keynum==0) continue;
+  if ($value == "on") {
+    echo "NORMAL";
+    set_fullscreen($arr,1);
+    } else if ($value=="off") {
+    echo "FULLSCREEN";
+    set_fullscreen($arr,0);
+    }
+}
 $box4 = substr($key,-5);
 if ($box4=="_hide") {
   $keystr = substr($key, 0, -5);

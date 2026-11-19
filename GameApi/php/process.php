@@ -201,6 +201,16 @@ echo "<div class=\"bl_container\">\n";
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
+echo "<h1>Voyage-R example created with our library</h1>";
+echo "<a href=\"https://meshpage.org/solaris/index.html\">Voyage-R</a>";
+
+echo "</div>\n";
+echo "</div>\n";
+echo "</div>\n";
+
+echo "<div class=\"bl_row\">\n";
+echo "<div class=\"bl_column\">\n";
+echo "<div class=\"bl_item customfont content\">\n";
 
 echo "<h1>We have shovels for AI gold rush: claude CONTEXTs for OpenGL rendering using our 3d engine</h1>";
 echo "<h3>./gameapi-builder --context &gt;gameapi.context</h3>\n";

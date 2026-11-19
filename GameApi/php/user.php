@@ -319,6 +319,21 @@ function is_hidden( $arr )
    } else { $num=0; }
    return $num;
 }
+function set_fullscreen( $arr, $num )
+{
+  $filename = "./user_data/user_" . $arr["username"] . "/fullscreen" . $arr["index"] . ".txt";
+  $num_str = strval( $num );
+  file_put_contents( $filename, $num_str );
+}
+function is_fullscreen( $arr )
+{
+  $filename = "./user_data/user_" . $arr["username"] . "/fullscreen" . $arr["index"] . ".txt";
+   if (file_exists($filename)) {
+      $data = file_get_contents($filename);
+      $num = intval($data);
+   } else { $num=0; }
+   return $num;
+}
 function increase_num( $username, $new_num )
 {
    $num = read_num( $username );
