@@ -1020,10 +1020,10 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::me
 			"ML", "mainloop_api", "lod_anim_matrix"));
 
  
-#if 0 
+#if 1 
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::lod_gpu,
 			"m_gpu_lod",
-			{ "ev", "p", "mat", "pts", "level1_tri", "level2_tri", "level3_tri", "level4_tri", "l1", "l2", "l3", "l4" },
+			{ "ev", "p", "mat", "pts", "level1_perc", "level2_perc", "level3_perc", "level4_perc", "l1", "l2", "l3", "l4" },
 			{ "EveryApi&", "P", "MT", "PTS", "float", "float","float", "float", "int", "int", "int", "int" },
 			{ "ev", "", "", "", "1.0", "0.8", "0.6", "0.4", "55", "55", "55", "55" },
 			"ML", "mainloop_api", "lod_gpu"));

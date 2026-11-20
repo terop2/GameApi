@@ -12862,6 +12862,8 @@ void GameApi::PolygonApi::sort_vertices(VA va, M m)
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   rend->sort_blit(0,mm);
 }
+
+extern int g_va_int;
 EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
@@ -12906,7 +12908,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 	// ogl->glEnable(Low_GL_TEXTURE_2D);
 	}
       }
-      rend->render(0);
+    rend->render(0,g_va_int);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP,0);
       //ogl->glDisable(Low_GL_TEXTURE_2D);
@@ -12921,7 +12923,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       //RenderVertexArray arr(*s);
       //arr.render(0);
       //ogl->glEnable(Low_GL_TEXTURE_2D);
-      rend->render(0);
+      rend->render(0,g_va_int);
       //ogl->glDisable(Low_GL_TEXTURE_2D);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
@@ -12937,7 +12939,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       //RenderVertexArray arr(*s);
       //arr.render(0);
       //ogl->glEnable(Low_GL_TEXTURE_CUBE_MAP);
-      rend->render(0);
+      rend->render(0,g_va_int);
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP,0);
       //ogl->glDisable(Low_GL_TEXTURE_CUBE_MAP);
 
@@ -12956,7 +12958,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       //RenderVertexArray arr(*s);
       //ogl->glEnable(Low_GL_TEXTURE_2D);
       //arr.render(0);
-      rend->render(0);
+      rend->render(0,g_va_int);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       // ogl->glDisable(Low_GL_TEXTURE_2D);
 
@@ -12971,7 +12973,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       ogl->glActiveTexture(Low_GL_TEXTURE0+0);
       ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY, s->texture_id-SPECIAL_TEX_IDA);
       //ogl->glEnable(Low_GL_TEXTURE_2D_ARRAY);
-      rend->render(0);
+      rend->render(0,g_va_int);
       //ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
       ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY,0);
@@ -12980,7 +12982,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
     {
       //RenderVertexArray arr(*s);
       //arr.render(0);
-      rend->render(0);
+      rend->render(0,g_va_int);
     }
 #ifdef VAO
 #if 0

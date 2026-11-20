@@ -11800,12 +11800,12 @@ private:
   bool firsttime;
 };
 
-float g_va_float = 1.0;
+int g_va_int = -1;
 
 class BindInstVA : public MainLoopItem
 {
 public:
-  BindInstVA(GameApi::Env &env, Material *mat, GameApi::VA va, GameApi::PTS pts, float val) : env(env), mat(mat), va(va), pts(pts),val(val) { ml.id = -1; firsttime = true; }
+  BindInstVA(GameApi::Env &env, Material *mat, GameApi::VA va, GameApi::PTS pts, int val) : env(env), mat(mat), va(va), pts(pts),val(val) { ml.id = -1; firsttime = true; }
   void find_ml() {
     if (ml.id==-1)
       {
@@ -11838,8 +11838,8 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
-    float old = g_va_float;
-    g_va_float = val;
+    int old = g_va_int;
+    g_va_int = val;
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
@@ -11851,7 +11851,7 @@ public:
     MainLoopItem *item = find_main_loop(env,ml);
     if (item)
       item->execute(e);
-    g_va_float = old;
+    g_va_int = old;
   }
   void handle_event(MainLoopEvent &e)
   {
@@ -11874,8 +11874,85 @@ private:
   GameApi::PTS pts;
   GameApi::ML ml;
   bool firsttime;
-  float val;
+  int val;
 };
+
+class BindInstVAMatrix : public MainLoopItem
+{
+public:
+  BindInstVAMatrix(GameApi::Env &env, Material *mat, GameApi::VA va, GameApi::MS ms, int val) : env(env), mat(mat), va(va), ms(ms),val(val) { ml.id = -1; firsttime = true; }
+  void find_ml() {
+    if (ml.id==-1)
+      {
+	// TODO.
+	//ml.id = mat->mat_inst_va_matrix(va.id,ms.id);
+      }
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    if (item)
+      item->Collect(vis);
+    vis.register_obj(this);
+    firsttime = false;
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+  void Prepare()
+  {
+    if (firsttime)
+      {
+	find_ml();
+	MainLoopItem *item = find_main_loop(env,ml);
+	if (item)
+	  item->Prepare();
+	firsttime = false;
+      }
+  }
+  void execute(MainLoopEnv &e)
+  {
+    int old = g_va_int;
+    g_va_int = val;
+    if (firsttime) {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      if (item)
+	item->Prepare();
+      firsttime = false;
+    }
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    if (item)
+      item->execute(e);
+    g_va_int = old;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    if (item)
+      item->handle_event(e);
+  }
+  std::vector<int> shader_id() {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  Material *mat;
+  GameApi::VA va;
+  GameApi::MS ms;
+  GameApi::ML ml;
+  bool firsttime;
+  int val;
+};
+
 
 
 class BindInst : public MainLoopItem
@@ -12103,11 +12180,18 @@ EXPORT GameApi::VA GameApi::MaterialsApi::bind_inst_va_prepare(P p, MT mat)
   return va;
 }
 
-EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_va(VA va, PTS pts, MT mat, float val)
+EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_va(VA va, PTS pts, MT mat, int val)
 {
   Material *mat2 = find_material(e, mat);
   return add_main_loop(e, new BindInstVA(e,mat2,va,pts,val));
 }
+
+EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_va_matrix(VA va, MS ms, MT mat, int val)
+{
+  Material *mat2 = find_material(e, mat);
+  return add_main_loop(e, new BindInstVAMatrix(e,mat2,va,ms,val));
+}
+
 
 EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst(P p, PTS pts, MT mat)
 {
@@ -45013,23 +45097,156 @@ GameApi::ML GameApi::VoxelApi::lod_vox(GameApi::EveryApi &ev, std::string vox_ur
   return I154;
 }
 
-GameApi::ML GameApi::MainLoopApi::lod_gpu(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1_tri, /*float level1_quad, float level1_polygon,*/ float level2_tri, /*float level2_quad, float level2_polygon,*/ float level3_tri, /*float level3_quad, float level3_polygon,*/ float level4_tri, /*float level4_quad, float level4_polygon,*/ int l1, int l2, int l3, int l4)
+class PrepareMultipleRender : public MainLoopItem
 {
-  std::cout << "Warning: lod_gpu not implemented" << std::endl;
+public:
+  PrepareMultipleRender(GameApi::Env &e, GameApi::P p, GameApi::MT mat, std::vector<GameApi::PTS> positions, std::vector<float> facenum_percentages)
+    : m_e(e), p(p), mat(mat), positions(positions), facenum_percentages(facenum_percentages) { }
+  void do_prepare() {
+    FaceCollection *coll = find_facecoll(m_e,p);
+    coll->Prepare();
+  }
+
+  virtual void Collect(CollectVisitor &vis)
+  {
+    FaceCollection *coll = find_facecoll(m_e,p);
+    coll->Collect(vis);
+    int s = positions.size();
+    for(int i=0;i<s;i++) {
+      GameApi::PTS pts = positions[i];
+      PointsApiPoints *pts2 = find_pointsapi_points(m_e,pts);
+      pts2->Collect(vis);
+    }
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    Material *mat2 = find_material(m_e,mat);
+    ml.id = mat2->mat(p.id);
+    MainLoopItem *item = find_main_loop(m_e,ml);
+    item->Prepare();
+    
+    FaceCollection *coll = find_facecoll(m_e,p);
+    int numfaces = coll->NumFaces();
+    int s = facenum_percentages.size();
+    facenum_limits.clear();
+    for(int i=0;i<s;i++)
+      {
+	float val = facenum_percentages[i];
+	int count = numfaces * val;
+	facenum_limits.push_back(count);
+      }
+  }
+  virtual void Prepare()
+  {
+    FaceCollection *coll = find_facecoll(m_e,p);
+    coll->Prepare();
+    int s = positions.size();
+    for(int i=0;i<s;i++) {
+      GameApi::PTS pts = positions[i];
+      PointsApiPoints *pts2 = find_pointsapi_points(m_e,pts);
+      pts2->Prepare();
+    }
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (ml.id != -1) {
+    int s = positions.size();
+    for(int i=0;i<s;i++)
+      {
+	PointsApiPoints *pts = find_pointsapi_points(m_e,positions[i]);
+	pts->Update(e);
+	int numpoints = pts->NumPoints();
+	for(int j=0;j<numpoints;j++)
+	  {
+	    Point pos = pts->Pos(j);
+	    Matrix old = e.in_MV;
+	    Matrix old2 = e.env;
+	    MainLoopEnv ee = e;
+	    ee.in_MV = e.in_MV * Matrix::Translate(pos.x,pos.y,pos.z);
+	    ee.env = e.env * Matrix::Translate(pos.x,pos.y,pos.z);
+	    MainLoopItem *item = find_main_loop(m_e,ml);
+	    //g_va_int = facenum_limits[i];
+	    item->execute(ee);
+	    //g_va_int = -1;
+	  }
+      }
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (ml.id != -1) {
+      MainLoopItem *item = find_main_loop(m_e,ml);
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (ml.id != -1) {
+    MainLoopItem *item = find_main_loop(m_e,ml);
+    return item->shader_id();
+    } else { return std::vector<int>(); }
+  }  
+private:
+  GameApi::Env &m_e;
+  GameApi::P p;
+  GameApi::MT mat;
+  GameApi::ML ml;
+  std::vector<GameApi::PTS> positions;
+  std::vector<float> facenum_percentages;
+  std::vector<int> facenum_limits;
+};
+
+GameApi::ML GameApi::MainLoopApi::prepare_multiple_render(P p, MT mat, std::vector<PTS> pos, std::vector<float> perc)
+{
+  return add_main_loop(e, new PrepareMultipleRender(e,p,mat,pos,perc));
+}
+
+GameApi::ML GameApi::MainLoopApi::lod_gpu(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1_facenum, float level2_facenum, float level3_facenum, float level4_facenum, int l1, int l2, int l3, int l4)
+{
+  //std::cout << "Warning: lod_gpu not implemented" << std::endl;
 #if 0
   P p1 = ev.polygon_api.sort_faces_by_area(p);
   PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
   PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
   PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
   PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
-
   GameApi::VA va = ev.materials_api.bind_inst_va_prepare(p1,mat);
-  ML I15=ev.materials_api.bind_inst_va(va,I612,mat,level1_tri);
-  ML I151=ev.materials_api.bind_inst_va(va,I613,mat,level2_tri);
-  ML I152=ev.materials_api.bind_inst_va(va,I614,mat,level3_tri);
-  ML I153=ev.materials_api.bind_inst_va(va,I615,mat,level4_tri);
+
+  FaceCollection *coll = find_facecoll(e,p1);
+  int numfaces = coll->NumFaces();
+
+  int level1_faces = numfaces * level1_facenum;
+  int level2_faces = numfaces * level2_facenum;
+  int level3_faces = numfaces * level3_facenum;
+  int level4_faces = numfaces * level4_facenum;
+  
+  ML I15=ev.materials_api.bind_inst_va(va,I612,mat,level1_faces);
+  ML I151=ev.materials_api.bind_inst_va(va,I613,mat,level2_faces);
+  ML I152=ev.materials_api.bind_inst_va(va,I614,mat,level3_faces);
+  ML I153=ev.materials_api.bind_inst_va(va,I615,mat,level4_faces);
   ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
   return I154;
+#endif
+
+#if 1
+  P p1 = ev.polygon_api.sort_faces_by_area(p);
+  PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
+  std::vector<PTS> vec;
+  vec.push_back(I612);
+  vec.push_back(I613);
+  vec.push_back(I614);
+  vec.push_back(I615);
+  std::vector<float> vec2;
+  vec2.push_back(level1_facenum);
+  vec2.push_back(level2_facenum);
+  vec2.push_back(level3_facenum);
+  vec2.push_back(level4_facenum);
+  GameApi::ML ml = prepare_multiple_render(p1,mat,vec,vec2);
+  return ml;
 #endif
 }
 
@@ -45051,9 +45268,34 @@ GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameA
   return I154;
 }
 
-GameApi::ML GameApi::MainLoopApi::lod_gpu_matrix(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::MS ms, float level1_tri, float level1_quad, float level1_polygon, float level2_tri, float level2_quad, float level2_polygon, float level3_tri, float level3_quad, float level3_polygon, float level4_tri, float level4_quad, float level4_polygon, int l1, int l2, int l3, int l4)
+GameApi::ML GameApi::MainLoopApi::lod_gpu_matrix(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::MS ms, float level1_facenum, float level2_facenum,  float level3_facenum,  float level4_facenum, int l1, int l2, int l3, int l4)
 {
-  // tästä voi tulla ongelmia, koska opengl:n kartassa ei ole uninterleavea
+
+#if 0
+  P p1 = ev.polygon_api.sort_faces_by_area(p);
+  MS I612=ev.points_api.block_ms_lod(pts,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  MS I613=ev.points_api.block_ms_lod(pts,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  MS I614=ev.points_api.block_ms_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  MS I615=ev.points_api.block_ms_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
+  GameApi::VA va = ev.materials_api.bind_inst_va_prepare(p1,mat);
+
+  FaceCollection *coll = find_facecoll(e,p1);
+  int numfaces = coll->NumFaces();
+
+  int level1_faces = numfaces * level1_facenum;
+  int level2_faces = numfaces * level2_facenum;
+  int level3_faces = numfaces * level3_facenum;
+  int level4_faces = numfaces * level4_facenum;
+  
+  ML I15=ev.materials_api.bind_inst_va(va,I612,mat,level1_faces);
+  ML I151=ev.materials_api.bind_inst_va(va,I613,mat,level2_faces);
+  ML I152=ev.materials_api.bind_inst_va(va,I614,mat,level3_faces);
+  ML I153=ev.materials_api.bind_inst_va(va,I615,mat,level4_faces);
+  ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
+  return I154;
+#endif
+
+
 }
 
 
