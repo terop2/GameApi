@@ -706,6 +706,7 @@ struct EnvImpl
   std::vector<ContinuousBitmap<Color>*, GameApiAllocator<ContinuousBitmap<Color> *> > continuous_bitmaps;
   std::vector<VertexArraySet*, GameApiAllocator<VertexArraySet*> > vertex_array;
   std::vector<RenderVertexArray*, GameApiAllocator<RenderVertexArray*> > vertex_array_render;
+  std::vector<GPULine*, GameApiAllocator<GPULine*> > gpu_lines;
   std::vector<int, GameApiAllocator<int> > texture_id;
   std::vector<std::string, GameApiAllocator<std::string> > shader_float_parameter;
   std::vector<std::string, GameApiAllocator<std::string> > shader_int_parameter;
@@ -1393,8 +1394,8 @@ GameApi::WV add_waveform(GameApi::Env &e, Waveform *bitmap);
 GameApi::TX add_texture(GameApi::Env &e, TextureI *i);
 GameApi::Q add_tex_quad(GameApi::Env &e, Point2d p1, Point2d p2);
 GameApi::FB add_float_bitmap(GameApi::Env &e, Bitmap<float> *bitmap);
-GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexArray *arr);
-void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr);
+GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexArray *arr, GPULine *line);
+void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr, GPULine *line);
 GameApi::CBM add_continuous_bitmap(GameApi::Env &e, ContinuousBitmap<Color> *bitmap);
 GameApi::F add_function(GameApi::Env &e, FunctionImpl &f);
 GameApi::F add_function(GameApi::Env &e, Function<float,float> *f);
@@ -1569,6 +1570,7 @@ std::vector<VertexArrayWithPos> *find_move_array(GameApi::Env &e, GameApi::VAA p
 FaceCollPolyHandle *find_poly(GameApi::Env &e, GameApi::P p);
 RenderVertexArray *find_vertex_array_render(GameApi::Env &e, GameApi::VA p);
 VertexArraySet *find_vertex_array(GameApi::Env &e, GameApi::VA p);
+GPULine *find_gpu_line(GameApi::Env &e, GameApi::VA p);
 FaceCollection *find_facecoll(GameApi::Env &e, GameApi::P p);
 FunctionImpl *find_function(GameApi::Env &e, GameApi::F f);
 SurfaceImpl *find_surface(GameApi::Env &e, GameApi::S f);

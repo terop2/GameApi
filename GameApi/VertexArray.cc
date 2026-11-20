@@ -22,6 +22,59 @@
 #define KP
 #endif
 
+struct GPULineSelect
+{
+  int facenum;
+};
+
+struct GPULineSelection
+{
+  int tri;
+  int quad;
+  int poly;
+};
+
+GPULine gpu_line_combine(const GPULine &a, const GPULine &b)
+{
+  GPULine res;
+  res.tri_vec = a.tri_vec;
+  res.quad_vec = a.quad_vec;
+  res.poly_vec = a.poly_vec;
+  int s = b.tri_vec.size();
+  for(int i=0;i<s;i++)
+    res.tri_vec.push_back(b.tri_vec[i]);
+  int s2 = b.quad_vec.size();
+  for(int i=0;i<s2;i++)
+    res.quad_vec.push_back(b.quad_vec[i]);
+  int s3 = b.poly_vec.size();
+  for(int i=0;i<s2;i++)
+    res.poly_vec.push_back(b.poly_vec[i]);
+}
+
+GPULineSelection default_gpu_line(int tri_count, int quad_count, int poly_count)
+{
+  GPULineSelection sel;
+  sel.tri = tri_count;
+  sel.quad = quad_count;
+  sel.poly = poly_count;
+  return sel;
+}
+int gpu_line_select(int count, int count2)
+{
+  return std::max(0,std::min(count,count2));
+}
+GPULineSelection calc_gpu_line(const GPULineSelect &sel, const GPULine &line)
+{
+  GPULineSelection res;
+  GPULine_tri t0; t0.facenum = sel.facenum;
+  GPULine_quad t1; t1.facenum = sel.facenum;
+  GPULine_poly t2; t2.facenum = sel.facenum;
+  res.tri = std::lower_bound(line.tri_vec.begin(),line.tri_vec.end(),t0) - line.tri_vec.begin();
+  res.quad = std::lower_bound(line.quad_vec.begin(),line.quad_vec.end(),t1) - line.quad_vec.begin();
+  res.poly = std::lower_bound(line.poly_vec.begin(),line.poly_vec.end(),t2) - line.poly_vec.begin();
+  return res;
+}
+
 
 void VertexArraySet::check_m_set(int id)
 {
@@ -3677,8 +3730,19 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 
 extern bool g_disable_polygons;
 
-GameApi::PinIn RenderVertexArray::render(int id)
+GameApi::PinIn RenderVertexArray::render(int id, int facenum_limit)
 {
+
+  GPULineSelection sel;
+  if (facenum_limit!=-1)
+    {
+      GPULineSelect sel0;
+      sel0.facenum = facenum_limit;
+      sel = calc_gpu_line(sel0,gpu_line);
+    } else {
+      sel = default_gpu_line(tri_count,quad_count,poly_count);
+    }
+  
   VertexArraySet::Polys *p = s.m_set[id];
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -3774,7 +3838,7 @@ GameApi::PinIn RenderVertexArray::render(int id)
 	  ogl->glDrawElements(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_INT, s.ref.indices_int);
       }
     else
-      ogl->glDrawArrays(Low_GL_TRIANGLES, 0, tri_count);
+      ogl->glDrawArrays(Low_GL_TRIANGLES, 0, gpu_line_select(tri_count,sel.tri));
 #if 1
     ogl->glDisableVertexAttribArray(0);
     ogl->glDisableVertexAttribArray(1);
@@ -3865,7 +3929,7 @@ GameApi::PinIn RenderVertexArray::render(int id)
     }
 
 #endif
-      ogl->glDrawArrays(Low_GL_TRIANGLES, 0, quad_count);
+    ogl->glDrawArrays(Low_GL_TRIANGLES, 0, gpu_line_select(quad_count,sel.quad));
 #if 1
     ogl->glDisableVertexAttribArray(0);
     ogl->glDisableVertexAttribArray(1);
@@ -3938,7 +4002,7 @@ GameApi::PinIn RenderVertexArray::render(int id)
       ogl->glEnableVertexAttribArray(12);
     }
 #endif
-      ogl->glDrawArrays(Low_GL_TRIANGLE_STRIP, 0, poly_count);
+    ogl->glDrawArrays(Low_GL_TRIANGLE_STRIP, 0, gpu_line_select(poly_count,sel.poly));
 #if 1
     ogl->glDisableVertexAttribArray(0);
     ogl->glDisableVertexAttribArray(1);
@@ -4083,6 +4147,7 @@ void *thread_func(void *data)
   ti->set->set_reserve(0,ct2_counts.tri_count*3,ct2_counts.quad_count*6,ct2_counts.poly_count);
 
   ti->va->copy(ti->start_range, ti->end_range,ti->attrib, ti->attribi);
+  ti->gpu_line = ti->va->get_gpu_line();
   //pthread_exit(NULL);
   ti->set->free_reserve(0);
   return 0;
@@ -4105,6 +4170,7 @@ void *thread_func(void *data)
       ti->set->set_reserve(0,ct2_counts.tri_count*3,ct2_counts.quad_count*6,ct2_counts.poly_count);
       //ti->va->reserve(0);
       ti->va->copy(start_range, end_range,ti->attrib, ti->attribi);
+      ti->gpu_line = ti->va->get_gpu_line();
       ti->ct2_counts = ct2_counts;
       ti->ct2_offsets = ct2_offsets;
       //std::cout << "wait 1" << std::endl;
@@ -4198,6 +4264,13 @@ bool is_texture_usage_confirmed(VertexArraySet *set);
 
 bool g_use_vertices_only = false;
 
+
+
+
+
+
+
+
 void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vector<int> attribs, std::vector<int> attribsi)
 {
   if (s.ref.numfaces!=0)
@@ -4225,7 +4298,7 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 
 
 
-    
+    GPULine gpu_line;
     
     for(int i=start_range;i<end_range;i++)
       {
@@ -4233,6 +4306,22 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	//std::cout << "F" << i << std::endl;
 	//if ((i-start_range)%1000==0) { std::cout << "Face: " << i << std::endl; }
 	int w = coll.NumPoints(i);
+	if (w==3)
+	  {
+	    GPULine_tri t; t.facenum = i;
+	    gpu_line.tri_vec.push_back(t);
+	  }
+	else if (w==4)
+	  {
+	    GPULine_quad t; t.facenum = i;
+	    gpu_line.quad_vec.push_back(t);
+	  }
+	else
+	  {
+	    GPULine_poly t; t.facenum = i;
+	    gpu_line.poly_vec.push_back(t);
+	  }
+
 	//std::cout << i << " " << w << std::endl;
 	for(int j=0;j<w;j++)
 	  {
@@ -4305,7 +4394,7 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	  }
 	}
       }
-      
+    line=gpu_line;
     //std::cout << "Copy returns" << std::endl;
   }
 

@@ -20,28 +20,33 @@ EXPORT GameApi::TX GameApi::TextureApi::tex_bitmap(GameApi::BM bm)
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
 {
+  GPULine *l = find_gpu_line(e,va);
+  GPULine *new_l = new GPULine(*l);
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_ID+tx.id;
   RenderVertexArray *arr2 = find_vertex_array_render(e,va);
-  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low, *ns*/);
+  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low, *ns*/,*new_l);
   //arr->prepare(0);
-  return add_vertex_array(e, ns, arr);
+  return add_vertex_array(e, ns, arr,new_l);
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind_cubemap(GameApi::VA va, GameApi::TXID tx)
 {
+  GPULine *l = find_gpu_line(e,va);
+  GPULine *new_l = new GPULine(*l);
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_ID_CUBEMAP+tx.id;
   RenderVertexArray *arr2 = find_vertex_array_render(e,va);
-  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low, *ns */);
+  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low, *ns */,*new_l);
   //arr->prepare(0);
-  return add_vertex_array(e, ns, arr);
+  return add_vertex_array(e, ns, arr,new_l);
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<GameApi::TXID> vec, std::vector<int> types)
 {
   //std::cout << "bind_many: " << vec.size() << " " << types.size() << std::endl;
-  
+  GPULine *l = find_gpu_line(e,va);
+  GPULine *new_l = new GPULine(*l);  
   VertexArraySet *s = find_vertex_array(e, va);
   //RenderVertexArray *arr = find_vertex_array_render(e,va);
   VertexArraySet *ns = new VertexArraySet(*s);
@@ -57,20 +62,22 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<Ga
     ns->texture_many_ids.push_back(txid);
   }
   RenderVertexArray *arr2 = find_vertex_array_render(e,va);
-  RenderVertexArray *arr = new RenderVertexArray(*ns,*arr2);
+  RenderVertexArray *arr = new RenderVertexArray(*ns,*arr2,*new_l);
   //arr->prepare(0);
   //s->free_memory(); // experimental (move semantics s->ns)
-  return add_vertex_array(e, ns, arr);
+  return add_vertex_array(e, ns, arr,new_l);
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind_arr(GameApi::VA va, GameApi::TXA tx)
 {
+  GPULine *l = find_gpu_line(e,va);
+  GPULine *new_l = new GPULine(*l);  
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_IDA+tx.id;
   RenderVertexArray *arr2 = find_vertex_array_render(e,va);
-  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low,*ns*/);
+  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low,*ns*/,*new_l);
   //arr->prepare(0);
-  return add_vertex_array(e, ns, arr);
+  return add_vertex_array(e, ns, arr,new_l);
 }
 EXPORT int GameApi::TextureApi::unique_id()
 {

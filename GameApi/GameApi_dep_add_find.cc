@@ -1089,11 +1089,12 @@ GameApi::FB add_float_bitmap(GameApi::Env &e, Bitmap<float> *bitmap)
   return bm;
 }
 
-GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexArray *arr)
+GameApi::VA add_vertex_array(GameApi::Env &e, VertexArraySet *va, RenderVertexArray *arr, GPULine *line)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->vertex_array.push_back(va);
   env->vertex_array_render.push_back(arr);
+  env->gpu_lines.push_back(line);
   if (g_current_block != -2)
   add_b(va);
   if (g_current_block != -2)
@@ -1116,7 +1117,7 @@ void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w)
   delete_item(env->widgets[widget.id]);
   env->widgets[widget.id] = w;
 }
-void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr)
+void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *va, RenderVertexArray *arr, GPULine *line)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   delete_item(env->vertex_array[va_h.id]);
@@ -1125,6 +1126,7 @@ void add_update_vertex_array(GameApi::Env &e, GameApi::VA va_h, VertexArraySet *
   //delete env->vertex_array_render[va_h.id];
   env->vertex_array[va_h.id] = va;
   env->vertex_array_render[va_h.id] = arr;
+  env->gpu_lines[va_h.id] = line;
 }
 
 GameApi::CBM add_continuous_bitmap(GameApi::Env &e, ContinuousBitmap<Color> *bitmap)
@@ -2627,6 +2629,16 @@ FaceCollPolyHandle *find_poly(GameApi::Env &e, GameApi::P p)
   if (p.id >=0 && p.id < (int)ee->poly.size())
     handle = ee->poly[p.id];
   //std::cout << "find_poly:" << handle << std::endl;
+  return handle;
+}
+GPULine *find_gpu_line(GameApi::Env &e, GameApi::VA p)
+{
+  EnvImpl *ee = ::EnvImpl::Environment(&e);
+  GPULine *handle = 0;
+  if (p.id >=0 && p.id < (int)ee->gpu_lines.size())
+    {
+      handle = ee->gpu_lines[p.id];
+    }
   return handle;
 }
 RenderVertexArray *find_vertex_array_render(GameApi::Env &e, GameApi::VA p)

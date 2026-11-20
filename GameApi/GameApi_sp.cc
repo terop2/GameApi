@@ -736,10 +736,11 @@ EXPORT void GameApi::SpriteApi::update_vertex_array(VA va, BM bm)
   PrepareSpriteToVA(*sprite, *s);
   TexturePrepare(*sprite, *env->renders2[bm.id], true);
   s->texture_id = bm.id;
-  RenderVertexArray *arr = new RenderVertexArray(g_low, *s); 
+  GPULine *gpu_line = new GPULine;
+  RenderVertexArray *arr = new RenderVertexArray(g_low, *s,*gpu_line); 
   arr->prepare(0);
   //s->free_memory();
-  add_update_vertex_array(e, va, s, arr);
+  add_update_vertex_array(e, va, s, arr, gpu_line);
 }
 EXPORT GameApi::ML GameApi::SpriteApi::vertex_array_render(EveryApi &ev, BM bm)
 {
@@ -761,11 +762,12 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm, bool progress,
   PrepareSpriteToVA(*sprite, *s);
   TexturePrepare(*sprite, *env->renders2[bm.id],progress,textrender);
   s->texture_id = bm.id;
-  RenderVertexArray *arr = new RenderVertexArray(g_low, *s); 
+  GPULine *g = new GPULine;
+  RenderVertexArray *arr = new RenderVertexArray(g_low, *s,*g); 
   arr->prepare(0);
   //s->free_memory();
   //std::cout << "add vertex array: " << (int)s << " " << (int)arr << std::endl;
-  return add_vertex_array(e, s, arr); 
+  return add_vertex_array(e, s, arr, g); 
 }
 EXPORT void GameApi::SpriteApi::clear_arrays(VA va)
 {

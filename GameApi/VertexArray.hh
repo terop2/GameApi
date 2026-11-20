@@ -353,11 +353,47 @@ struct Counts {
 Counts CalcOffsets(FaceCollection *coll, int start);
 Counts CalcCounts(FaceCollection *coll, int start, int end);
 
+
+
+struct GPULine_tri
+{
+  int facenum;
+  friend bool operator<(const GPULine_tri &a, const GPULine_tri &b)
+  {
+    return a.facenum<b.facenum;
+  }
+};
+struct GPULine_quad
+{
+  int facenum;
+  friend bool operator<(const GPULine_quad &a, const GPULine_quad &b)
+  {
+    return a.facenum<b.facenum;
+  }
+};
+struct GPULine_poly
+{
+  int facenum;
+  friend bool operator<(const GPULine_poly &a, const GPULine_poly &b)
+  {
+    return a.facenum<b.facenum;
+  }
+};
+
+struct GPULine
+{
+  std::vector<GPULine_tri> tri_vec;
+  std::vector<GPULine_quad> quad_vec;
+  std::vector<GPULine_poly> poly_vec;
+};
+GPULine gpu_line_combine(const GPULine &a, const GPULine &b);
+
+
 class RenderVertexArray
 {
 public:
-  RenderVertexArray(VertexArraySet &s2, RenderVertexArray &rend)
-    : s(s2), nodelete(false) {
+  RenderVertexArray(VertexArraySet &s2, RenderVertexArray &rend, GPULine &line)
+    : s(s2), nodelete(false), gpu_line(line) {
     int ss = 7;
     for(int i=0;i<ss;i++)
       {
@@ -382,12 +418,12 @@ public:
     attribi_buffer2 = rend.attribi_buffer2;
     attribi_buffer2 = rend.attribi_buffer2;
   }
-  RenderVertexArray(LowApi *g_low, VertexArraySet &s)
-    : s(s),nodelete(false),tri_count(0), quad_count(0), poly_count(0) { }
+  RenderVertexArray(LowApi *g_low, VertexArraySet &s, GPULine &line)
+    : s(s),nodelete(false),tri_count(0), quad_count(0), poly_count(0), gpu_line(line) { }
   GameApi::PinIn prepare(int id, bool isnull=false, int tri_count=-1, int quad_count=-1, int poly_count=-1);
   GameApi::PinIn update(int id);
   GameApi::PinIn update_tri(int id, int buffer_id, int start, int end);
-  GameApi::PinIn render(int id);
+  GameApi::PinIn render(int id, int facenum_limit=-1);
   void sort_blit(int id, Matrix in_MV);
   GameApi::PinIn prepare_instanced(int id, Point *positions, Vector *normals, float *colors, int size, int colour_divisor);
   GameApi::PinIn prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, float *colors, int size, int colour_divisor);
@@ -424,6 +460,7 @@ public:
   unsigned int indices_buffer;
   bool nodelete;
   bool bufferdata_done=false;
+  GPULine &gpu_line;
 };
 
 class RenderVertexArray2
@@ -481,6 +518,7 @@ public:
     s.set_reserve(id, tri_count, quad_count, poly_count);
   }
   void copy(int start_range, int end_range, std::vector<int> attribs = std::vector<int>(), std::vector<int> attribsi = std::vector<int>());
+  const GPULine &get_gpu_line() const { return line; }
 private:
   Point p[200];
   Point p2[200];
@@ -496,6 +534,7 @@ private:
   
   const FaceCollection &coll;
   VertexArraySet &s;
+  GPULine line;
 };
 
 #ifndef ARM
@@ -522,6 +561,7 @@ struct ThreadInfo
   pthread_cond_t *g_cond2;
   Counts ct2_offsets;
   Counts ct2_counts;
+  GPULine gpu_line;
 };
 void *thread_func(void *data);
 extern long long g_copy_total;
@@ -632,11 +672,11 @@ public:
     sets[id]=0;
     va2[id]=0;
   }
-  void transfer_to_gpu_mem(VertexArraySet *set, RenderVertexArray &r, int rend_id, int buf, int start, int end) {
+  void transfer_to_gpu_mem(VertexArraySet *set, RenderVertexArray &r, GPULine &gpuline, int rend_id, int buf, int start, int end) {
     RenderVertexArray_bufferids ids;
     r.fetch_buffers(ids);
     VertexArraySet * vs = set;
-    RenderVertexArray rend(*vs, r /*g_low, *vs*/);
+    RenderVertexArray rend(*vs, r /*g_low, *vs*/, gpuline);
     rend.update_buffers(ids);
     rend.set_no_delete(true);
     rend.update_tri(rend_id, buf, start,end);

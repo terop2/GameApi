@@ -6361,12 +6361,13 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
     VertexArraySet *s = new VertexArraySet;
     FaceCollectionVertexArray2 arr(*faces, *s);
     arr.reserve(0);
-    arr.copy(0,faces->NumFaces());  
-    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    arr.copy(0,faces->NumFaces());
+    GPULine *new_g = new GPULine(arr.get_gpu_line());
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s,*new_g);
     arr2->prepare(0); 
     if (!keep)
       s->free_memory();
-    add_update_vertex_array(e, va, s, arr2);
+    add_update_vertex_array(e, va, s, arr2,new_g);
 
   }
 
@@ -6417,7 +6418,8 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   //std::cout << "NumThreads2: " << num_threads << std::endl;
   Counts ct = CalcCounts(faces, 0, faces->NumFaces());
   VertexArraySet *set = new VertexArraySet;
-  RenderVertexArray *arr2 = new RenderVertexArray(g_low,*set);
+  GPULine *g = find_gpu_line(e,va);
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low,*set,*g);
   arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
   pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
   pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
@@ -6475,9 +6477,9 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
     ThreadInfo volatile *ti_global2 = ti_global;
     if (ti_global2) {
       //std::cout << "transfer" << std::endl;
-    ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count*3, ti_global2->ct2_offsets.tri_count*3 + ti_global2->ct2_counts.tri_count*3); 
-    ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 1, ti_global2->ct2_offsets.quad_count*6, ti_global2->ct2_offsets.quad_count*6 + ti_global2->ct2_counts.quad_count*6);
-    ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 2, std::max(ti_global2->ct2_offsets.poly_count-1,0), std::max(ti_global2->ct2_offsets.poly_count-1,0) + (ti_global2->ct2_offsets.poly_count?ti_global2->ct2_counts.poly_count:ti_global2->ct2_counts.poly_count-1));
+      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, *g,0, 0, ti_global2->ct2_offsets.tri_count*3, ti_global2->ct2_offsets.tri_count*3 + ti_global2->ct2_counts.tri_count*3); 
+      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, *g,0, 1, ti_global2->ct2_offsets.quad_count*6, ti_global2->ct2_offsets.quad_count*6 + ti_global2->ct2_counts.quad_count*6);
+      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, *g, 0, 2, std::max(ti_global2->ct2_offsets.poly_count-1,0), std::max(ti_global2->ct2_offsets.poly_count-1,0) + (ti_global2->ct2_offsets.poly_count?ti_global2->ct2_counts.poly_count:ti_global2->ct2_counts.poly_count-1));
     }
     ti_global = 0;
     //std::cout << "lock 2 release" << std::endl;
@@ -6517,7 +6519,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       //::EnvImpl *env = ::EnvImpl::Environment(&e);
       //env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
     }
-  add_update_vertex_array(e, va, set, arr2);
+  add_update_vertex_array(e, va, set, arr2,g);
   
 #endif
 
@@ -6526,12 +6528,13 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   VertexArraySet *s = new VertexArraySet;
   FaceCollectionVertexArray2 arr(*faces, *s);
   arr.reserve(0);
-  arr.copy(0,faces->NumFaces());  
-  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+  arr.copy(0,faces->NumFaces());
+  GPULine *line = new GPULine(arr.get_gpu_line());
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s,*line);
   arr2->prepare(0); 
   if (!keep)
     s->free_memory();
-  add_update_vertex_array(e, va, s, arr2);
+  add_update_vertex_array(e, va, s, arr2,line);
 #endif
 
 }
@@ -6662,8 +6665,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
 	
 
-
-    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    GPULine *line = new GPULine(arr.get_gpu_line());
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s,*line);
     arr2->prepare(0);
     if (!keep) {
       s->free_memory();
@@ -6671,7 +6674,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
     }
     //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
-    return add_vertex_array(e, s, arr2);
+    return add_vertex_array(e, s, arr2,line);
     }
 
     //   std::cout << "Normal rendering" << std::endl;
@@ -6753,14 +6756,15 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     VertexArraySet *s = new VertexArraySet;
     FaceCollectionVertexArray2 arr(*faces, *s);
     arr.reserve(0);
-    arr.copy(0,faces->NumFaces());  
-    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    arr.copy(0,faces->NumFaces());
+    GPULine *line = new GPULine(arr.get_gpu_line());
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s,*line);
     arr2->prepare(0);
     if (!keep) {
       s->free_memory();
     }
     //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
-    return add_vertex_array(e, s, arr2);
+    return add_vertex_array(e, s, arr2,line);
   }
   
 #ifdef THREADS
@@ -6841,15 +6845,16 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     VertexArraySet *s = new VertexArraySet;
     FaceCollectionVertexArray2 arr(*faces, *s);
     arr.reserve(0);
-    arr.copy(0,faces->NumFaces());  
-    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    arr.copy(0,faces->NumFaces());
+    GPULine *line = new GPULine(arr.get_gpu_line());
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s,*line);
     arr2->prepare(0);
     if (!keep)
       s->free_memory();
     //ProgressBar(66665+unique_id,2,4,"create_vertex_array");
 
 
-    return add_vertex_array(e, s, arr2);
+    return add_vertex_array(e, s, arr2,line);
 
     }
     
@@ -6876,8 +6881,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     set->has_skeleton = has_skeleton2;
     
 
-
-    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set);
+    GPULine *line = new GPULine;
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set, *line);
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
     pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
@@ -6929,17 +6934,19 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       
       // now ti_global is available
       ThreadInfo volatile *ti_global2 = ti_global;
+      GPULine *line=0;
       if (ti_global2 && !error) {
-       //std::cout << "transfer"<< std::endl;
+	line = &const_cast<GPULine&>(ti_global2->gpu_line);
+	//std::cout << "transfer"<< std::endl;
 
        //std::cout << "TRANSFER::ctcounts(" << ti_global2->ct2_counts.tri_count << " " << ti_global2->ct2_counts.quad_count << " " << ti_global2->ct2_counts.poly_count << ")" << std::endl;
        //std::cout << "TRANSFER::ctoffsets(" << ti_global2->ct2_offsets.tri_count << " " << ti_global2->ct2_offsets.quad_count << " " << ti_global2->ct2_offsets.poly_count << ")" << std::endl;
 
        
-       ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count *3, ti_global2->ct2_offsets.tri_count *3 + ti_global2->ct2_counts.tri_count *3); 
-      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 1, ti_global2->ct2_offsets.quad_count *6, ti_global2->ct2_offsets.quad_count *6 + ti_global2->ct2_counts.quad_count *6);
+	ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, *line,0, 0, ti_global2->ct2_offsets.tri_count *3, ti_global2->ct2_offsets.tri_count *3 + ti_global2->ct2_counts.tri_count *3); 
+	ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, *line,0, 1, ti_global2->ct2_offsets.quad_count *6, ti_global2->ct2_offsets.quad_count *6 + ti_global2->ct2_counts.quad_count *6);
       if (!g_disable_polygons)
-      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 2, std::max(ti_global2->ct2_offsets.poly_count-1,0), std::max(ti_global2->ct2_offsets.poly_count-1,0) + (ti_global2->ct2_offsets.poly_count?ti_global2->ct2_counts.poly_count:ti_global2->ct2_counts.poly_count-1));
+	ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, *line, 0, 2, std::max(ti_global2->ct2_offsets.poly_count-1,0), std::max(ti_global2->ct2_offsets.poly_count-1,0) + (ti_global2->ct2_offsets.poly_count?ti_global2->ct2_counts.poly_count:ti_global2->ct2_counts.poly_count-1));
       }
       ti_global = 0;
       //std::cout << "rel 2" << std::endl;
@@ -6986,7 +6993,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
     
 #ifdef EMSCRIPTEN
-    return add_vertex_array(e, set, arr2);
+    return add_vertex_array(e, set, arr2,line);
     //#ifdef __EMSCRIPTEN_PTHREADS__
   } else {
     //#endif
@@ -7031,8 +7038,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     s->has_texcoord = has_texcoord2;
     s->has_skeleton = has_skeleton2;
 
-    
-    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    GPULine *line = new GPULine;
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s,*line);
     std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     //if (ct.tri_count==0 && ct.quad_count==0 && ct.poly_count==0) return;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
@@ -7054,6 +7061,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       
       //arr.reserve(0);
       arr.copy(start,end);
+      *line = gpu_line_combine(*line,arr.get_gpu_line());
       if (ct2_counts.tri_count!=0)
 	arr2->update_tri(0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3);
       if (ct2_counts.quad_count!=0)
@@ -7066,7 +7074,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     if (!keep)
       s->free_memory();
     //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
-    return add_vertex_array(e, s, arr2);
+    return add_vertex_array(e, s, arr2,line);
 #endif // BATCHING
     //#ifdef __EMSCRIPTEN_PTHREADS__
 #ifdef THREADS
@@ -7077,7 +7085,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   //#endif
 #else // EMSCRIPTEN
     //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
-  return add_vertex_array(e, set, arr2);
+  return add_vertex_array(e, set, arr2,line);
 #endif // end of EMSCRIPTEN
 
 #else // THREADS
@@ -7126,8 +7134,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     s->has_texcoord = has_texcoord2;
     s->has_skeleton = has_skeleton2;
     
-
-    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    GPULine *line = new GPULine;
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s,*line);
 
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     for(int i=0;i<batch_count;i++) {
@@ -7139,9 +7147,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
       FaceCollectionVertexArray2 arr(*faces, *s);
-
       arr.reserve_fixed2(0,ct2_counts.tri_count,ct2_counts.quad_count,ct2_counts.poly_count);
       arr.copy(start,end);
+      *line = gpu_line_combine(*line,arr.get_gpu_line());
       if (ct2_counts.tri_count!=0)
 	arr2->update_tri(0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3);
 
@@ -7155,7 +7163,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     if (!keep)
       s->free_memory();
     //ProgressBar(66665+unique_id,4,4,"create_vertex_array");
-    return add_vertex_array(e, s, arr2);
+    return add_vertex_array(e, s, arr2, line);
 #endif // end of BATCHING
 #endif // end of THREADS
 }
@@ -7187,25 +7195,27 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array_attribs(GameApi::P p
       prep.join(vec[i]);
     }
   VertexArraySet *set = prep.collect();
-  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set);
+  GPULine *line = new GPULine;
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set,*line);
   arr2->prepare(0);
   if (!keep)
     {
       set->free_memory();
     }
-  return add_vertex_array(e, set, arr2);
+  return add_vertex_array(e, set, arr2,line);
 #else
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
   VertexArraySet *s = new VertexArraySet;
   FaceCollectionVertexArray2 arr(*faces, *s);
   arr.reserve(0);
-  arr.copy(0,faces->NumFaces(),attribs,attribi);  
-  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+  arr.copy(0,faces->NumFaces(),attribs,attribi);
+  GPULine *line = new GPULine(arr.get_gpu_line());
+  RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s,*line);
   arr2->prepare(0); 
   if (!keep)
     s->free_memory();
-  return add_vertex_array(e, s, arr2);
+  return add_vertex_array(e, s, arr2,line);
 #endif
 }
 
@@ -26577,7 +26587,8 @@ public:
     //comb = new CombineAnim(start_coll, end_coll);
 
     delete render;
-    render = new RenderVertexArray(g_low, *set);
+    GPULine *line = new GPULine;
+    render = new RenderVertexArray(g_low, *set, *line);
 
     delete arr;
     arr = new FaceCollectionVertexArray2(*comb, *set);
