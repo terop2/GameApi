@@ -26773,6 +26773,7 @@ GameApi::PN GameApi::WaveformApi::df_dx(PN poly)
   return add_polynomial(e, vec3);
 }
 
+extern bool g_meshpage_landscape;
 
 class TouchRotate : public MainLoopItem
 {
@@ -26785,9 +26786,22 @@ public:
   std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e) 
   {
+    Point cursor_pos = e.cursor_pos;
+    if (g_meshpage_landscape)
+      {
+	float alfa = -3.14159265/2.0;
+	float x = cursor_pos.x;
+	float y = cursor_pos.y;
+	float xx = x*cos(alfa) - y*sin(alfa);
+	float yy = x*sin(alfa) + y*cos(alfa);
+	cursor_pos.x = xx;
+	cursor_pos.y = yy;
+      }
+
+    
     if ((e.type==1025 && e.button==0) /*|| e.type==Low_SDL_FINGERDOWN*/) {
       mousedown=true;
-      mousedown_pos = e.cursor_pos;
+      mousedown_pos = cursor_pos;
     }
     if ((e.type==1026 && e.button==-1) /*|| e.type==Low_SDL_FINGERUP*/) {
       mousedown=false;
@@ -26796,8 +26810,8 @@ public:
     }
     if ((e.type==1024 /*||e.type==Low_SDL_FINGERMOTION*/) && mousedown)
       {
-	mouse_delta += e.cursor_pos - mousedown_pos;
-        mousedown_pos = e.cursor_pos;
+	mouse_delta += cursor_pos - mousedown_pos;
+        mousedown_pos = cursor_pos;
       }
     next->handle_event(e);
   }
