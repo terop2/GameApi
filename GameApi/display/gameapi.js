@@ -136,7 +136,7 @@ function load_emscripten()
     if (firefox && vnum<=78)
         src="engine/engine_nothreads_highmem.js?" + data2;
     else if (firefox) src="engine/engine_highmem.js?" + data2;
-    if (mobile) src="engine/engine_nothreads_highmem.js?"+data2;
+    if (mobile) src="engine/engine_highmem.js?"+data2;
     if (!crossOriginIsolated && !mobile) src="engine/engine_nothreads_highmem.js?"+data2;
     var script = document.createElement("script");
     script.setAttribute("id","ourscript");

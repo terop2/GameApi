@@ -3755,7 +3755,8 @@ function choose_fullscreen2(id, txt)
 console.log("FULLSCREEN2");
    console.log(txt);
    console.log("FULLSCREEN OVER");
-   if (txt=="1")
+
+if (txt=="1")
    {
       g_fullscreen = true;
       el3.style.display="block";
@@ -3777,6 +3778,36 @@ console.log("FULLSCREEN2");
 	el2.style.top="0px";
 	el2.style.left="0px";
   	el2.style.z_index="10";
+
+
+
+
+<?php
+$mobile = js_mobile();
+if ($mobile == "yes") {
+   echo "el.style.transform=\"rotate(90deg)\";\n";
+   echo "el.style.transform_origin=\"top left\";\n";
+   echo "el2.style.transform=\"rotate(90deg)\";\n";
+   echo "el2.style.transform_origin=\"top left\";\n";
+   echo "el.style.width=\"90vh\";\n";
+   echo "el.style.height=\"98vw\";\n";
+   echo "el2.style.width=\"90vh\";\n";
+   echo "el2.style.height=\"98vw\";\n";
+   echo "el.style.left=\"-37%\";\n";
+   echo "el2.style.left=\"-37%\";\n";
+   echo "el.style.top=\"125px\";\n";
+   echo "el2.style.top=\"125px\";\n";
+   //echo "el.width=\"800\";\n";
+   //echo "el.height=\"600\";\n";
+   echo "const dpr = window.devicePixelRatio || 1;";
+   echo "el2.width=800+340;\n";
+   echo "el2.height=600+340;\n";
+}
+?>
+
+
+
+
 	window.scrollTo(0,0);
    } else {
       el3.style.display="none";
@@ -3879,7 +3910,7 @@ $mobile = js_mobile();
 $highmem = js_highmem();
 //echo "MOBILE: $mobile\nNOTHREADS: $nothreads\nHIGHMEM: $highmem\n";
 if ($mobile == "yes") {
-  echo "var filename = 'engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
+  echo "var filename = 'engine_highmem.js?" . filemtime("engine_highmem.js") . "';";
 
 } else
 if ($nothreads == "yes") {

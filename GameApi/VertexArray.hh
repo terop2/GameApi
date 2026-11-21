@@ -386,7 +386,7 @@ struct GPULine
   std::vector<GPULine_quad> quad_vec;
   std::vector<GPULine_poly> poly_vec;
 };
-GPULine gpu_line_combine(const GPULine &a, const GPULine &b);
+IMPORT GPULine gpu_line_combine(const GPULine &a, const GPULine &b);
 
 
 class RenderVertexArray

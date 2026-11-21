@@ -34,7 +34,7 @@ struct GPULineSelection
   int poly;
 };
 
-GPULine gpu_line_combine(const GPULine &a, const GPULine &b)
+EXPORT GPULine gpu_line_combine(const GPULine &a, const GPULine &b)
 {
   GPULine res;
   res.tri_vec = a.tri_vec;
@@ -61,6 +61,7 @@ GPULineSelection default_gpu_line(int tri_count, int quad_count, int poly_count)
 }
 int gpu_line_select(int count, int count2)
 {
+  //return count;
   return std::max(0,std::min(count,count2));
 }
 GPULineSelection calc_gpu_line(const GPULineSelect &sel, const GPULine &line)
