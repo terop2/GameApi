@@ -3571,7 +3571,7 @@ if (typeof(elem)!='undefined' && elem != null) { } else { return; }
 	elem.style.position="absolute";
 	elem.style.top="0px";
 	elem.style.left="0px";
-	elem.style.width="100vw";
+	elem.style.width="99vw";
 	elem.style.height="56vw";
 	elem.style.object_fit="contain";
 	elem.style.aspect_ratio="16/9";
@@ -3580,7 +3580,7 @@ if (typeof(elem)!='undefined' && elem != null) { } else { return; }
 	elem2.style.position="absolute";
 	elem2.style.top="0px";
 	elem2.style.left="0px";
-	elem2.style.width="100vw";
+	elem2.style.width="99vw";
 	elem2.style.height="56vw";
 	elem2.style.object_fit="contain";
 	elem2.style.aspect_ratio="16/9";
@@ -3603,12 +3603,12 @@ elem.style.width = (wd).toString() + "px";
 
   iframe.style.top = "0px";
   iframe.style.left = "0px";
-  iframe.style.width = "100vw";
+  iframe.style.width = "99vw";
   iframe.style.height = "56vw";
   iframe.style.z_index="10";
 
   var iframe3 = document.getElementById("iframe");
-  iframe3.style.width = "100vw";
+  iframe3.style.width = "99vw";
   iframe3.style.height = "56vw";
   iframe3.style.top = "0px";
   iframe3.style.left = "0px";
@@ -3616,7 +3616,7 @@ elem.style.width = (wd).toString() + "px";
 
   var iframe2 = document.getElementById("canvas2");
   if (!iframe2) return;
-  iframe2.style.width = "100vw";	
+  iframe2.style.width = "99vw";	
   iframe2.style.height = "56vw";
   iframe2.style.top = "0px";
   iframe2.style.left = "0px";
@@ -3625,7 +3625,7 @@ elem.style.width = (wd).toString() + "px";
 
   var iframe3 = document.getElementById("gpucanvas");
   if (!iframe3) return;
-  iframe3.style.width = "100vw";
+  iframe3.style.width = "99vw";
   iframe3.style.height = "56vw";
   iframe3.style.top = "0px";
   iframe3.style.left = "0px";
@@ -3758,13 +3758,13 @@ console.log("FULLSCREEN2");
    console.log(txt);
    console.log("FULLSCREEN OVER");
 
-if (txt=="1")
+if (txt!="0")
    {
       g_fullscreen = true;
       el3.style.display="block";
        el4.style.display="none";
 	el.style.position="absolute";
-	el.style.width="100vw";
+	el.style.width="99vw";
 	el.style.height="56vw";
 	el.style.object_fit="contain";
 	el.style.aspect_ratio="16/9";
@@ -3773,7 +3773,7 @@ if (txt=="1")
   	el.style.z_index="10";
 
 	el2.style.position="absolute";
-	el2.style.width="100vw";
+	el2.style.width="99vw";
 	el2.style.height="56vw";
 	el2.style.object_fit="contain";
 	el2.style.aspect_ratio="16/9";
@@ -3802,8 +3802,8 @@ if ($mobile == "yes") {
    //echo "el.width=\"800\";\n";
    //echo "el.height=\"600\";\n";
    echo "const dpr = window.devicePixelRatio || 1;";
-   echo "el2.width=800;\n";
-   echo "el2.height=600;\n";
+   echo "el2.width=800+340;\n";
+   echo "el2.height=600+340;\n";
    echo "Module.ccall('set_meshpage_landscape', null, ['number'], [1], {async:true});";
 }
 ?>
