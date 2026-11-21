@@ -157,6 +157,9 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   
   
 }
+
+bool g_meshpage_landscape = false;
+
 void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, float &pos_y, float &rot_y, Quake_data &data, float &speed_x, float &speed_y, float speed, float rot_speed)
 {
 
@@ -179,6 +182,13 @@ void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, f
   }
 #endif
 
+  if (g_meshpage_landscape)
+    {
+      std::swap(data.backward,data.left);
+      std::swap(data.forward,data.right);
+      std::swap(data.left,data.right);
+    }
+  
 
 #ifdef ANDROID
 #ifdef ANDROID_LANDSCAPE
@@ -197,6 +207,14 @@ void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, f
 #endif
 #endif
 
+  if (g_meshpage_landscape)
+    {
+      std::swap(data.left,data.right);
+      std::swap(data.backward,data.left);
+      std::swap(data.forward,data.right);
+    }
+
+ 
 #ifndef ANDROID
   if (data.side_left) { pos_y += delta*speed*sin(rot_y); pos_x += delta*speed*cos(rot_y); }
   if (data.side_right) { pos_y += delta*speed*sin(rot_y+3.14159); pos_x += delta*speed*cos(rot_y+3.14159); }

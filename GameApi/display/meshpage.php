@@ -3739,6 +3739,8 @@ function choose_iframe_vs_canvas2(id,txt)
    }
 }
 
+
+
 function choose_iframe_vs_canvas(id)
 {
    fetch("<?php echo $https ?>://<?php echo $site ?>/mesh_iframe.php?id=" + id.toString())
@@ -3800,19 +3802,18 @@ if ($mobile == "yes") {
    //echo "el.width=\"800\";\n";
    //echo "el.height=\"600\";\n";
    echo "const dpr = window.devicePixelRatio || 1;";
-   echo "el2.width=800+340;\n";
-   echo "el2.height=600+340;\n";
+   echo "el2.width=800;\n";
+   echo "el2.height=600;\n";
+   echo "Module.ccall('set_meshpage_landscape', null, ['number'], [1], {async:true});";
 }
 ?>
-
-
-
 
 	window.scrollTo(0,0);
    } else {
       el3.style.display="none";
        el4.style.display="block";
     g_fullscreen = false;
+    Module.ccall('set_meshpage_landscape', null, ['number'], [0], {async:true});
    }
 
 }

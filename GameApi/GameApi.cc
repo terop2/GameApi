@@ -40942,6 +40942,12 @@ KP extern "C" void set_background_mode(int i)
   if (i>=0 && i<9)
     g_background_mode = i;
 }
+extern bool g_meshpage_landscape;
+KP extern "C" void set_meshpage_landscape(int i)
+{
+  if (i==0) { g_meshpage_landscape=false; }
+  if (i==1) { g_meshpage_landscape=true; }
+}
 
 bool g_stop_music = false;
 void (*g_stop_cb)(void*);
