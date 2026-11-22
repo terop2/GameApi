@@ -3803,8 +3803,8 @@ if ($mobile == "yes") {
    //echo "el.width=\"800\";\n";
    //echo "el.height=\"600\";\n";
    echo "const dpr = window.devicePixelRatio || 1;";
-   echo "el2.width=800+340;\n";
-   echo "el2.height=600+340;\n";
+   echo "el2.width=800+340-25;\n";
+   echo "el2.height=600+340-120;\n";
    echo "Module.ccall('set_meshpage_landscape', null, ['number'], [1], {async:true});";
 }
 ?>
