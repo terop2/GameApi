@@ -38472,7 +38472,7 @@ public:
     prog->use(); // 80.0, 10.1, 60000.0
     
   float fovy = 90.0 * 3.14159265/180.0f;
-  Matrix m = Matrix::Perspective(fovy /*120.0*double(sy)/double(sx)*/, (double)sx/sy, 10.1, 1600.0);
+  Matrix m = Matrix::Perspective(fovy /*120.0*double(sy)/double(sx)*/, (double)sx/sy, 10.1, 1600.0)*get_aspect_matrix();
     //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
     prog->set_var("in_P", m);
     ogl->glViewport(corner_x+x,screen_y-corner_y-sy-y, sx, sy);
@@ -40961,6 +40961,41 @@ KP extern "C" void set_meshpage_landscape(int i)
 {
   if (i==0) { g_meshpage_landscape=false; }
   if (i==1) { g_meshpage_landscape=true; }
+}
+
+
+
+int g_aspect_width = 4;
+int g_aspect_height = 3;
+
+Matrix get_aspect_matrix()
+{
+  float ww = float(g_aspect_width)/float(4);
+  float hh = float(g_aspect_height)/float(3);
+
+  if (ww>hh)
+    {
+      float h = hh;
+      ww/=h;
+      hh/=h;
+    }
+  else
+    {
+      float w = ww;
+      ww/=w;
+      hh/=w;
+    }
+  ww=1.0/ww;
+  hh=1.0/hh;
+  Matrix m = Matrix::Scale(ww,hh,1.0);
+  return m;
+}
+
+
+KP extern "C" void set_aspect(int w, int h)
+{
+  g_aspect_width = w;
+  g_aspect_height = h;
 }
 
 bool g_stop_music = false;

@@ -556,7 +556,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
 #endif
   float fovy = 90.0 * 3.14159265/180.0f;
   
-  Matrix m = Matrix::Perspective(fovy /*90.0*double(screeny*scale_y)/double(screenx*scale_x)*/, (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 1600.0); // 10.1 60000.0
+  Matrix m = Matrix::Perspective(fovy /*90.0*double(screeny*scale_y)/double(screenx*scale_x)*/, (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 1600.0) * get_aspect_matrix(); // 10.1 60000.0
   //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
   prog->set_var("in_P", m);
   Matrix m2 = Matrix::Identity();
@@ -801,7 +801,7 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
   float fovy = 90.0 * 3.14159265/180.0f;
       
   Matrix m = Matrix::Perspective(fovy /*80.0*/, (double)(screenx*scale_x)/(screeny*scale_y), 10.1,
-				     1600.0);
+				 1600.0)*get_aspect_matrix();
       Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
       prog->use();
       prog->set_var("in_P", m);
@@ -2170,7 +2170,7 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   ek.in_N = find_matrix(e, in_N);
   float fovy = 90.0 * 3.14159265/180.0f;
 
-  ek.in_P = Matrix::Perspective(fovy /*90.0*double(screeny*scale_y)/double(screenx*scale_x)*/, (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 1600.0); // 10.1, 60000.0
+  ek.in_P = Matrix::Perspective(fovy /*90.0*double(screeny*scale_y)/double(screenx*scale_x)*/, (double)(screenx*scale_x)/(screeny*scale_y), 10.1, 1600.0) * get_aspect_matrix(); // 10.1, 60000.0
   ek.time = get_time()/1000.0;
   ek.delta_time = get_delta_time();
   ek.screen_x = 0;

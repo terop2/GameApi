@@ -26220,7 +26220,7 @@ public:
     
     MainLoopEnv &ee = e;
     Matrix old_inP = ee.in_P;
-    Matrix m = Matrix::Perspective(mult*3.14159265f/180.0f, (double)(800*scale_x)/(double)(600*scale_y), front_plane, end_plane); 
+    Matrix m = Matrix::Perspective(mult*3.14159265f/180.0f, (double)(800*scale_x)/(double)(600*scale_y), front_plane, end_plane)*get_aspect_matrix(); 
     ee.in_P = m;
 
     Matrix gp = g_in_P;

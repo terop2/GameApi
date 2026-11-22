@@ -3781,6 +3781,7 @@ if (txt!="0")
 	el2.style.left="0px";
   	el2.style.z_index="10";
 
+    Module.ccall('set_aspect', null, ['number','number'], [16,9], {async:true});
 
 
 
@@ -3813,6 +3814,7 @@ if ($mobile == "yes") {
       el3.style.display="none";
        el4.style.display="block";
     g_fullscreen = false;
+    Module.ccall('set_aspect', null, ['number','number'], [4,3], {async:true});
     Module.ccall('set_meshpage_landscape', null, ['number'], [0], {async:true});
    }
 

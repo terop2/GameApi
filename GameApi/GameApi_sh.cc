@@ -57,7 +57,7 @@ void GameApi::ShaderApi::set_default_projection_1(SH shader, std::string name)
 #endif
   float fovy = 90.0 * 3.14159265/180.0f;
 
-  Matrix m = Matrix::Perspective(fovy /*80.0*/, (double)(screen_sx*scale_x)/(screen_sy*scale_y), 10.1, 1600.0);
+  Matrix m = Matrix::Perspective(fovy /*80.0*/, (double)(screen_sx*scale_x)/(screen_sy*scale_y), 10.1, 1600.0)*get_aspect_matrix();
   if (shader.id==-1) return;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;

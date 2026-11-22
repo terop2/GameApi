@@ -178,6 +178,7 @@ void async_pending_minus(std::string label, std::string info);
 extern float android_screen_sx;
 extern float android_screen_sy;
 
+Matrix get_aspect_matrix();
 
 #ifdef ANDROID
 #if 0
