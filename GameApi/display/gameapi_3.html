@@ -65,6 +65,7 @@ function resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,en
           }
            try {
                Module.ccall("set_resize_event", null, ["number", "number"], [wd,hd], {async:true});
+              Module.ccall('set_aspect', null, ['number','number'], [wd,hd], {async:true});
            } catch(e) {
                console.log(e);
            }
