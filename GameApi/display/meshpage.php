@@ -116,14 +116,14 @@ if ("$machine"=="terop-pc2") {
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light" id="html" style="overflow: auto;"> 
 <head>
-<title><?php echo $sitename ?> -- 3D Engine for the web | Display 3D models on your website</title>
+<title>AI 3D Engine - Create 3D Worlds with Claude AI</title>
 <link rel="stylesheet" id="bootstrap-css" href="" media="print" onload="this.media='all'" crossorigin="anonymous">
 
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
 if ($page!="2") {
- echo '<meta name="description" content="meshpage.org makes the web 3d, one site at the time"/>';
+ echo '<meta name="description" content="Create static 3D worlds with artificial intelligence. Use Claude AI to generate 3D scenes, animations and WebGL applications. Export standalone HTML5 projects."/>';
  } else
  ?>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -1396,42 +1396,40 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $http
 <div id="AI" class="container-lg" style="display:none;">
 <p>
 <p>
-<h1>Using our 3d engine with artificial intelligence</h1>
+<h1>AI 3D Model Generator -- Create 3D Worlds with Artificial Intelligence</h1>
 
 
-<h3>This model can create walking simulators with OpenGL/WebGL technology</h3> 
+<h3>This AI model can create "static 3d worlds in web" with OpenGL/WebGL technology</h3> 
 
 <b>Engine download:</b><p>
 <ul>
-<li><b>Engine deploy package:</b> <a href="https://meshpage.org/gameapi_3d_engine.zip">gameapi_3d_engine.zip</a>. 
-<li><b>Claude context file:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude.txt">gameapi_3d_engine_claude.txt</a>.
-<li><b>Claude base example:</b> <a href="https://meshpage.org/gameapi_3d_engine_claude_example_script.txt">gameapi_3d_engine_claude_example_script.txt</a>.
+<li><b>Engine deploy package:</b> <a href="https://meshpage.org/AI_engine.zip" download>AI_engine.zip</a>. 
+<li><b>Claude context file:</b> <a href="https://meshpage.org/AI_engine_claude.txt" download>AI_engine_claude.txt</a>.
+<li><b>Claude base example:</b> <a href="https://meshpage.org/AI_engine_claude_example_script.txt" download>AI_engine_claude_example_script.txt</a>.
+<li><b>github repo:</b> https://github.com/terop2/GameApi more_stable branch
 <li><b>Link to claude.ai:</b> <a href="https://claude.ai">claude.ai</a>.
 </ul>
 <p>
 Usage instructions:
 <ul>
-<li>unzip gameapi_3d_engine.zip to new web server directory
-<li>display.html from the zip file has the script you need to change
+<li><b>unzip AI_engine.zip</b> to new web server directory
+<li><b>display.html</b> from the zip file has <b>the script</b> you need to change
+<li><b>claude context file</b> and <b>base example file</b> and <b>github repo link</b> and <b>more_stable branch</b> should be passed to claude before prompting
 <li>use &lt;iframe src="mywebdir/display.html" width="830" height="630" scrolling="no"&gt; to display the result in another web page.
 </ul>
 <p>
-Other instructions/claude/sonnet5.5 probably needs to know this info:
+Other instructions/claude/<b>sonnet5.5</b> probably needs to know this info:
 <ul>
 <li><b>Cone primitive</b> radius parameters might be in wrong order
 <li><b>glb animation</b> files need to have <b>skeleton</b> included
 <li>after initial setup, it's useful to ask <b>snippets</b> from claude
-<li>claude might ask <b>a link to github repo</b> https://github.com/terop2/GameApi
-<li>claude should use <b>more_stable branch</b> from github repo
 </ul>
 <p>
-Instructions for claude/fable5.2:
+Instructions for claude/<b>fable5.2</b>:
 <ul>
 <li><b>Cone primitive</b> radius parameters might be in wrong order
 <li>can ask to fix <b>z-fighting</b> on specific elements if you see flicker in the end result.
-<li><b>a link to github repo</b> https://github.com/terop2/GameApi
-<li>claude should use <b>more_stable branch</b> from github repo
-
+<li><b>glb animation</b> files need to have <b>skeleton</b> included
 </ul>
 <p>
 Advanced usage/web server config:
