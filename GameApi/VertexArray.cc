@@ -49,6 +49,7 @@ EXPORT GPULine gpu_line_combine(const GPULine &a, const GPULine &b)
   int s3 = b.poly_vec.size();
   for(int i=0;i<s2;i++)
     res.poly_vec.push_back(b.poly_vec[i]);
+  return res;
 }
 
 GPULineSelection default_gpu_line(int tri_count, int quad_count, int poly_count)
