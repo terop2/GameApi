@@ -405,10 +405,11 @@ public:
       g_low->sdl_mixer->Mix_Init(0);
 #endif
   }
-  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
-  void HeavyPrepare() { Prepare(); }
-
-  void Prepare() {
+  void Collect(CollectVisitor &vis) {
+    next->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
@@ -431,6 +432,13 @@ public:
     
     initialized = true;
 
+
+
+  }
+
+  void Prepare() {
+    next->Prepare();
+    HeavyPrepare();
   }
   virtual void execute(MainLoopEnv &e)
   {
