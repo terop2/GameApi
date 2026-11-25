@@ -3432,10 +3432,8 @@ public:
   void Collect(CollectVisitor &vis) { next->Collect(vis);
     vis.register_obj(this);
   }
-  void HeavyPrepare() { Prepare(); }
-  void Prepare() {
+  void HeavyPrepare() {
     if (firsttime2) {
-    next->Prepare();
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
@@ -3448,6 +3446,11 @@ public:
     vec = new std::vector<unsigned char>(ptr->begin(),ptr->end());
     firsttime2 = false;
     }
+
+  }
+  void Prepare() {
+    next->Prepare();
+    HeavyPrepare();
   }
   virtual void execute(MainLoopEnv &e)
   {

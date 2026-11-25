@@ -1423,6 +1423,7 @@ Other instructions/claude/<b>sonnet5.5</b> probably needs to know this info:
 <li><b>Cone primitive</b> radius parameters might be in wrong order
 <li><b>glb animation</b> files need to have <b>skeleton</b> included
 <li>after initial setup, it's useful to ask <b>snippets</b> from claude
+<li><b>matrix stack order</b> needs to be checked.
 </ul>
 <p>
 Instructions for claude/<b>fable5.2</b>:
@@ -1430,6 +1431,7 @@ Instructions for claude/<b>fable5.2</b>:
 <li><b>Cone primitive</b> radius parameters might be in wrong order
 <li>can ask to fix <b>z-fighting</b> on specific elements if you see flicker in the end result.
 <li><b>glb animation</b> files need to have <b>skeleton</b> included
+<li><b>matrix stack order</b> needs to be checked.
 </ul>
 <p>
 Advanced usage/web server config:
