@@ -41,7 +41,7 @@ struct X
 struct I
 {
   int index;
-
+  I(int index) : index(index) { }
   friend X convert_i_to_x(I i, X range_start, X range_end, I sample_count)
   {
     float ii = float(i.index);
