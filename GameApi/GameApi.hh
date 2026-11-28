@@ -2942,6 +2942,7 @@ public:
   IMPORT DP dyn_faces(std::vector<P> vec, MS m);
   IMPORT DP dyn_faces_point(std::vector<P> vec, std::vector<PTS> pts);
   IMPORT DP dyn_faces_matrix(std::vector<P> vec, std::vector<MS> ms);
+  IMPORT P from_dyn(DP dyn, int obj);
   IMPORT ML landscape_height(P p, float height);
   IMPORT P sum(std::vector<P> vec);
   IMPORT P mult(P p, float val);

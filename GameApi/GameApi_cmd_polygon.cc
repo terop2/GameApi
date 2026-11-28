@@ -411,6 +411,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "" ,"" },
 			 "DP", "polygon_api", "dyn_faces_matrix"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::from_dyn,
+			 "p_from_dyn",
+			 { "dyn", "obj" },
+			 { "DP", "int" },
+			 { "" ,"" },
+			 "P", "polygon_api", "from_dyn"));
 
 #if (ALL==1)||(P_DUP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::p_dup,

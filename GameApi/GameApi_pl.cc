@@ -32360,6 +32360,7 @@ class FaceCollectionFromDyn : public FaceCollection
 {
 public:
   FaceCollectionFromDyn(DynamicFaceCollection *dyn, int obj) : dyn(dyn), obj(obj) { }
+  virtual std::string name() const { return "FaceColletionFromDyn"; }
   virtual void Collect(CollectVisitor &vis) {
     dyn->Collect(vis);
     vis.register_obj(this);
@@ -32426,3 +32427,9 @@ private:
   const VEC4 *joints = 0;
   const VEC4 *weights = 0;
 };
+
+GameApi::P GameApi::PolygonApi::from_dyn(GameApi::DP dyn, int obj)
+{
+  DynamicFaceCollection *d = find_dynamic_facecoll(e,dyn);
+  return add_polygon2(e, new FaceCollectionFromDyn(d,obj),1);
+}
