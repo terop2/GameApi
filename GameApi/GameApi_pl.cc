@@ -32377,6 +32377,7 @@ public:
   virtual void Prepare()
   {
     dyn->Prepare();
+    HeavyPrepare();
   }
   virtual int NumFaces() const { return dyn->NumFaces(obj); }
   virtual int NumPoints(int face) const { return 3; }
