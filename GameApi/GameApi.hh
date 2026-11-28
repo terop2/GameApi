@@ -69,6 +69,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(PAT)
 #define PAT_DEFINED 1
 #endif
+  MAC(DP)
   MAC(ZIP)
   MAC(BS)
   MAC(US)
@@ -2938,6 +2939,9 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT DP dyn_faces(std::vector<P> vec, MS m);
+  IMPORT DP dyn_faces_point(std::vector<P> vec, std::vector<PTS> pts);
+  IMPORT DP dyn_faces_matrix(std::vector<P> vec, std::vector<MS> ms);
   IMPORT ML landscape_height(P p, float height);
   IMPORT P sum(std::vector<P> vec);
   IMPORT P mult(P p, float val);

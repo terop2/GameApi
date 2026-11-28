@@ -32128,7 +32128,7 @@ private:
   struct RET { RET() : b(false) { } bool b; unsigned int color; };
   std::map<IDX,RET> voxel;
   };
-
+};
 GameApi::VX GameApi::VoxelApi::pts_to_vx(PTS pts)
 {
 }
@@ -32152,4 +32152,207 @@ GameApi::PTS GameApi::VoxelApi::snap_pts_to_grid(PTS pts,
   }
 
 #endif  
+
+class FaceCollectionDynamic : public DynamicFaceCollection
+{
+public:
+  FaceCollectionDynamic(std::vector<FaceCollection*> coll, MatrixArray *ms) : coll(coll),ms(ms), is_simple(true), is_points_instancing(false),is_matrix_instancing(false) { }
+  FaceCollectionDynamic(std::vector<FaceCollection*> coll, std::vector<PointsApiPoints *> pts) : coll(coll), pts_arr(pts), is_simple(false),is_points_instancing(true),is_matrix_instancing(false) { }
+  FaceCollectionDynamic(std::vector<FaceCollection*> coll, std::vector<MatrixArray*> ms) : coll(coll),ms_arr(ms), is_simple(false),is_points_instancing(false),is_matrix_instancing(true) { }
+
+  
+  void Prepare() {
+    int s = coll.size();
+    for(int i=0;i<s;i++)
+      {
+	coll[i]->Prepare();
+      }
+    HeavyPrepare();
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = coll.size();
+    for(int i=0;i<s;i++)
+      {
+	coll[i]->Collect(vis);
+      }
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    int objcount = coll.size();
+    if (is_points_instancing)
+      objcount = std::min(objcount,int(pts_arr.size()));
+    if (is_matrix_instancing)
+      objcount = std::min(objcount,int(ms_arr.size()));
+    for(int o=0;o<objcount;o++)
+      {
+	FaceCollection *c = coll[o];
+	Matrix m = is_simple?ms->Index(o):Matrix::Identity();
+	PointsApiPoints *pts = is_points_instancing?pts_arr[o]:0;
+	MatrixArray *ms2 = is_matrix_instancing?ms_arr[o]:0;
+
+	objects.push_back(Obj());
+	Obj *obj = &objects[objects.size()-1];
+
+	int s = c->NumFaces();
+
+	obj->vertices.reserve(s*3);
+	obj->normals.reserve(s*3);
+	obj->colors.reserve(s*3);
+	obj->texcoord.reserve(s*3);
+	obj->joints.reserve(s*3);
+	obj->weights.reserve(s*3);
+
+	for(int i=0;i<s;i++)
+	  {
+	    assert(c->NumPoints(i)==3);
+	    for(int p=0;p<3;p++)
+	      {
+		obj->vertices.push_back(c->FacePoint(i,p));
+		obj->normals.push_back(c->PointNormal(i,p));
+		obj->colors.push_back(c->Color(i,p));
+		Point2d p1 = c->TexCoord(i,p);
+		float p2 = c->TexCoord3(i,p);
+		obj->texcoord.push_back(Point(p1.x,p1.y,p2));
+		obj->joints.push_back(c->Joints(i,p));
+		obj->weights.push_back(c->Weights(i,p));
+	      }
+	  }
+
+	obj->transform = m;
+
+	if (is_simple) {
+	  obj->instancecount = 1;
+	  obj->max_instancecount = 1;
+	}
+	if (is_points_instancing) {
+	  obj->instancecount = pts->NumPoints();
+	  obj->max_instancecount = pts->NumPoints();
+	}
+	if (is_matrix_instancing)
+	  {
+	    obj->instancecount = ms2->Size();
+	    obj->max_instancecount = ms2->MaxSize();
+	  }
+
+	if (is_points_instancing)
+	  {
+	    int s = pts->NumPoints();
+	    obj->instance_point.reserve(s);
+	    for(int i=0;i<s;i++) {
+	      Point p = pts->Pos(i);
+	      obj->instance_point.push_back(p);
+	    }
+	  }
+	if (is_matrix_instancing)
+	  {
+	    int s = ms->Size();
+	    obj->instance_matrix.reserve(s);
+	    for(int i=0;i<s;i++) {
+	      Matrix p = ms2->Index(i);
+	      obj->instance_matrix.push_back(p);
+	    }
+	  }
+
+	
+      }
+
+    
+  }
+  
+  virtual int NumObjects() const { return objects.size(); }
+  virtual int NumFaces(int obj) const { return objects[obj].vertices.size()/3; }
+  virtual const Point *GetVertices(int obj) const { return &objects[obj].vertices[0]; }
+  virtual const Vector *GetNormals(int obj) const { return &objects[obj].normals[0]; }
+  virtual const unsigned int *Color(int obj) const { return &objects[obj].colors[0]; }
+  virtual const Point *TexCoord(int obj) const { return &objects[obj].texcoord[0]; }
+  virtual const VEC4 *Joints(int obj) const { return &objects[obj].joints[0]; }
+  virtual const VEC4 *Weights(int obj) const { return &objects[obj].weights[0]; }
+
+  virtual Matrix Transform(int obj) const { return objects[obj].transform; }
+  virtual int InstanceCount(int obj) const { return objects[obj].instancecount; }
+  virtual int MaxInstanceCount(int obj) const { return objects[obj].max_instancecount; }
+  virtual const Point *InstancePoint(int obj) const { if (objects[obj].is_instances_points) return &objects[obj].instance_point[0]; return 0; }
+  virtual const Matrix *InstanceMatrix(int obj) const { if (objects[obj].is_instances_matrix) return &objects[obj].instance_matrix[0]; return 0; }
+
+private:
+  struct Obj {
+    std::vector<Point> vertices;
+    std::vector<Vector> normals;
+    std::vector<unsigned int> colors;
+    std::vector<Point> texcoord;
+    std::vector<VEC4> joints;
+    std::vector<VEC4> weights;
+
+    Matrix transform;
+    int instancecount;
+    int max_instancecount;
+    bool is_instances_points;
+    std::vector<Point> instance_point;
+    bool is_instances_matrix;
+    std::vector<Matrix> instance_matrix;
+  };
+private:
+  std::vector<FaceCollection*> coll;
+  bool is_simple;
+  MatrixArray *ms;
+  bool is_points_instancing;
+  std::vector<PointsApiPoints*> pts_arr;
+  bool is_matrix_instancing;
+  std::vector<MatrixArray*> ms_arr;
+
+  std::vector<Obj> objects;
+};
+GameApi::DP GameApi::PolygonApi::dyn_faces(std::vector<GameApi::P> vec, MS m)
+{
+  std::vector<FaceCollection*> coll;
+  int s= vec.size();
+  for(int i=0;i<s;i++)
+    {
+      FaceCollection *c = find_facecoll(e,vec[i]);
+      coll.push_back(c);
+    }
+  MatrixArray *ms = find_matrix_array(e,m);
+  return add_dynamic_facecoll(e,new FaceCollectionDynamic(coll,ms));
+}
+
+GameApi::DP GameApi::PolygonApi::dyn_faces_point(std::vector<GameApi::P> vec, std::vector<GameApi::PTS> pts)
+{
+  std::vector<FaceCollection*> coll;
+  int s= vec.size();
+  for(int i=0;i<s;i++)
+    {
+      FaceCollection *c = find_facecoll(e,vec[i]);
+      coll.push_back(c);
+    }
+  std::vector<PointsApiPoints*> vec2;
+  int s2 = pts.size();
+  for(int i=0;i<s2;i++)
+    {
+      PointsApiPoints *p = find_pointsapi_points(e,pts[i]);
+      vec2.push_back(p);
+    }
+  return add_dynamic_facecoll(e,new FaceCollectionDynamic(coll,vec2));
+}
+
+GameApi::DP GameApi::PolygonApi::dyn_faces_matrix(std::vector<GameApi::P> vec, std::vector<GameApi::MS> ms)
+{
+  std::vector<FaceCollection*> coll;
+  int s= vec.size();
+  for(int i=0;i<s;i++)
+    {
+      FaceCollection *c = find_facecoll(e,vec[i]);
+      coll.push_back(c);
+    }
+  std::vector<MatrixArray*> vec2;
+  int s2 = ms.size();
+  for(int i=0;i<s2;i++)
+    {
+      MatrixArray *p = find_matrix_array(e,ms[i]);
+      vec2.push_back(p);
+    }
+  return add_dynamic_facecoll(e,new FaceCollectionDynamic(coll,vec2));
+}
+
 

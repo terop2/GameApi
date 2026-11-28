@@ -143,6 +143,16 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 #endif
+GameApi::DP add_dynamic_facecoll(GameApi::Env &e, DynamicFaceCollection *f)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->dyn_faces.push_back(f);
+  if (g_current_block != -2)
+    add_b(f);
+  GameApi::DP im;
+  im.id = env->dyn_faces.size()-1;
+  return im;
+}
 
 GameApi::F add_pullback(GameApi::Env &e, PullbackFunction *p)
 {
@@ -1570,6 +1580,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 #endif
   GameApi::LL ll = { -1 };
   return ll;
+}
+
+DynamicFaceCollection *find_dynamic_facecoll(GameApi::Env &e, GameApi::DP p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->dyn_faces[p.id];  
 }
 
 PullbackFunction *find_pullback(GameApi::Env &e, GameApi::F p)

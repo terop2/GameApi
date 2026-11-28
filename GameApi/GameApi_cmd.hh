@@ -96,6 +96,7 @@ class TypeToString { public: static constexpr const char * str=""; };
 #define MAC(a) \
   template<> class TypeToString<GameApi::a> { public: static constexpr const char * str=#a; };
 
+  MAC(DP)
   MAC(BS)
   MAC(US)
   MAC(CS)
@@ -549,6 +550,7 @@ MACRO(GameApi::TRR)
 MACRO(GameApi::PV)
 MACRO(GameApi::FS)
 MACRO(GameApi::F)
+MACRO(GameApi::DP)
 #undef MACRO
 
 

@@ -392,6 +392,26 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "", "0" },
 			 "P", "polygon_api", "alt"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::dyn_faces,
+			 "p_dyn",
+			 { "vec", "m" },
+			 { "[P]", "MS" },
+			 { "" ,"" },
+			 "DP", "polygon_api", "dyn_faces"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::dyn_faces_point,
+			 "p_dyn_point",
+			 { "vec", "pts" },
+			 { "[P]", "[PTS]" },
+			 { "" ,"" },
+			 "DP", "polygon_api", "dyn_faces_point"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::dyn_faces_matrix,
+			 "p_dyn_matrix",
+			 { "vec", "ms" },
+			 { "[P]", "[MS]" },
+			 { "" ,"" },
+			 "DP", "polygon_api", "dyn_faces_matrix"));
+
+
 #if (ALL==1)||(P_DUP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::p_dup,
 			 "p_dup",

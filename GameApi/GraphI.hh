@@ -59,6 +59,8 @@ namespace GameApi
 };
 
 
+
+
 class CachedFileService
 {
 public:
@@ -631,6 +633,31 @@ public:
   virtual void register_obj(CollectInterface *i)=0;
   virtual void register_first_frame(CollectInterface *i)=0;
 };
+
+
+class DynamicFaceCollection : public CollectInterface
+{
+public: // vertex arrays
+  virtual void Prepare()=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  
+  virtual int NumObjects() const=0;
+  virtual int NumFaces(int obj) const=0;
+  virtual const Point *GetVertices(int obj) const=0;
+  virtual const Vector *GetNormals(int obj) const=0;
+  virtual const unsigned int *Color(int obj) const=0;
+  virtual const Point *TexCoord(int obj) const=0;
+  virtual const VEC4 *Joints(int obj) const=0;
+  virtual const VEC4 *Weights(int obj) const=0;
+
+  virtual Matrix Transform(int obj) const=0;
+  virtual int InstanceCount(int obj) const=0;
+  virtual int MaxInstanceCount(int obj) const=0;
+  virtual const Point *InstancePoint(int obj) const=0;
+  virtual const Matrix *InstanceMatrix(int obj) const=0;
+};
+
 
 class FloatRay
 {

@@ -848,6 +848,7 @@ struct EnvImpl
   std::vector<Path*, GameApiAllocator<Path*> > paths;
   std::vector<void*, GameApiAllocator<void*> > objects;
   std::vector<PullbackFunction*, GameApiAllocator<PullbackFunction*> > pullbacks;
+  std::vector<DynamicFaceCollection*, GameApiAllocator<DynamicFaceCollection*> > dyn_faces;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1270,6 +1271,7 @@ typename FindTrait<ID>::interface_type find_object(GameApi::Env &e, ID i)
 
 #endif
 
+GameApi::DP add_dynamic_facecoll(GameApi::Env &e, DynamicFaceCollection *face);
 
 GameApi::F add_pullback(GameApi::Env &e, PullbackFunction *f);
 #if 1
@@ -1445,6 +1447,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 //Array<int,LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_array(GameApi::Env &e, GameApi::TFA tfa);
 //Bitmap<LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_matrix(GameApi::Env &e, GameApi::TFB tfb);
+DynamicFaceCollection *find_dynamic_facecoll(GameApi::Env &e, GameApi::DP d);
 PullbackFunction *find_pullback(GameApi::Env &e, GameApi::F f);
 #if 1
 Path *find_path(GameApi::Env &e, GameApi::PAT p);
