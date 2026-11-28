@@ -24,17 +24,76 @@
 //  i1
 //
 // pos=1
-void fill_slot(std::vector<float> &res, int pos, const std::vector<float> &slots)
+
+
+struct X
 {
-  float f0 = res[pos-1];
-  float s0 = slots[pos-1];
-  float r1 = f0 + s0;
+  float x;
+  X(float x) : x(x) { }
+  std::string print_x() const {
+    std::stringstream ss;
+    ss << x;
+    return ss.str();
+  }
+  float to_float() const { return x; }
+};
+
+struct I
+{
+  int index;
+
+  friend X convert_i_to_x(I i, X range_start, X range_end, I sample_count)
+  {
+    float ii = float(i.index);
+    float count = float(sample_count.index);
+    float ii_scaled = range_start.x + ii/count*(range_end.x-range_start.x);
+    X res(ii_scaled);
+    return res;
+  }
+};
+
+
+struct FX
+{
+  float f_val;
+  FX() : f_val(0.0) { } // std::vector<FX>::resize uses this
+  FX(float fx) : f_val(fx) { }
+  std::string print_fx() const
+  {
+    std::stringstream ss;
+    ss << f_val;
+    return ss.str();
+  }
+  float to_float() const { return f_val; }
+  friend FX operator+(FX a, FX b) { FX res(a.f_val + b.f_val); return res; }
+};
+struct D
+{
+  int ii;
+  D(int i) : ii(i) { }
+};
+
+struct P {
+private:
+  float mult;
+public:
+  P(float mult) : mult(mult) { }
+  void operator+=(float s) { mult+=s; }
+  bool check_if_zero() const { return fabs(mult)<0.00000001; }
+  std::string print_mult() const { std::stringstream ss; ss << mult; return ss.str(); }
+};
+
+void fill_slot(std::vector<FX> &res, int pos, const std::vector<FX> &slots)
+{
+  FX f0 = res[pos-1];
+  FX s0 = slots[pos-1];
+  FX r1 = f0 + s0;
   res[pos] = r1;
 }
 
-std::vector<float> next_level(std::vector<float> slots, std::vector<float> initial_values, int degree)
+std::vector<FX> next_level(std::vector<FX> slots, std::vector<FX> initial_values, int degree)
 {
-  std::vector<float> res;
+  std::vector<FX> res;
   res.push_back(initial_values[degree]);
   res.resize(slots.size()+1);
   
@@ -45,11 +104,12 @@ std::vector<float> next_level(std::vector<float> slots, std::vector<float> initi
   return res;
 }
 
-std::vector<float> lagranges_interpolation(std::vector<float> x, std::vector<float> y)
+std::vector<P> lagranges_interpolation(std::vector<X> x, std::vector<FX> y)
 {
   int n = x.size();
   assert(n==y.size());
-  std::vector<float> result(n, 0.0);
+  P def(0.0);
+  std::vector<P> result(n, def);
   
   for (int i = 0; i < n; i++)
     {
@@ -65,19 +125,19 @@ std::vector<float> lagranges_interpolation(std::vector<float> x, std::vector<flo
 	  
 	  for (int k = 0; k < basis.size(); k++)
 	    {
-	      next[k]   -= basis[k] * x[j];
+	      next[k]   -= basis[k] * x[j].to_float();
 	      next[k+1] += basis[k];
 	    }
 	  
 	  basis = next;
 	  
-	  denominator *= (x[i] - x[j]);
+	  denominator *= (x[i].to_float() - x[j].to_float());
 	}
       
       // Add y[i] * basis / denominator
       for (int k = 0; k < n; k++)
 	{
-	  result[k] += y[i] * basis[k] / denominator;
+	  result[k] += y[i].to_float() * basis[k] / denominator;
 	}
     }
   return result;
@@ -92,21 +152,20 @@ std::string x_display(int i)
   return std::string("x^")+ss.str();  
 }
 
-std::string i_display(int ii, float range_start)
+std::string i_display(D ii, X range_start)
 {
   std::string s = "f";
-  for(int i=0;i<ii;i++) s+='\'';
-  std::stringstream ss;
-  float ii_scaled = range_start;
-  ss << ii_scaled;
-  s+="(" + ss.str() + ")=";
+  for(int i=0;i<ii.ii;i++) s+='\'';
+  //std::stringstream ss;
+  X ii_scaled = range_start;
+  s+="(" + ii_scaled.print_x() + ")=";
   return s;
 }
 
 
-void solve_diff_eq(float (*fptr)(float x), std::string eq, int degree,
-		   std::vector<float> initial_values,
-		   float range_start, float range_end,
+void solve_diff_eq(FX (*fptr)(X x), std::string eq, int degree,
+		   std::vector<FX> initial_values,
+		   X range_start, X range_end,
 		   int sample_count)
 {
   std::cout << std::endl;
@@ -122,23 +181,26 @@ void solve_diff_eq(float (*fptr)(float x), std::string eq, int degree,
   int s3 = initial_values.size();
   for(int i=s3-1;i>=0;i--)
     {
-      std::cout << i_display(i,range_start) << initial_values[i] << std::endl;
+      std::cout << i_display(i,range_start) << initial_values[i].f_val << std::endl;
     }
   
   
 
   
   sample_count--;
-  std::vector<float> val;
-  std::vector<float> orig_x;
+  std::vector<FX> val; // i->FX
+  std::vector<X> orig_x; // i->X
   for(int i=0;i<sample_count+1;i++)
     {
-      float ii = float(i);
-      float ii_scaled = range_start + ii/float(sample_count)*(range_end-range_start);
+      I ii0 = { i };
+      I sample_count0 = { sample_count };
+      X ii_scaled = convert_i_to_x(ii0,range_start,range_end,sample_count0);
+      //float ii = float(i);
+      //float ii_scaled = range_start + ii/float(sample_count)*(range_end-range_start);
       orig_x.push_back(ii_scaled);
       val.push_back(fptr(ii_scaled)); // 0, 1, 2, 3 ,4, ..., 9
     }
-  std::vector<float> curr;
+  std::vector<FX> curr; // i->FX
   for(int i=degree-1;i>=0;i--)
     {
       curr = next_level(val,initial_values,i);
@@ -153,19 +215,19 @@ void solve_diff_eq(float (*fptr)(float x), std::string eq, int degree,
   std::cout << "Samples:" << std::endl;
   for(int i=0;i<s;i++)
     {
-      std::cout << "f(" << orig_x[i] << ") = " << curr[i] << std::endl;
+      std::cout << "f(" << orig_x[i].print_x() << ") = " << curr[i].print_fx() << std::endl;
     }
 
   curr.resize(orig_x.size());
   
-  std::vector<float> res = lagranges_interpolation(orig_x,curr);
+  std::vector<P> res = lagranges_interpolation(orig_x,curr);
   std::cout << "Polynomial:" << std::endl;
   int s1 = res.size();
   for(int i=0;i<s1;i++)
     {
-      if (fabs(res[i])<0.00000001) { } else {
+      if (res[i].check_if_zero()) { } else {
 	if (i!=0) std::cout << "+";
-	std::cout << res[i];
+	std::cout << res[i].print_mult();
 	std::cout << x_display(i);
       }
     }
@@ -173,18 +235,18 @@ void solve_diff_eq(float (*fptr)(float x), std::string eq, int degree,
   std::cout << std::endl;
 }
 
-float diff1_subst(float x) { return -x*x-1; }
-float diff2_subst(float x) { return -x*x-1; }
+FX diff1_subst(X x) { return FX(-x.x*x.x-1); }
+FX diff2_subst(X x) { return FX(-x.x*x.x-1); }
 
 void diff_test_case1()
 {
   std::cout << "Test case #1:" << std::endl;
-  solve_diff_eq(&diff1_subst, "x*x+1", 1, std::vector<float>{0.0f}, 0.0, 30.0, 10);
+  solve_diff_eq(&diff1_subst, "x*x+1", 1, std::vector<FX>{0.0f}, X(0.0), X(30.0), 10);
 }
 void diff_test_case2()
 {
   std::cout << "Test case #2:" << std::endl;
-  solve_diff_eq(&diff2_subst, "x*x+1", 2,std::vector<float>{0.0f,0.0f}, 0.0, 30.0, 10);  
+  solve_diff_eq(&diff2_subst, "x*x+1", 2,std::vector<FX>{0.0f,0.0f}, X(0.0), X(30.0), 10);  
 }
 
 int main()
