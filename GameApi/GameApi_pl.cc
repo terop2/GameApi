@@ -32263,8 +32263,8 @@ public:
   
   virtual int NumObjects() const { return objects.size(); }
   virtual int NumFaces(int obj) const { return objects[obj].vertices.size()/3; }
-  virtual const Point *GetVertices(int obj) const { return &objects[obj].vertices[0]; }
-  virtual const Vector *GetNormals(int obj) const { return &objects[obj].normals[0]; }
+  virtual const Point *Vertices(int obj) const { return &objects[obj].vertices[0]; }
+  virtual const Vector *Normals(int obj) const { return &objects[obj].normals[0]; }
   virtual const unsigned int *Color(int obj) const { return &objects[obj].colors[0]; }
   virtual const Point *TexCoord(int obj) const { return &objects[obj].texcoord[0]; }
   virtual const VEC4 *Joints(int obj) const { return &objects[obj].joints[0]; }
@@ -32356,3 +32356,73 @@ GameApi::DP GameApi::PolygonApi::dyn_faces_matrix(std::vector<GameApi::P> vec, s
 }
 
 
+class FaceCollectionFromDyn : public FaceCollection
+{
+public:
+  FaceCollectionFromDyn(DynamicFaceCollection *dyn, int obj) : dyn(dyn), obj(obj) { }
+  virtual void Collect(CollectVisitor &vis) {
+    dyn->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    p = dyn->Vertices(obj);
+    v = dyn->Normals(obj);
+    c  = dyn->Color(obj);
+    tex = dyn->TexCoord(obj);
+    joints = dyn->Joints(obj);
+    weights = dyn->Weights(obj);
+  }
+  virtual void Prepare()
+  {
+    dyn->Prepare();
+  }
+  virtual int NumFaces() const { return dyn->NumFaces(obj); }
+  virtual int NumPoints(int face) const { return 3; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return p[face*3+point];
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return v[face*3+point];
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return 0;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return c[face*3+point];
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point p = tex[face*3+point];
+    Point2d pp = { p.x, p.y };
+    return pp;
+  }
+  virtual float TexCoord3(int face, int point) const {
+    Point p = tex[face*3+point];
+    float pp = p.z;
+    return pp;
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    return joints[face*3+point];
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    return weights[face*3+point];
+  }
+private:
+  DynamicFaceCollection *dyn = 0;
+  int obj;
+  const Point *p = 0;
+  const Vector *v = 0;
+  const unsigned int *c = 0;
+  const Point *tex = 0;
+  const VEC4 *joints = 0;
+  const VEC4 *weights = 0;
+};

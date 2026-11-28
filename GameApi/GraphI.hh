@@ -644,8 +644,8 @@ public: // vertex arrays
   
   virtual int NumObjects() const=0;
   virtual int NumFaces(int obj) const=0;
-  virtual const Point *GetVertices(int obj) const=0;
-  virtual const Vector *GetNormals(int obj) const=0;
+  virtual const Point *Vertices(int obj) const=0;
+  virtual const Vector *Normals(int obj) const=0;
   virtual const unsigned int *Color(int obj) const=0;
   virtual const Point *TexCoord(int obj) const=0;
   virtual const VEC4 *Joints(int obj) const=0;
